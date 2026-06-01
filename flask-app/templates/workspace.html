@@ -187,7 +187,7 @@ async function handleFiles(files) {
 
 async function processImages(msg = 'Building catalog…') {
   const order = getOrder();
-  if (!order.length || isProcessing) return;
+  if (!order.length || isProcessing) return false;
   isProcessing = true;
   readyCard.classList.add('hidden');
   setStatus('info', msg);
@@ -206,7 +206,7 @@ async function processImages(msg = 'Building catalog…') {
       setProgress(0);
       setStatus('error', '&#9888; ' + (data.message || 'Processing error.'));
       isProcessing = false;
-      return;
+      return false;
     }
 
     setProgress(100);
@@ -224,11 +224,14 @@ async function processImages(msg = 'Building catalog…') {
 
     readyMeta.textContent = metaLine;
     readyCard.classList.remove('hidden');
+    isProcessing = false;
+    return true;
   } catch {
     setProgress(0);
     setStatus('error', 'Processing failed — please try again.');
+    isProcessing = false;
+    return false;
   }
-  isProcessing = false;
 }
 
 // ── Thumbs ────────────────────────────────────────────────────────────────────
@@ -275,10 +278,32 @@ function updateUI() {
 async function confirmBuild() {
   const btn = document.getElementById('confirm-btn');
   btn.disabled = true;
-  btn.textContent = '⏳ Building…';
-  await processImages('Building catalog with prices…');
+  btn.innerHTML = '<span class="btn-spinner"></span> Building…';
+  btn.classList.add('btn-building');
+
+  const ok = await processImages('Building catalog with prices…');
+
+  btn.classList.remove('btn-building');
   btn.disabled = false;
-  btn.innerHTML = '&#10003; Confirm Prices &amp; Build Catalog';
+
+  if (ok) {
+    btn.classList.add('btn-built');
+    btn.innerHTML = '&#10003; Done — Flipbook is ready!';
+    setTimeout(() => {
+      readyCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+    setTimeout(() => {
+      btn.classList.remove('btn-built');
+      btn.innerHTML = '&#10003; Confirm Prices &amp; Build Catalog';
+    }, 4000);
+  } else {
+    btn.innerHTML = '&#9888; Error — try again';
+    btn.classList.add('btn-error');
+    setTimeout(() => {
+      btn.classList.remove('btn-error');
+      btn.innerHTML = '&#10003; Confirm Prices &amp; Build Catalog';
+    }, 3000);
+  }
 }
 
 function getOrder() {

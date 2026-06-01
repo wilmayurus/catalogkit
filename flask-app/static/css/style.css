@@ -1381,3 +1381,31 @@ nav {
   cursor: not-allowed;
   transform: none;
 }
+
+/* ── CONFIRM BUTTON STATES ── */
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+.btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 3px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.btn-confirm-build.btn-building {
+  background: linear-gradient(135deg, #0288d1, #0277bd);
+  box-shadow: 0 4px 20px rgba(2,136,209,0.4);
+}
+.btn-confirm-build.btn-built {
+  background: linear-gradient(135deg, #00c853, #1b5e20);
+  box-shadow: 0 4px 20px rgba(0,200,83,0.5);
+}
+.btn-confirm-build.btn-error {
+  background: linear-gradient(135deg, #e53935, #b71c1c);
+  box-shadow: 0 4px 20px rgba(229,57,53,0.4);
+}
