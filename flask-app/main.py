@@ -24,6 +24,7 @@ TARGET_WIDTH  = 800
 TARGET_HEIGHT = 1000
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 
+FREE_CATALOG_LIMIT    = 1      # total catalogs on free plan
 FREE_MAX_IMAGES       = 5      # images per catalog on free plan
 BASIC_MAX_IMAGES      = 20    # images per catalog on basic plan
 BASIC_PRICE_PGK       = 5     # K5/month
@@ -108,7 +109,7 @@ class User(db.Model):
             return True
         if self.is_basic:
             return self.catalogs_this_period < BASIC_MONTHLY_LIMIT
-        return True   # free: always yes, but images will be capped
+        return self.catalog_count < FREE_CATALOG_LIMIT
 
     @property
     def catalog_count(self):

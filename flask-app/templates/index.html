@@ -6,18 +6,24 @@
   {# ── Plan status banners ── #}
   {% if not can_create %}
   <div class="alert alert-warning" style="margin-bottom:20px">
-    <strong>&#9888; Monthly catalog limit reached.</strong>
-    You've used both catalogs this month.
-    <a href="/upgrade" class="alert-link">Upgrade to Pro (K{{ 20 }}/mo)</a> for unlimited.
+    {% if current_user.is_basic %}
+      <strong>&#9888; Monthly catalog limit reached.</strong>
+      You've used both catalogs this month.
+      <a href="/upgrade" class="alert-link">Upgrade to Pro (K20/mo)</a> for unlimited.
+    {% else %}
+      <strong>&#9888; Free plan limit reached.</strong>
+      You've used your 1 free catalog.
+      <a href="/upgrade" class="alert-link">Upgrade to Basic (K5/mo)</a> for more.
+    {% endif %}
   </div>
   {% elif current_user.is_basic and catalogs_remaining is not none %}
   <div class="plan-info-bar">
-    <span>&#11088; <strong>Basic plan</strong> &nbsp;·&nbsp; {{ catalogs_remaining }} catalog{{ 's' if catalogs_remaining != 1 }} remaining this month</span>
+    <span>&#11088; <strong>Basic plan</strong> &nbsp;·&nbsp; {{ catalogs_remaining }} catalog{{ 's' if catalogs_remaining != 1 }} remaining this month &nbsp;·&nbsp; up to {{ basic_max_images }} images each</span>
     <a href="/upgrade" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade to Pro &#8594;</a>
   </div>
   {% elif not current_user.is_basic and not current_user.is_pro and not current_user.is_admin %}
   <div class="plan-info-bar">
-    <span>&#9675; <strong>Free plan</strong> &nbsp;·&nbsp; Catalogs are limited to {{ free_max_images }} images</span>
+    <span>&#9675; <strong>Free plan</strong> &nbsp;·&nbsp; 1 catalog · max {{ free_max_images }} images</span>
     <a href="/upgrade" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade for more &#8594;</a>
   </div>
   {% endif %}
