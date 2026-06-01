@@ -74,7 +74,7 @@
 
   <p class="text-muted" id="price-hint"
      style="font-size:0.82rem;margin:-4px 0 10px;{% if not catalog.get_pages() %}display:none;{% endif %}">
-    &#128176; Type a price below each image — it appears as a badge in the flipbook
+    &#128176; Type a price below each image (optional) — it will appear as a badge in the flipbook
   </p>
 
   {# ── Thumbnail grid — pre-populated from saved page data ── #}
@@ -87,10 +87,20 @@
         <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
       </div>
       <input type="text" class="thumb-price" placeholder="e.g. K 25.00"
-             value="{{ item.price }}" onchange="onPriceChange(this)"
+             value="{{ item.price }}"
              onclick="event.stopPropagation()" title="Enter price (e.g. K 25.00)">
     </div>
     {% endfor %}
+  </div>
+
+  {# ── Confirm button — shown when images are in the grid ── #}
+  <div id="confirm-wrap" class="{% if not catalog.get_pages() %}hidden{% endif %}">
+    <button class="btn-confirm-build" id="confirm-btn" onclick="confirmBuild()">
+      &#10003; Confirm Prices &amp; Build Catalog
+    </button>
+    <p class="text-muted" style="font-size:0.78rem;margin-top:8px;text-align:center">
+      Saves your prices and generates the shareable flipbook link
+    </p>
   </div>
 
 </div>
@@ -233,7 +243,7 @@ function addThumb(filename, price = '') {
       <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
     </div>
     <input type="text" class="thumb-price" placeholder="e.g. K 25.00" value="${price}"
-           onchange="onPriceChange(this)" onclick="event.stopPropagation()" title="Enter price">
+           onclick="event.stopPropagation()" title="Enter price">
   `;
   grid.appendChild(item);
   updateNumbers();
@@ -243,18 +253,10 @@ function removeThumb(btn) {
   btn.closest('.thumb-item').remove();
   updateNumbers();
   updateUI();
-  if (getOrder().length) {
-    clearTimeout(regenTimer);
-    regenTimer = setTimeout(() => processImages('Updating catalog…'), 500);
-  } else {
+  if (!getOrder().length) {
     readyCard.classList.add('hidden');
     clearStatus();
   }
-}
-
-function onPriceChange(inp) {
-  clearTimeout(regenTimer);
-  regenTimer = setTimeout(() => processImages('Saving prices…'), 1200);
 }
 
 function updateNumbers() {
@@ -267,6 +269,16 @@ function updateUI() {
   const has = grid.querySelectorAll('.thumb-item').length > 0;
   gridHeader.classList.toggle('hidden', !has);
   priceHint.style.display = has ? '' : 'none';
+  document.getElementById('confirm-wrap').classList.toggle('hidden', !has);
+}
+
+async function confirmBuild() {
+  const btn = document.getElementById('confirm-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Building…';
+  await processImages('Building catalog with prices…');
+  btn.disabled = false;
+  btn.innerHTML = '&#10003; Confirm Prices &amp; Build Catalog';
 }
 
 function getOrder() {
