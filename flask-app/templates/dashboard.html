@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}My Plan — CatalogKit{% endblock %}
+{% block body %}
+<div class="container">
+
+  <!-- Plan Card -->
+  <div class="plan-card">
+    <div class="plan-card-left">
+      <div class="plan-card-label">Current plan</div>
+      <div class="plan-card-name plan-{{ user.plan_label | lower }}">
+        {% if user.is_admin %}&#9670; Admin{% elif user.is_pro %}&#9733; Pro{% else %}&#9675; Free{% endif %}
+      </div>
+      {% if user.is_pro and user.plan_expires %}
+        <div class="plan-card-meta">Renews {{ user.plan_expires.strftime('%d %b %Y') }}</div>
+      {% elif not user.is_admin %}
+        <div class="plan-card-meta">{{ user.catalog_count }} / {{ free_limit }} catalog{{ 's' if free_limit != 1 }} used</div>
+      {% endif %}
+    </div>
+    <div class="plan-card-right">
+      {% if pending %}
+        <div class="pending-badge">&#10010; Payment pending review</div>
+      {% elif not user.is_pro and not user.is_admin %}
+        <a href="/upgrade" class="btn btn-primary">&#9733; Upgrade to Pro &nbsp; K{{ pro_price }}/mo</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Plan Comparison -->
+  {% if not user.is_pro and not user.is_admin %}
+  <div class="compare-grid">
+    <div class="compare-col compare-free">
+      <div class="compare-col-head">Free</div>
+      <ul class="compare-list">
+        <li>&#10003; {{ free_limit }} catalog</li>
+        <li>&#10003; All image processing</li>
+        <li>&#10003; Flipbook viewer</li>
+        <li>&#10003; Download ZIP</li>
+        <li class="dim">&#10005; Unlimited catalogs</li>
+      </ul>
+      <div class="compare-price">K0</div>
+    </div>
+    <div class="compare-col compare-pro">
+      <div class="compare-col-badge">&#9733; Best</div>
+      <div class="compare-col-head">Pro</div>
+      <ul class="compare-list">
+        <li>&#10003; Unlimited catalogs</li>
+        <li>&#10003; All image processing</li>
+        <li>&#10003; Flipbook viewer</li>
+        <li>&#10003; Download ZIP</li>
+        <li>&#10003; Share link</li>
+      </ul>
+      <div class="compare-price">K{{ pro_price }}<span>/mo</span></div>
+      <a href="/upgrade" class="btn btn-primary btn-block" style="margin-top:16px">Upgrade now</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Catalogs -->
+  <div class="section-header" style="margin-top:40px">
+    <h3>Your catalogs &nbsp;·&nbsp; <span class="badge">{{ catalogs | length }}</span></h3>
+    <a href="/" class="btn btn-primary btn-sm">+ New catalog</a>
+  </div>
+
+  {% if catalogs %}
+  <div class="catalog-list">
+    {% for cat in catalogs %}
+    <div class="catalog-list-item">
+      <div class="catalog-list-icon">&#128218;</div>
+      <div class="catalog-list-info">
+        <div class="catalog-list-name">{{ cat.name }}</div>
+        <div class="catalog-list-meta">{{ cat.page_count }} page{{ 's' if cat.page_count != 1 }} &nbsp;·&nbsp; {{ cat.created_at.strftime('%d %b %Y') }}</div>
+      </div>
+      <a href="/catalog" class="btn btn-secondary btn-sm">View</a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">&#128218;</div>
+    <p>No catalogs yet — <a href="/">create your first one</a>.</p>
+  </div>
+  {% endif %}
+
+  <!-- Account Info -->
+  <div class="section-header" style="margin-top:40px">
+    <h3>Account</h3>
+  </div>
+  <div class="info-row"><span>Name</span><strong>{{ user.name }}</strong></div>
+  <div class="info-row"><span>Email</span><strong>{{ user.email }}</strong></div>
+  <div class="info-row"><span>Member since</span><strong>{{ user.created_at.strftime('%d %b %Y') }}</strong></div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Admin — CatalogKit{% endblock %}
+{% block body %}
+<div class="container">
+
+  <div class="section-header" style="padding-top:8px">
+    <h2 style="font-size:1.3rem; font-weight:700">&#9670; Admin Panel</h2>
+    <span class="badge">{{ all_users | length }} users</span>
+  </div>
+
+  <!-- Pending Payments -->
+  <h3 class="sub-heading">
+    Pending Payments
+    {% if pending %}<span class="badge badge-warning">{{ pending | length }}</span>{% endif %}
+  </h3>
+
+  {% if pending %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>User</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th><th>Date</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pending %}
+        <tr>
+          <td>
+            <strong>{{ p.user.name }}</strong><br>
+            <span class="text-muted" style="font-size:0.8rem">{{ p.user.email }}</span>
+          </td>
+          <td>K{{ "%.0f"|format(p.amount) }} ({{ p.months }}mo)</td>
+          <td>{{ p.payment_method }}</td>
+          <td>{{ p.reference }}</td>
+          <td>{{ p.notes or '—' }}</td>
+          <td style="white-space:nowrap">{{ p.submitted_at.strftime('%d %b %Y') }}</td>
+          <td style="white-space:nowrap">
+            <form method="POST" action="/admin/payment/{{ p.id }}/approve" style="display:inline">
+              <button type="submit" class="btn btn-success btn-sm">&#10003; Approve</button>
+            </form>
+            <form method="POST" action="/admin/payment/{{ p.id }}/reject" style="display:inline; margin-left:6px">
+              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this payment?')">&#10005;</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state" style="padding:32px">
+    <p>&#10003; No pending payments.</p>
+  </div>
+  {% endif %}
+
+  <!-- All Users -->
+  <h3 class="sub-heading" style="margin-top:40px">All Users</h3>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Plan</th><th>Expires</th><th>Catalogs</th><th>Joined</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in all_users %}
+        <tr>
+          <td><strong>{{ u.name }}</strong>{% if u.is_admin %} <span style="color:var(--warning); font-size:0.75rem">admin</span>{% endif %}</td>
+          <td>{{ u.email }}</td>
+          <td>
+            <span class="plan-badge plan-{{ u.plan_label | lower }}">{{ u.plan_label }}</span>
+          </td>
+          <td>{{ u.plan_expires.strftime('%d %b %Y') if u.plan_expires else '—' }}</td>
+          <td>{{ u.catalog_count }}</td>
+          <td style="white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
+          <td style="white-space:nowrap">
+            {% if not u.is_admin %}
+              {% if u.is_pro %}
+                <form method="POST" action="/admin/user/{{ u.id }}/revoke" style="display:inline">
+                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Revoke Pro from {{ u.name }}?')">Revoke Pro</button>
+                </form>
+              {% else %}
+                <form method="POST" action="/admin/user/{{ u.id }}/grant" style="display:inline">
+                  <input type="hidden" name="months" value="1">
+                  <button type="submit" class="btn btn-secondary btn-sm">Grant 1mo Pro</button>
+                </form>
+              {% endif %}
+            {% else %}
+              —
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Recent Processed Payments -->
+  {% if recent %}
+  <h3 class="sub-heading" style="margin-top:40px">Recent Decisions</h3>
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>User</th><th>Amount</th><th>Method</th><th>Status</th><th>Decided</th></tr>
+      </thead>
+      <tbody>
+        {% for p in recent %}
+        <tr>
+          <td>{{ p.user.name }}</td>
+          <td>K{{ "%.0f"|format(p.amount) }}</td>
+          <td>{{ p.payment_method }}</td>
+          <td>
+            <span class="plan-badge {% if p.status == 'approved' %}plan-pro{% else %}plan-free{% endif %}">
+              {{ p.status | capitalize }}
+            </span>
+          </td>
+          <td>{{ p.processed_at.strftime('%d %b %Y') if p.processed_at else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,25 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Product Catalog — Flipbook</title>
-  <link rel="stylesheet" href="/static/css/style.css">
-  <style>
-    body { background: var(--bg); }
-    .catalog-container { padding-top: 20px; }
-  </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Catalog — CatalogKit{% endblock %}
+{% block head %}
+<style>
+  .catalog-container { padding-top: 20px; }
+</style>
+{% endblock %}
 
-<nav>
-  <span class="nav-brand">&#9670; CatalogKit</span>
-  <div class="nav-links">
-    <a href="/">Upload</a>
-    <a href="/catalog" class="active">Catalog</a>
-  </div>
-</nav>
-
+{% block body %}
 {% if pages %}
 <div class="catalog-container">
 
@@ -28,64 +15,50 @@
     <p>{{ pages|length }} page{{ 's' if pages|length != 1 }} &nbsp;·&nbsp; Click or swipe to flip</p>
   </div>
 
-  <!-- Flipbook -->
   <div id="flipbook-wrap">
     <div id="flipbook">
       <div class="hard">&#9670; CatalogKit</div>
       {% for page in pages %}
       <div class="page">
-        <img src="/static/processed/{{ page }}" alt="Page {{ loop.index }}" loading="lazy">
+        <img src="/static/processed/{{ current_user.id }}/{{ page }}" alt="Page {{ loop.index }}" loading="lazy">
       </div>
       {% endfor %}
       <div class="hard">&#9670; End</div>
     </div>
   </div>
 
-  <!-- Controls -->
   <div class="catalog-controls">
     <button class="btn btn-secondary" id="prev-btn" onclick="flipPrev()">&#8592; Prev</button>
     <span class="page-indicator" id="page-indicator">Page 1</span>
     <button class="btn btn-secondary" id="next-btn" onclick="flipNext()">Next &#8594;</button>
   </div>
 
-  <!-- Share & Download -->
   <div class="catalog-actions">
-    <button class="btn btn-secondary" onclick="copyShareLink()" id="copy-btn">
-      &#128279; Copy Share Link
-    </button>
-    <a href="/download-all" class="btn btn-secondary" download>
-      &#128190; Download All
-    </a>
+    <button class="btn btn-secondary" onclick="copyShareLink()" id="copy-btn">&#128279; Copy Share Link</button>
+    <a href="/download-all" class="btn btn-secondary" download>&#128190; Download All</a>
     <a href="/" class="btn btn-secondary">&#8592; Back to Upload</a>
   </div>
 
-  <!-- Toast notification -->
   <div id="toast">Link copied!</div>
 
 </div>
 
-<!-- jQuery (required by Turn.js) -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<!-- Turn.js -->
 <script src="/static/js/turn.min.js"></script>
-
 <script>
 $(document).ready(function () {
   const totalPages = {{ pages|length }};
-  let bookW, bookH;
 
   function calcSize() {
     const vw = Math.min(window.innerWidth - 32, 800);
-    const vh = window.innerHeight - 220;
+    const vh = window.innerHeight - 240;
     const ratio = 800 / 1000;
-
-    // On small screens use single-page display
     const isMobile = window.innerWidth < 640;
+    let bookW, bookH;
     if (isMobile) {
       bookW = Math.min(vw, 380);
       bookH = bookW / ratio;
     } else {
-      // Two-page spread
       bookH = Math.min(vh, 600);
       bookW = Math.min(bookH * ratio * 2, vw);
       bookH = bookW / (ratio * 2);
@@ -95,26 +68,20 @@ $(document).ready(function () {
 
   function initFlipbook() {
     const { w, h, single } = calcSize();
-
     $('#flipbook').turn({
-      width: w,
-      height: h,
+      width: w, height: h,
       autoCenter: true,
       display: single ? 'single' : 'double',
       acceleration: true,
       gradients: !single,
       elevation: 50,
-      when: {
-        turned: function (e, page) {
-          updateIndicator(page);
-        }
-      }
+      when: { turned: function (e, page) { updateIndicator(page); } }
     });
     updateIndicator($('#flipbook').turn('page'));
   }
 
   function updateIndicator(page) {
-    const total = totalPages + 2; // covers
+    const total = totalPages + 2;
     $('#page-indicator').text('Page ' + Math.max(1, page - 1) + ' of ' + totalPages);
     $('#prev-btn').prop('disabled', page <= 1);
     $('#next-btn').prop('disabled', page >= total);
@@ -129,12 +96,9 @@ $(document).ready(function () {
       const toast = document.getElementById('toast');
       toast.classList.add('show');
       setTimeout(function () { toast.classList.remove('show'); }, 2200);
-    }).catch(function () {
-      prompt('Copy this link:', url);
-    });
+    }).catch(function () { prompt('Copy this link:', url); });
   };
 
-  // Keyboard navigation
   $(document).keydown(function (e) {
     if (e.key === 'ArrowLeft') flipPrev();
     if (e.key === 'ArrowRight') flipNext();
@@ -142,7 +106,6 @@ $(document).ready(function () {
 
   initFlipbook();
 
-  // Re-init on resize
   let resizeTimer;
   $(window).on('resize', function () {
     clearTimeout(resizeTimer);
@@ -150,8 +113,7 @@ $(document).ready(function () {
       const { w, h, single } = calcSize();
       try {
         $('#flipbook').turn('size', w, h);
-        if (single) $('#flipbook').turn('display', 'single');
-        else $('#flipbook').turn('display', 'double');
+        $('#flipbook').turn('display', single ? 'single' : 'double');
       } catch(e) {}
     }, 250);
   });
@@ -159,18 +121,13 @@ $(document).ready(function () {
 </script>
 
 {% else %}
-<!-- No pages yet -->
 <div class="catalog-container">
-  <div class="empty-state" style="padding: 80px 24px;">
+  <div class="empty-state" style="padding:80px 24px">
     <div class="icon">&#128436;</div>
-    <p style="font-size:1.1rem; font-weight:600; margin-bottom:8px;">No catalog yet</p>
-    <p class="text-muted" style="margin-bottom:28px;">
-      Upload your product images and click "Process &amp; Build Catalog" first.
-    </p>
+    <p style="font-size:1.1rem; font-weight:600; margin-bottom:8px">No catalog yet</p>
+    <p class="text-muted" style="margin-bottom:28px">Upload your product images and click "Process &amp; Build Catalog" first.</p>
     <a href="/" class="btn btn-primary btn-lg">&#8592; Go to Upload</a>
   </div>
 </div>
 {% endif %}
-
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Upgrade to Pro — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="max-width:680px">
+
+  <div style="text-align:center; margin-bottom:36px; padding-top:16px">
+    <div style="font-size:2.5rem; margin-bottom:10px">&#9733;</div>
+    <h1 style="font-size:1.8rem; font-weight:700; margin-bottom:6px">Upgrade to Pro</h1>
+    <p class="text-muted">Unlimited catalogs for K{{ pro_price }} per month</p>
+  </div>
+
+  {% if pending %}
+  <div class="alert alert-info">
+    <strong>&#10010; Payment under review</strong><br>
+    You submitted a payment on {{ pending.submitted_at.strftime('%d %b %Y at %I:%M %p') }}. We'll activate your Pro plan once confirmed.
+  </div>
+  {% else %}
+
+  <!-- Step 1: Pay -->
+  <div class="upgrade-step">
+    <div class="upgrade-step-num">1</div>
+    <div class="upgrade-step-body">
+      <h3>Send K{{ pro_price }} using one of these methods</h3>
+
+      <div class="payment-methods">
+
+        <div class="payment-method">
+          <div class="payment-method-icon">&#128242;</div>
+          <div class="payment-method-info">
+            <div class="payment-method-name">Cell Moni (Digicel)</div>
+            <div class="payment-method-detail">Send to: <strong>{{ payment_info.cell_moni }}</strong></div>
+          </div>
+        </div>
+
+        <div class="payment-method">
+          <div class="payment-method-icon">&#127981;</div>
+          <div class="payment-method-info">
+            <div class="payment-method-name">Bank Transfer</div>
+            <div class="payment-method-detail">{{ payment_info.bank }}</div>
+          </div>
+        </div>
+
+        <div class="payment-method">
+          <div class="payment-method-icon">&#128181;</div>
+          <div class="payment-method-info">
+            <div class="payment-method-name">Cash</div>
+            <div class="payment-method-detail">Contact us: <strong>{{ payment_info.contact }}</strong></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Submit reference -->
+  <div class="upgrade-step">
+    <div class="upgrade-step-num">2</div>
+    <div class="upgrade-step-body">
+      <h3>Tell us how you paid</h3>
+      <p class="text-muted" style="margin-bottom:20px; font-size:0.875rem">We'll review and activate your plan within a few hours.</p>
+
+      <form method="POST" action="/upgrade/submit">
+        <div class="field">
+          <label>Months</label>
+          <select name="months" id="months-select" onchange="updateTotal()">
+            <option value="1">1 month — K{{ pro_price }}</option>
+            <option value="3">3 months — K{{ pro_price * 3 }}</option>
+            <option value="6">6 months — K{{ pro_price * 6 }}</option>
+            <option value="12">12 months — K{{ pro_price * 12 }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Payment method</label>
+          <select name="method" required>
+            <option value="">Select method…</option>
+            <option value="Cell Moni">Cell Moni (Digicel)</option>
+            <option value="Bank Transfer">Bank Transfer (BSP / Kina Bank)</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Reference / Name used <span class="field-hint">e.g. your name or transaction ID</span></label>
+          <input type="text" name="reference" placeholder="e.g. Jane Smith or TXN123456" required>
+        </div>
+
+        <div class="field">
+          <label>Notes <span class="field-hint">optional</span></label>
+          <textarea name="notes" rows="2" placeholder="Any extra details…"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg">
+          &#10003; Submit Payment — K<span id="total-amount">{{ pro_price }}</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% endif %}
+
+  <div style="text-align:center; margin-top:24px">
+    <a href="/dashboard" class="btn btn-secondary">&#8592; Back to Dashboard</a>
+  </div>
+
+</div>
+
+<script>
+const price = {{ pro_price }};
+function updateTotal() {
+  const months = parseInt(document.getElementById('months-select').value) || 1;
+  document.getElementById('total-amount').textContent = price * months;
+}
+</script>
+{% endblock %}

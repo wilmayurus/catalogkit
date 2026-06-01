@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>{% block title %}CatalogKit{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-brand">&#9670; CatalogKit</a>
+
+  <div class="nav-links">
+    {% if current_user %}
+      <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Upload</a>
+      <a href="/catalog" {% if request.endpoint == 'catalog' %}class="active"{% endif %}>Catalog</a>
+      <a href="/dashboard" {% if request.endpoint == 'dashboard' %}class="active"{% endif %}>My Plan</a>
+      {% if current_user.is_admin %}
+        <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
+      {% endif %}
+      <div class="nav-user">
+        <span class="plan-badge plan-{{ current_user.plan_label | lower }}">{{ current_user.plan_label }}</span>
+        <a href="/logout" class="btn btn-ghost btn-sm">Sign out</a>
+      </div>
+    {% else %}
+      <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
+      <a href="/register" class="btn btn-primary btn-sm">Sign up</a>
+    {% endif %}
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-wrap">
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+{% block body %}{% endblock %}
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
