@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Product Catalog Builder</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">&#9670; CatalogKit</span>
+  <div class="nav-links">
+    <a href="/" class="active">Upload</a>
+    <a href="/catalog">Catalog</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- Upload Zone -->
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept="image/*" multiple>
+    <span class="upload-icon">&#128247;</span>
+    <h2>Select product images</h2>
+    <p>Tap to choose from your camera roll, or drag &amp; drop here</p>
+    <p class="hint">JPG · PNG · WebP &nbsp;·&nbsp; Multiple files supported</p>
+  </div>
+
+  <!-- Status Bar -->
+  <div id="status-bar"></div>
+
+  <!-- Progress -->
+  <div class="progress-bar-wrap" id="progress-wrap">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+
+  <!-- Grid Header -->
+  <div class="section-header" id="grid-header" style="display:none">
+    <h3>Drag to reorder &nbsp;·&nbsp; <span id="count-badge">0 images</span></h3>
+    <button class="btn btn-danger" id="clear-btn" onclick="clearAll()">&#10005; Clear all</button>
+  </div>
+
+  <!-- Sort Grid -->
+  <div id="sort-grid"></div>
+
+  <!-- Empty placeholder when no images -->
+  <div class="empty-state hidden" id="empty-state">
+    <div class="icon">&#128436;</div>
+    <p>No images yet — upload some above to get started.</p>
+  </div>
+
+  <!-- Action Bar -->
+  <div class="action-bar" id="action-bar" style="display:none">
+    <button class="btn btn-primary btn-lg" id="process-btn" onclick="processImages()">
+      <span>&#9889;</span> Process &amp; Build Catalog
+    </button>
+    <a href="/catalog" class="btn btn-success btn-lg hidden" id="view-catalog-btn">
+      <span>&#128218;</span> View Flipbook
+    </a>
+  </div>
+
+</div>
+
+<!-- SortableJS -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+<script>
+const grid = document.getElementById('sort-grid');
+const fileInput = document.getElementById('file-input');
+const statusBar = document.getElementById('status-bar');
+const gridHeader = document.getElementById('grid-header');
+const actionBar = document.getElementById('action-bar');
+const progressWrap = document.getElementById('progress-wrap');
+const progressFill = document.getElementById('progress-fill');
+const countBadge = document.getElementById('count-badge');
+const emptyState = document.getElementById('empty-state');
+
+let uploadedFiles = [];  // ordered list of filenames from server
+
+const sortable = Sortable.create(grid, {
+  animation: 200,
+  ghostClass: 'sortable-ghost',
+  chosenClass: 'sortable-chosen',
+  dragClass: 'sortable-drag',
+  delay: 50,
+  delayOnTouchOnly: true,
+  touchStartThreshold: 8,
+  onEnd: updateNumbers
+});
+
+// ── Upload Zone drag-over highlight ──
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('dragover');
+  handleFiles([...e.dataTransfer.files]);
+});
+
+fileInput.addEventListener('change', () => {
+  handleFiles([...fileInput.files]);
+  fileInput.value = '';
+});
+
+async function handleFiles(files) {
+  const imageFiles = files.filter(f => f.type.startsWith('image/'));
+  if (!imageFiles.length) return;
+
+  setStatus('info', `Uploading ${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''}…`);
+  showProgress(0);
+
+  // Add skeleton placeholders
+  const skeletons = imageFiles.map(() => {
+    const el = document.createElement('div');
+    el.className = 'thumb-skeleton';
+    grid.appendChild(el);
+    return el;
+  });
+
+  const formData = new FormData();
+  imageFiles.forEach(f => formData.append('images', f));
+
+  try {
+    const res = await fetch('/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    skeletons.forEach(s => s.remove());
+
+    data.files.forEach(filename => {
+      uploadedFiles.push(filename);
+      addThumb(filename);
+    });
+
+    showProgress(100);
+    setTimeout(() => hideProgress(), 600);
+    updateUI();
+    setStatus('success', `&#10003; ${data.files.length} image${data.files.length > 1 ? 's' : ''} uploaded. Drag to reorder.`);
+  } catch (err) {
+    skeletons.forEach(s => s.remove());
+    hideProgress();
+    setStatus('error', 'Upload failed. Please try again.');
+  }
+}
+
+function addThumb(filename) {
+  const item = document.createElement('div');
+  item.className = 'thumb-item';
+  item.dataset.filename = filename;
+  item.innerHTML = `
+    <img src="/static/uploads/${filename}" loading="lazy" alt="">
+    <span class="thumb-num">1</span>
+    <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
+  `;
+  grid.appendChild(item);
+  updateNumbers();
+}
+
+function removeThumb(btn) {
+  const item = btn.closest('.thumb-item');
+  const filename = item.dataset.filename;
+  uploadedFiles = uploadedFiles.filter(f => f !== filename);
+  item.remove();
+  updateNumbers();
+  updateUI();
+}
+
+function updateNumbers() {
+  const items = grid.querySelectorAll('.thumb-item');
+  items.forEach((el, i) => {
+    el.querySelector('.thumb-num').textContent = i + 1;
+  });
+  const n = items.length;
+  countBadge.textContent = `${n} image${n !== 1 ? 's' : ''}`;
+}
+
+function updateUI() {
+  const hasItems = grid.querySelectorAll('.thumb-item').length > 0;
+  gridHeader.style.display = hasItems ? 'flex' : 'none';
+  actionBar.style.display = hasItems ? 'flex' : 'none';
+  emptyState.classList.toggle('hidden', hasItems);
+}
+
+function getOrder() {
+  return [...grid.querySelectorAll('.thumb-item')].map(el => el.dataset.filename);
+}
+
+async function processImages() {
+  const order = getOrder();
+  if (!order.length) return;
+
+  const btn = document.getElementById('process-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Processing…';
+  document.getElementById('view-catalog-btn').classList.add('hidden');
+
+  setStatus('info', 'Resizing and compressing images for WhatsApp…');
+  showProgress(10);
+
+  try {
+    const res = await fetch('/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order })
+    });
+    const data = await res.json();
+
+    showProgress(100);
+    setTimeout(() => hideProgress(), 600);
+
+    if (data.errors && data.errors.length) {
+      setStatus('error', `Done with ${data.errors.length} error(s): ${data.errors[0]}`);
+    } else {
+      setStatus('success', `&#10003; ${data.count} images processed at 800×1000px, compressed for WhatsApp.`);
+    }
+
+    btn.innerHTML = '<span>&#9889;</span> Process & Build Catalog';
+    btn.disabled = false;
+    document.getElementById('view-catalog-btn').classList.remove('hidden');
+  } catch (err) {
+    hideProgress();
+    setStatus('error', 'Processing failed. Please try again.');
+    btn.innerHTML = '<span>&#9889;</span> Process & Build Catalog';
+    btn.disabled = false;
+  }
+}
+
+async function clearAll() {
+  if (!confirm('Remove all uploaded images?')) return;
+  await fetch('/clear', { method: 'POST' });
+  uploadedFiles = [];
+  grid.innerHTML = '';
+  updateUI();
+  document.getElementById('view-catalog-btn').classList.add('hidden');
+  setStatus('info', 'All images cleared.');
+}
+
+function setStatus(type, html) {
+  statusBar.className = type;
+  statusBar.innerHTML = `${type === 'info' ? '<span class="spinner"></span>' : ''} ${html}`;
+}
+
+function showProgress(pct) {
+  progressWrap.style.display = 'block';
+  progressFill.style.width = pct + '%';
+}
+
+function hideProgress() {
+  progressWrap.style.display = 'none';
+  progressFill.style.width = '0%';
+}
+
+updateUI();
+</script>
+</body>
+</html>

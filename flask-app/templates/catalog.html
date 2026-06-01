@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Product Catalog — Flipbook</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body { background: var(--bg); }
+    .catalog-container { padding-top: 20px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">&#9670; CatalogKit</span>
+  <div class="nav-links">
+    <a href="/">Upload</a>
+    <a href="/catalog" class="active">Catalog</a>
+  </div>
+</nav>
+
+{% if pages %}
+<div class="catalog-container">
+
+  <div class="catalog-header">
+    <h1>&#128218; Product Catalog</h1>
+    <p>{{ pages|length }} page{{ 's' if pages|length != 1 }} &nbsp;·&nbsp; Click or swipe to flip</p>
+  </div>
+
+  <!-- Flipbook -->
+  <div id="flipbook-wrap">
+    <div id="flipbook">
+      <div class="hard">&#9670; CatalogKit</div>
+      {% for page in pages %}
+      <div class="page">
+        <img src="/static/processed/{{ page }}" alt="Page {{ loop.index }}" loading="lazy">
+      </div>
+      {% endfor %}
+      <div class="hard">&#9670; End</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="catalog-controls">
+    <button class="btn btn-secondary" id="prev-btn" onclick="flipPrev()">&#8592; Prev</button>
+    <span class="page-indicator" id="page-indicator">Page 1</span>
+    <button class="btn btn-secondary" id="next-btn" onclick="flipNext()">Next &#8594;</button>
+  </div>
+
+  <div style="text-align:center; margin-top:20px;">
+    <a href="/" class="btn btn-secondary">&#8592; Back to Upload</a>
+  </div>
+
+</div>
+
+<!-- jQuery (required by Turn.js) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- Turn.js -->
+<script src="/static/js/turn.min.js"></script>
+
+<script>
+$(document).ready(function () {
+  const totalPages = {{ pages|length }};
+  let bookW, bookH;
+
+  function calcSize() {
+    const vw = Math.min(window.innerWidth - 32, 800);
+    const vh = window.innerHeight - 220;
+    const ratio = 800 / 1000;
+
+    // On small screens use single-page display
+    const isMobile = window.innerWidth < 640;
+    if (isMobile) {
+      bookW = Math.min(vw, 380);
+      bookH = bookW / ratio;
+    } else {
+      // Two-page spread
+      bookH = Math.min(vh, 600);
+      bookW = Math.min(bookH * ratio * 2, vw);
+      bookH = bookW / (ratio * 2);
+    }
+    return { w: Math.round(bookW), h: Math.round(bookH), single: isMobile };
+  }
+
+  function initFlipbook() {
+    const { w, h, single } = calcSize();
+
+    $('#flipbook').turn({
+      width: w,
+      height: h,
+      autoCenter: true,
+      display: single ? 'single' : 'double',
+      acceleration: true,
+      gradients: !single,
+      elevation: 50,
+      when: {
+        turned: function (e, page) {
+          updateIndicator(page);
+        }
+      }
+    });
+    updateIndicator($('#flipbook').turn('page'));
+  }
+
+  function updateIndicator(page) {
+    const total = totalPages + 2; // covers
+    $('#page-indicator').text('Page ' + Math.max(1, page - 1) + ' of ' + totalPages);
+    $('#prev-btn').prop('disabled', page <= 1);
+    $('#next-btn').prop('disabled', page >= total);
+  }
+
+  window.flipPrev = function () { $('#flipbook').turn('previous'); };
+  window.flipNext = function () { $('#flipbook').turn('next'); };
+
+  // Keyboard navigation
+  $(document).keydown(function (e) {
+    if (e.key === 'ArrowLeft') flipPrev();
+    if (e.key === 'ArrowRight') flipNext();
+  });
+
+  initFlipbook();
+
+  // Re-init on resize
+  let resizeTimer;
+  $(window).on('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      const { w, h, single } = calcSize();
+      try {
+        $('#flipbook').turn('size', w, h);
+        if (single) $('#flipbook').turn('display', 'single');
+        else $('#flipbook').turn('display', 'double');
+      } catch(e) {}
+    }, 250);
+  });
+});
+</script>
+
+{% else %}
+<!-- No pages yet -->
+<div class="catalog-container">
+  <div class="empty-state" style="padding: 80px 24px;">
+    <div class="icon">&#128436;</div>
+    <p style="font-size:1.1rem; font-weight:600; margin-bottom:8px;">No catalog yet</p>
+    <p class="text-muted" style="margin-bottom:28px;">
+      Upload your product images and click "Process &amp; Build Catalog" first.
+    </p>
+    <a href="/" class="btn btn-primary btn-lg">&#8592; Go to Upload</a>
+  </div>
+</div>
+{% endif %}
+
+</body>
+</html>
