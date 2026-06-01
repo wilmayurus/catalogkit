@@ -956,3 +956,52 @@ nav {
   .upgrade-step { flex-direction: column; }
   .nav-user .btn-ghost { display: none; }
 }
+
+/* ── CATALOG READY CARD ── */
+.catalog-ready-card {
+  margin-top: 24px;
+  background: linear-gradient(135deg, rgba(124,92,252,0.12), rgba(252,92,156,0.08));
+  border: 1px solid rgba(124,92,252,0.35);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  animation: slideIn 0.35s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.catalog-ready-icon {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+}
+
+.catalog-ready-body { flex: 1; min-width: 0; }
+
+.catalog-ready-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.catalog-ready-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.catalog-ready-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .catalog-ready-card { flex-direction: column; align-items: flex-start; }
+  .catalog-ready-actions { width: 100%; }
+  .catalog-ready-actions .btn { flex: 1; justify-content: center; }
+}
