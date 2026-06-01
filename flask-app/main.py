@@ -25,6 +25,7 @@ TARGET_HEIGHT = 1000
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 
 FREE_MAX_IMAGES       = 5      # images per catalog on free plan
+BASIC_MAX_IMAGES      = 20    # images per catalog on basic plan
 BASIC_PRICE_PGK       = 5     # K5/month
 BASIC_MONTHLY_LIMIT   = 2     # catalogs per billing period on Basic
 PRO_PRICE_PGK         = 20    # K20/month — unlimited
@@ -74,8 +75,10 @@ class User(db.Model):
     # ── image cap per catalog (None = unlimited) ──
     @property
     def max_images(self):
-        if self.is_admin or self.is_pro or self.is_basic:
+        if self.is_admin or self.is_pro:
             return None
+        if self.is_basic:
+            return BASIC_MAX_IMAGES
         return FREE_MAX_IMAGES
 
     # ── catalogs created in current billing period (Basic only) ──
@@ -272,6 +275,7 @@ def dashboard():
     pending  = PaymentRequest.query.filter_by(user_id=user.id, status='pending').first()
     return render_template('dashboard.html', user=user, catalogs=catalogs, pending=pending,
                            free_max_images=FREE_MAX_IMAGES,
+                           basic_max_images=BASIC_MAX_IMAGES,
                            basic_price=BASIC_PRICE_PGK,
                            pro_price=PRO_PRICE_PGK,
                            basic_monthly_limit=BASIC_MONTHLY_LIMIT)
@@ -288,6 +292,7 @@ def upgrade():
                            payment_info=PAYMENT_INFO,
                            basic_price=BASIC_PRICE_PGK,
                            pro_price=PRO_PRICE_PGK,
+                           basic_max_images=BASIC_MAX_IMAGES,
                            basic_monthly_limit=BASIC_MONTHLY_LIMIT,
                            pending=pending)
 
@@ -425,6 +430,7 @@ def index():
                            max_images=user.max_images,
                            catalogs_remaining=user.catalogs_remaining,
                            basic_monthly_limit=BASIC_MONTHLY_LIMIT,
+                           basic_max_images=BASIC_MAX_IMAGES,
                            free_max_images=FREE_MAX_IMAGES)
 
 
