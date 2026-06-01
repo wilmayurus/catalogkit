@@ -58,6 +58,9 @@
     <a href="/catalog" class="btn btn-success btn-lg hidden" id="view-catalog-btn">
       <span>&#128218;</span> View Flipbook
     </a>
+    <a href="/download-all" class="btn btn-secondary btn-lg hidden" id="download-btn" download>
+      <span>&#128190;</span> Download All
+    </a>
   </div>
 
 </div>
@@ -194,6 +197,7 @@ async function processImages() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Processing…';
   document.getElementById('view-catalog-btn').classList.add('hidden');
+  document.getElementById('download-btn').classList.add('hidden');
 
   setStatus('info', 'Resizing and compressing images for WhatsApp…');
   showProgress(10);
@@ -218,6 +222,7 @@ async function processImages() {
     btn.innerHTML = '<span>&#9889;</span> Process & Build Catalog';
     btn.disabled = false;
     document.getElementById('view-catalog-btn').classList.remove('hidden');
+    document.getElementById('download-btn').classList.remove('hidden');
   } catch (err) {
     hideProgress();
     setStatus('error', 'Processing failed. Please try again.');
@@ -233,6 +238,7 @@ async function clearAll() {
   grid.innerHTML = '';
   updateUI();
   document.getElementById('view-catalog-btn').classList.add('hidden');
+  document.getElementById('download-btn').classList.add('hidden');
   setStatus('info', 'All images cleared.');
 }
 

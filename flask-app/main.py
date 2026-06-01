@@ -1,8 +1,10 @@
+import io
 import os
 import uuid
 import json
 import shutil
-from flask import Flask, render_template, request, jsonify, send_from_directory
+import zipfile
+from flask import Flask, render_template, request, jsonify, send_from_directory, send_file
 from PIL import Image
 
 app = Flask(__name__)
@@ -96,6 +98,31 @@ def catalog():
         with open(CATALOG_FILE) as f:
             pages = json.load(f)
     return render_template('catalog.html', pages=pages)
+
+
+@app.route('/download-all')
+def download_all():
+    pages = []
+    if os.path.exists(CATALOG_FILE):
+        with open(CATALOG_FILE) as f:
+            pages = json.load(f)
+
+    if not pages:
+        return jsonify({'error': 'No processed images found'}), 404
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for page in pages:
+            path = os.path.join(PROCESSED_FOLDER, page)
+            if os.path.exists(path):
+                zf.write(path, page)
+    buf.seek(0)
+    return send_file(
+        buf,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name='catalog_images.zip'
+    )
 
 
 @app.route('/clear', methods=['POST'])

@@ -48,9 +48,19 @@
     <button class="btn btn-secondary" id="next-btn" onclick="flipNext()">Next &#8594;</button>
   </div>
 
-  <div style="text-align:center; margin-top:20px;">
+  <!-- Share & Download -->
+  <div class="catalog-actions">
+    <button class="btn btn-secondary" onclick="copyShareLink()" id="copy-btn">
+      &#128279; Copy Share Link
+    </button>
+    <a href="/download-all" class="btn btn-secondary" download>
+      &#128190; Download All
+    </a>
     <a href="/" class="btn btn-secondary">&#8592; Back to Upload</a>
   </div>
+
+  <!-- Toast notification -->
+  <div id="toast">Link copied!</div>
 
 </div>
 
@@ -112,6 +122,17 @@ $(document).ready(function () {
 
   window.flipPrev = function () { $('#flipbook').turn('previous'); };
   window.flipNext = function () { $('#flipbook').turn('next'); };
+
+  window.copyShareLink = function () {
+    const url = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(url).then(function () {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(function () { toast.classList.remove('show'); }, 2200);
+    }).catch(function () {
+      prompt('Copy this link:', url);
+    });
+  };
 
   // Keyboard navigation
   $(document).keydown(function (e) {
