@@ -3,60 +3,75 @@
 {% block body %}
 <div class="container">
 
+  {# ── Plan status banners ── #}
   {% if not can_create %}
-  <div class="alert alert-warning" style="margin-bottom:28px">
-    <strong>&#9888; Free plan limit reached.</strong>
-    You've used your 1 free catalog. <a href="/upgrade" class="alert-link">Upgrade to Pro (K20/mo)</a> for unlimited catalogs.
+  <div class="alert alert-warning" style="margin-bottom:20px">
+    <strong>&#9888; Monthly catalog limit reached.</strong>
+    You've used both catalogs this month.
+    <a href="/upgrade" class="alert-link">Upgrade to Pro (K{{ 20 }}/mo)</a> for unlimited.
+  </div>
+  {% elif current_user.is_basic and catalogs_remaining is not none %}
+  <div class="plan-info-bar">
+    <span>&#11088; <strong>Basic plan</strong> &nbsp;·&nbsp; {{ catalogs_remaining }} catalog{{ 's' if catalogs_remaining != 1 }} remaining this month</span>
+    <a href="/upgrade" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade to Pro &#8594;</a>
+  </div>
+  {% elif not current_user.is_basic and not current_user.is_pro and not current_user.is_admin %}
+  <div class="plan-info-bar">
+    <span>&#9675; <strong>Free plan</strong> &nbsp;·&nbsp; Catalogs are limited to {{ free_max_images }} images</span>
+    <a href="/upgrade" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade for more &#8594;</a>
   </div>
   {% endif %}
 
-  <!-- Upload Zone -->
+  {# ── Upload zone ── #}
   <div class="upload-zone {% if not can_create %}upload-zone-disabled{% endif %}" id="upload-zone">
     {% if can_create %}
       <input type="file" id="file-input" accept="image/*" multiple>
     {% endif %}
     <span class="upload-icon">&#128247;</span>
-    <h2>{% if can_create %}Select product images{% else %}Upgrade to add more{% endif %}</h2>
-    <p>{% if can_create %}Tap to choose — your catalog is built automatically{% else %}<a href="/upgrade">Get Pro for K20/month</a> to create more catalogs{% endif %}</p>
+    <h2>{% if can_create %}Select product images{% else %}Monthly limit reached{% endif %}</h2>
+    <p>
+      {% if can_create %}
+        Tap to choose — your catalog is built automatically
+      {% else %}
+        <a href="/upgrade">Upgrade to Pro (K20/mo)</a> to create more catalogs
+      {% endif %}
+    </p>
     {% if can_create %}
     <p class="hint">JPG · PNG · WebP &nbsp;·&nbsp; Select multiple at once</p>
     {% endif %}
   </div>
 
-  <!-- Progress bar -->
+  {# ── Progress bar ── #}
   <div class="progress-bar-wrap" id="progress-wrap">
     <div class="progress-bar-fill" id="progress-fill"></div>
   </div>
 
-  <!-- Status -->
+  {# ── Status message ── #}
   <div id="status-bar"></div>
 
-  <!-- Catalog Ready Card (hidden until ready) -->
+  {# ── Ready card (shown after processing) ── #}
   <div id="catalog-ready-card" class="catalog-ready-card hidden">
     <div class="catalog-ready-icon">&#127881;</div>
     <div class="catalog-ready-body">
       <div class="catalog-ready-title">Your catalog is ready!</div>
-      <div class="catalog-ready-meta" id="catalog-ready-meta">0 pages · 800×1000px</div>
+      <div class="catalog-ready-meta" id="catalog-ready-meta"></div>
     </div>
     <div class="catalog-ready-actions">
-      <a href="/catalog" class="btn btn-success" id="view-catalog-btn" target="_blank">
-        &#128218; Open Flipbook
-      </a>
+      <a href="/catalog" class="btn btn-success" target="_blank">&#128218; Open Flipbook</a>
       <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link</button>
       <a href="/download-all" class="btn btn-secondary" download>&#128190; Download ZIP</a>
     </div>
   </div>
 
-  <!-- Toast -->
   <div id="toast">Link copied!</div>
 
-  <!-- Grid Header (only shows when images loaded) -->
+  {# ── Grid header ── #}
   <div class="section-header hidden" id="grid-header">
     <h3>&#8645; Drag to reorder &nbsp;·&nbsp; <span id="count-badge">0</span> images</h3>
     <button class="btn btn-danger btn-sm" onclick="clearAll()">&#10005; Clear all</button>
   </div>
 
-  <!-- Thumbnail Grid -->
+  {# ── Thumbnail grid ── #}
   <div id="sort-grid"></div>
 
 </div>
@@ -66,23 +81,26 @@
 {% if can_create %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
-const grid          = document.getElementById('sort-grid');
-const fileInput     = document.getElementById('file-input');
-const statusBar     = document.getElementById('status-bar');
-const gridHeader    = document.getElementById('grid-header');
-const progressWrap  = document.getElementById('progress-wrap');
-const progressFill  = document.getElementById('progress-fill');
-const countBadge    = document.getElementById('count-badge');
-const readyCard     = document.getElementById('catalog-ready-card');
-const readyMeta     = document.getElementById('catalog-ready-meta');
-const toast         = document.getElementById('toast');
+const MAX_IMAGES  = {{ max_images if max_images else 'null' }};
+const USER_ID     = {{ current_user.id }};
+
+const grid         = document.getElementById('sort-grid');
+const fileInput    = document.getElementById('file-input');
+const statusBar    = document.getElementById('status-bar');
+const gridHeader   = document.getElementById('grid-header');
+const progressWrap = document.getElementById('progress-wrap');
+const progressFill = document.getElementById('progress-fill');
+const countBadge   = document.getElementById('count-badge');
+const readyCard    = document.getElementById('catalog-ready-card');
+const readyMeta    = document.getElementById('catalog-ready-meta');
+const toast        = document.getElementById('toast');
 
 let uploadedFiles = [];
-let regenTimer = null;
-let isProcessing = false;
+let regenTimer    = null;
+let isProcessing  = false;
 
-// ── Sortable with auto-regen on reorder ──────────────────────────────────
-const sortable = Sortable.create(grid, {
+// ── Sortable ────────────────────────────────────────────────────────────────
+Sortable.create(grid, {
   animation: 200,
   ghostClass: 'sortable-ghost',
   chosenClass: 'sortable-chosen',
@@ -92,19 +110,17 @@ const sortable = Sortable.create(grid, {
   touchStartThreshold: 8,
   onEnd() {
     updateNumbers();
-    // Debounce: regenerate 900ms after last drag
     clearTimeout(regenTimer);
     regenTimer = setTimeout(() => processImages('Updating catalog…'), 900);
   }
 });
 
-// ── Drag-over highlight on upload zone ──────────────────────────────────
+// ── Upload zone events ───────────────────────────────────────────────────────
 const zone = document.getElementById('upload-zone');
 zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
 zone.addEventListener('dragleave', ()  => zone.classList.remove('dragover'));
 zone.addEventListener('drop', e => {
-  e.preventDefault();
-  zone.classList.remove('dragover');
+  e.preventDefault(); zone.classList.remove('dragover');
   handleFiles([...e.dataTransfer.files]);
 });
 fileInput.addEventListener('change', () => {
@@ -112,7 +128,7 @@ fileInput.addEventListener('change', () => {
   fileInput.value = '';
 });
 
-// ── Main upload + auto-process flow ────────────────────────────────────
+// ── Main upload → auto-process flow ─────────────────────────────────────────
 async function handleFiles(files) {
   const imgs = files.filter(f => f.type.startsWith('image/'));
   if (!imgs.length) return;
@@ -120,7 +136,6 @@ async function handleFiles(files) {
   setStatus('info', `Uploading ${imgs.length} image${imgs.length !== 1 ? 's' : ''}…`);
   setProgress(5);
 
-  // Skeleton placeholders while uploading
   const skeletons = imgs.map(() => {
     const el = document.createElement('div');
     el.className = 'thumb-skeleton';
@@ -134,14 +149,10 @@ async function handleFiles(files) {
   try {
     const res  = await fetch('/upload', { method: 'POST', body: form });
     const data = await res.json();
-
     skeletons.forEach(s => s.remove());
     data.files.forEach(fn => { uploadedFiles.push(fn); addThumb(fn); });
-
     setProgress(40);
     updateUI();
-
-    // Auto-process immediately
     await processImages('Building your catalog…');
   } catch {
     skeletons.forEach(s => s.remove());
@@ -150,24 +161,24 @@ async function handleFiles(files) {
   }
 }
 
-async function processImages(statusMsg = 'Building your catalog…') {
+async function processImages(msg = 'Building your catalog…') {
   const order = getOrder();
   if (!order.length || isProcessing) return;
 
   isProcessing = true;
   readyCard.classList.add('hidden');
-  setStatus('info', statusMsg);
+  setStatus('info', msg);
   setProgress(55);
 
   try {
     const res  = await fetch('/process', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ order, name: 'My Catalog' })
+      body:    JSON.stringify({ order, name: 'My Catalog' })
     });
     const data = await res.json();
 
-    if (res.status === 403 && data.error === 'upgrade_required') {
+    if (res.status === 403) {
       setProgress(0);
       setStatus('error', '&#9888; ' + data.message +
         ' <a href="/upgrade" style="color:inherit;font-weight:700;text-decoration:underline">Upgrade &#8594;</a>');
@@ -178,14 +189,17 @@ async function processImages(statusMsg = 'Building your catalog…') {
     setProgress(100);
     setTimeout(() => setProgress(0), 500);
 
-    if (data.errors && data.errors.length) {
-      setStatus('error', `Finished with ${data.errors.length} error(s).`);
+    let metaLine = `${data.count} page${data.count !== 1 ? 's' : ''} · 800×1000px · ready to share`;
+    if (data.capped) {
+      metaLine += ` · Free plan: first ${data.cap} images used`;
+      setStatus('info',
+        `&#9432; Free plan — only the first ${data.cap} images were included. ` +
+        `<a href="/upgrade" style="color:inherit;font-weight:700;text-decoration:underline">Upgrade for more &#8594;</a>`);
     } else {
       clearStatus();
     }
 
-    // Show the ready card
-    readyMeta.textContent = `${data.count} page${data.count !== 1 ? 's' : ''} · 800×1000px · ready to share`;
+    readyMeta.textContent = metaLine;
     readyCard.classList.remove('hidden');
 
   } catch {
@@ -196,13 +210,13 @@ async function processImages(statusMsg = 'Building your catalog…') {
   isProcessing = false;
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────────
+// ── Grid helpers ─────────────────────────────────────────────────────────────
 function addThumb(filename) {
   const item = document.createElement('div');
   item.className = 'thumb-item';
   item.dataset.filename = filename;
   item.innerHTML = `
-    <img src="/static/uploads/{{ current_user.id }}/${filename}" loading="lazy" alt="">
+    <img src="/static/uploads/${USER_ID}/${filename}" loading="lazy" alt="">
     <span class="thumb-num">1</span>
     <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
   `;
@@ -226,14 +240,14 @@ function removeThumb(btn) {
 }
 
 function updateNumbers() {
-  const items = [...grid.querySelectorAll('.thumb-item')];
-  items.forEach((el, i) => el.querySelector('.thumb-num').textContent = i + 1);
-  countBadge.textContent = items.length;
+  [...grid.querySelectorAll('.thumb-item')].forEach((el, i) => {
+    el.querySelector('.thumb-num').textContent = i + 1;
+  });
+  countBadge.textContent = grid.querySelectorAll('.thumb-item').length;
 }
 
 function updateUI() {
-  const has = grid.querySelectorAll('.thumb-item').length > 0;
-  gridHeader.classList.toggle('hidden', !has);
+  gridHeader.classList.toggle('hidden', grid.querySelectorAll('.thumb-item').length === 0);
 }
 
 function getOrder() {
@@ -253,13 +267,8 @@ async function clearAll() {
 function copyLink() {
   const url = window.location.origin + '/catalog';
   navigator.clipboard.writeText(url)
-    .then(() => showToast())
+    .then(() => { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2200); })
     .catch(() => prompt('Copy this link:', url));
-}
-
-function showToast() {
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2200);
 }
 
 function setStatus(type, html) {
@@ -267,21 +276,14 @@ function setStatus(type, html) {
   statusBar.style.display = 'flex';
   statusBar.innerHTML = (type === 'info' ? '<span class="spinner"></span> ' : '') + html;
 }
-
 function clearStatus() {
   statusBar.style.display = 'none';
   statusBar.innerHTML = '';
   statusBar.className = '';
 }
-
 function setProgress(pct) {
-  if (pct > 0) {
-    progressWrap.style.display = 'block';
-    progressFill.style.width = pct + '%';
-  } else {
-    progressWrap.style.display = 'none';
-    progressFill.style.width = '0%';
-  }
+  progressWrap.style.display = pct > 0 ? 'block' : 'none';
+  progressFill.style.width = pct + '%';
 }
 
 updateUI();

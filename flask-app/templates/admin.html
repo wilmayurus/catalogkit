@@ -18,9 +18,7 @@
   <div class="admin-table-wrap">
     <table class="admin-table">
       <thead>
-        <tr>
-          <th>User</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th><th>Date</th><th>Actions</th>
-        </tr>
+        <tr><th>User</th><th>Plan</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th><th>Date</th><th>Actions</th></tr>
       </thead>
       <tbody>
         {% for p in pending %}
@@ -28,6 +26,11 @@
           <td>
             <strong>{{ p.user.name }}</strong><br>
             <span class="text-muted" style="font-size:0.8rem">{{ p.user.email }}</span>
+          </td>
+          <td>
+            <span class="plan-badge plan-{{ p.requested_plan or 'pro' }}">
+              {{ (p.requested_plan or 'pro') | capitalize }}
+            </span>
           </td>
           <td>K{{ "%.0f"|format(p.amount) }} ({{ p.months }}mo)</td>
           <td>{{ p.payment_method }}</td>
@@ -39,7 +42,8 @@
               <button type="submit" class="btn btn-success btn-sm">&#10003; Approve</button>
             </form>
             <form method="POST" action="/admin/payment/{{ p.id }}/reject" style="display:inline; margin-left:6px">
-              <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this payment?')">&#10005;</button>
+              <button type="submit" class="btn btn-danger btn-sm"
+                      onclick="return confirm('Reject this payment?')">&#10005;</button>
             </form>
           </td>
         </tr>
@@ -48,9 +52,7 @@
     </table>
   </div>
   {% else %}
-  <div class="empty-state" style="padding:32px">
-    <p>&#10003; No pending payments.</p>
-  </div>
+  <div class="empty-state" style="padding:32px"><p>&#10003; No pending payments.</p></div>
   {% endif %}
 
   <!-- All Users -->
@@ -58,36 +60,38 @@
   <div class="admin-table-wrap">
     <table class="admin-table">
       <thead>
-        <tr>
-          <th>Name</th><th>Email</th><th>Plan</th><th>Expires</th><th>Catalogs</th><th>Joined</th><th>Actions</th>
-        </tr>
+        <tr><th>Name</th><th>Email</th><th>Plan</th><th>Expires</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
       </thead>
       <tbody>
         {% for u in all_users %}
         <tr>
-          <td><strong>{{ u.name }}</strong>{% if u.is_admin %} <span style="color:var(--warning); font-size:0.75rem">admin</span>{% endif %}</td>
-          <td>{{ u.email }}</td>
           <td>
-            <span class="plan-badge plan-{{ u.plan_label | lower }}">{{ u.plan_label }}</span>
+            <strong>{{ u.name }}</strong>
+            {% if u.is_admin %}<span style="color:var(--warning);font-size:0.75rem"> admin</span>{% endif %}
           </td>
+          <td>{{ u.email }}</td>
+          <td><span class="plan-badge plan-{{ u.plan_label | lower }}">{{ u.plan_label }}</span></td>
           <td>{{ u.plan_expires.strftime('%d %b %Y') if u.plan_expires else '—' }}</td>
           <td>{{ u.catalog_count }}</td>
           <td style="white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
           <td style="white-space:nowrap">
             {% if not u.is_admin %}
-              {% if u.is_pro %}
+              {% if u.is_pro or u.is_basic %}
                 <form method="POST" action="/admin/user/{{ u.id }}/revoke" style="display:inline">
-                  <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Revoke Pro from {{ u.name }}?')">Revoke Pro</button>
+                  <button type="submit" class="btn btn-danger btn-sm"
+                          onclick="return confirm('Revert {{ u.name }} to Free?')">Revoke</button>
                 </form>
               {% else %}
-                <form method="POST" action="/admin/user/{{ u.id }}/grant" style="display:inline">
+                <form method="POST" action="/admin/user/{{ u.id }}/grant" style="display:inline; gap:4px">
+                  <select name="plan" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:0.8rem">
+                    <option value="basic">Basic</option>
+                    <option value="pro">Pro</option>
+                  </select>
                   <input type="hidden" name="months" value="1">
-                  <button type="submit" class="btn btn-secondary btn-sm">Grant 1mo Pro</button>
+                  <button type="submit" class="btn btn-secondary btn-sm">Grant 1mo</button>
                 </form>
               {% endif %}
-            {% else %}
-              —
-            {% endif %}
+            {% else %}—{% endif %}
           </td>
         </tr>
         {% endfor %}
@@ -95,18 +99,19 @@
     </table>
   </div>
 
-  <!-- Recent Processed Payments -->
+  <!-- Recent decisions -->
   {% if recent %}
   <h3 class="sub-heading" style="margin-top:40px">Recent Decisions</h3>
   <div class="admin-table-wrap">
     <table class="admin-table">
       <thead>
-        <tr><th>User</th><th>Amount</th><th>Method</th><th>Status</th><th>Decided</th></tr>
+        <tr><th>User</th><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Decided</th></tr>
       </thead>
       <tbody>
         {% for p in recent %}
         <tr>
           <td>{{ p.user.name }}</td>
+          <td>{{ (p.requested_plan or 'pro') | capitalize }}</td>
           <td>K{{ "%.0f"|format(p.amount) }}</td>
           <td>{{ p.payment_method }}</td>
           <td>
