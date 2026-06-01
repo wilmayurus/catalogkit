@@ -46,7 +46,7 @@
   {# ── Status ── #}
   <div id="status-bar"></div>
 
-  {# ── Ready card — pre-show if catalog already has pages ── #}
+  {# ── Ready card ── #}
   <div id="catalog-ready-card" class="catalog-ready-card {% if not catalog.get_pages() %}hidden{% endif %}">
     <div class="catalog-ready-icon">&#127881;</div>
     <div class="catalog-ready-body">
@@ -72,13 +72,20 @@
     <button class="btn btn-danger btn-sm" onclick="clearAll()">&#10005; Clear all</button>
   </div>
 
-  {# ── Thumbnail grid — pre-populated from saved pages ── #}
+  <p class="text-muted" style="font-size:0.82rem;margin:-4px 0 10px;{% if not catalog.get_pages() %}display:none{% endif %}" id="price-hint">
+    &#128176; Add a price below each image — it will show as a badge in the flipbook
+  </p>
+
+  {# ── Thumbnail grid — pre-populated from saved page data ── #}
   <div id="sort-grid">
-    {% for page in catalog.get_pages() %}
-    <div class="thumb-item" data-filename="{{ page }}">
-      <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ page }}" loading="lazy" alt="">
+    {% for item in catalog.get_page_data() %}
+    <div class="thumb-item" data-filename="{{ item.file }}">
+      <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}" loading="lazy" alt="">
       <span class="thumb-num">{{ loop.index }}</span>
       <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
+      <input type="text" class="thumb-price" placeholder="K 0.00"
+             value="{{ item.price }}" onchange="onPriceChange(this)"
+             onclick="event.stopPropagation()" title="Enter price (e.g. K 25.00)">
     </div>
     {% endfor %}
   </div>
@@ -97,6 +104,7 @@ const grid         = document.getElementById('sort-grid');
 const fileInput    = document.getElementById('file-input');
 const statusBar    = document.getElementById('status-bar');
 const gridHeader   = document.getElementById('grid-header');
+const priceHint    = document.getElementById('price-hint');
 const progressWrap = document.getElementById('progress-wrap');
 const progressFill = document.getElementById('progress-fill');
 const countBadge   = document.getElementById('count-badge');
@@ -112,6 +120,8 @@ Sortable.create(grid, {
   animation: 200,
   ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', dragClass: 'sortable-drag',
   delay: 60, delayOnTouchOnly: true, touchStartThreshold: 8,
+  filter: '.thumb-price',   // don't drag when clicking price input
+  preventOnFilter: false,
   onEnd() {
     updateNumbers();
     clearTimeout(regenTimer);
@@ -175,7 +185,7 @@ async function processImages(msg = 'Building catalog…') {
     const res  = await fetch(`/workspace/${CATALOG_ID}/process`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ order, name: catalogName })
+      body: JSON.stringify({ order, prices: getPrices(), name: catalogName })
     });
     const data = await res.json();
 
@@ -209,7 +219,7 @@ async function processImages(msg = 'Building catalog…') {
 }
 
 // ── Thumbs ────────────────────────────────────────────────────────────────────
-function addThumb(filename) {
+function addThumb(filename, price = '') {
   const item = document.createElement('div');
   item.className = 'thumb-item';
   item.dataset.filename = filename;
@@ -217,6 +227,8 @@ function addThumb(filename) {
     <img src="/static/uploads/${USER_ID}/${CATALOG_ID}/${filename}" loading="lazy" alt="">
     <span class="thumb-num">1</span>
     <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
+    <input type="text" class="thumb-price" placeholder="K 0.00" value="${price}"
+           onchange="onPriceChange(this)" onclick="event.stopPropagation()" title="Enter price">
   `;
   grid.appendChild(item);
   updateNumbers();
@@ -235,6 +247,11 @@ function removeThumb(btn) {
   }
 }
 
+function onPriceChange(inp) {
+  clearTimeout(regenTimer);
+  regenTimer = setTimeout(() => processImages('Saving prices…'), 1200);
+}
+
 function updateNumbers() {
   [...grid.querySelectorAll('.thumb-item')].forEach((el, i) =>
     el.querySelector('.thumb-num').textContent = i + 1);
@@ -242,11 +259,22 @@ function updateNumbers() {
 }
 
 function updateUI() {
-  gridHeader.classList.toggle('hidden', grid.querySelectorAll('.thumb-item').length === 0);
+  const has = grid.querySelectorAll('.thumb-item').length > 0;
+  gridHeader.classList.toggle('hidden', !has);
+  priceHint.style.display = has ? '' : 'none';
 }
 
 function getOrder() {
   return [...grid.querySelectorAll('.thumb-item')].map(el => el.dataset.filename);
+}
+
+function getPrices() {
+  const prices = {};
+  grid.querySelectorAll('.thumb-item').forEach(el => {
+    const inp = el.querySelector('.thumb-price');
+    prices[el.dataset.filename] = inp ? inp.value.trim() : '';
+  });
+  return prices;
 }
 
 async function clearAll() {

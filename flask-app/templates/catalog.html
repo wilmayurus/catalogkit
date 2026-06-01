@@ -5,21 +5,26 @@
 {% endblock %}
 
 {% block body %}
-{% if pages %}
+{% if page_data %}
 <div class="catalog-container">
 
   <div class="catalog-header">
     <h1>&#128218; {{ catalog.name }}</h1>
-    <p>{{ pages|length }} page{{ 's' if pages|length != 1 }} &nbsp;·&nbsp; Click or swipe to flip</p>
+    <p>{{ page_data|length }} page{{ 's' if page_data|length != 1 }} &nbsp;·&nbsp; Click or swipe to flip</p>
   </div>
 
   <div id="flipbook-wrap">
     <div id="flipbook">
       <div class="hard">&#9670; {{ catalog.name }}</div>
-      {% for page in pages %}
+      {% for item in page_data %}
       <div class="page">
-        <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ page }}"
-             alt="Page {{ loop.index }}" loading="lazy">
+        <div class="page-inner">
+          <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}"
+               alt="Page {{ loop.index }}" loading="lazy">
+          {% if item.price %}
+          <div class="price-badge">{{ item.price }}</div>
+          {% endif %}
+        </div>
       </div>
       {% endfor %}
       <div class="hard">&#9670; End</div>
@@ -47,7 +52,7 @@
 <script src="/static/js/turn.min.js"></script>
 <script>
 $(document).ready(function () {
-  const totalPages = {{ pages|length }};
+  const totalPages = {{ page_data|length }};
 
   function calcSize() {
     const vw = Math.min(window.innerWidth - 32, 800);

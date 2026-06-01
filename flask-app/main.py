@@ -119,11 +119,21 @@ class Catalog(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def get_pages(self):
-        if self.pages:
-            return json.loads(self.pages)
-        return []
+        """Return list of filenames only (backward compat)."""
+        if not self.pages:
+            return []
+        data = json.loads(self.pages)
+        return [p['file'] if isinstance(p, dict) else p for p in data]
+
+    def get_page_data(self):
+        """Return list of {'file': ..., 'price': ...} dicts."""
+        if not self.pages:
+            return []
+        data = json.loads(self.pages)
+        return [p if isinstance(p, dict) else {'file': p, 'price': ''} for p in data]
 
     def set_pages(self, pages_list):
+        """Accept list of dicts {'file':..,'price':..} or plain strings."""
         self.pages      = json.dumps(pages_list)
         self.page_count = len(pages_list)
         self.updated_at = datetime.utcnow()
@@ -348,6 +358,7 @@ def process(catalog_id):
     data      = request.get_json()
     order     = data.get('order', [])
     name      = data.get('name', '').strip() or catalog.name
+    prices    = data.get('prices', {})   # {orig_filename: "K25"}
     image_cap = user.max_images
     capped    = False
     if image_cap and len(order) > image_cap:
@@ -367,14 +378,14 @@ def process(catalog_id):
             img      = smart_crop_resize(img, TARGET_WIDTH, TARGET_HEIGHT)
             out_name = f'page_{i + 1:03d}.jpg'
             img.save(os.path.join(proc_dir, out_name), 'JPEG', quality=72, optimize=True, progressive=True)
-            processed.append(out_name)
+            processed.append({'file': out_name, 'price': prices.get(filename, '')})
         except Exception as e:
             errors.append(str(e))
 
     catalog.name = name
     catalog.set_pages(processed)
     db.session.commit()
-    return jsonify({'processed': processed, 'count': len(processed),
+    return jsonify({'processed': [p['file'] for p in processed], 'count': len(processed),
                     'capped': capped, 'cap': image_cap, 'errors': errors})
 
 @app.route('/workspace/<int:catalog_id>/rename', methods=['POST'])
@@ -417,7 +428,7 @@ def catalog_view(catalog_id):
         flash('Catalog not found.', 'error')
         return redirect(url_for('index'))
     return render_template('catalog.html', user=user, catalog=catalog,
-                           pages=catalog.get_pages())
+                           page_data=catalog.get_page_data())
 
 @app.route('/catalog/<int:catalog_id>/download')
 @login_required
