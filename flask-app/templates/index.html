@@ -34,12 +34,14 @@
       <input type="file" id="file-input" accept="image/*" multiple>
     {% endif %}
     <span class="upload-icon">&#128247;</span>
-    <h2>{% if can_create %}Select product images{% else %}Monthly limit reached{% endif %}</h2>
+    <h2>{% if can_create %}Select product images{% elif current_user.is_basic %}Monthly limit reached{% else %}Free catalog used{% endif %}</h2>
     <p>
       {% if can_create %}
         Tap to choose — your catalog is built automatically
+      {% elif current_user.is_basic %}
+        <a href="/upgrade?plan=pro">Upgrade to Pro (K20/mo)</a> for unlimited catalogs
       {% else %}
-        <a href="/upgrade">Upgrade to Pro (K20/mo)</a> to create more catalogs
+        <a href="/upgrade?plan=basic">Upgrade to Basic (K5/mo)</a> for 2 catalogs a month
       {% endif %}
     </p>
     {% if can_create %}
