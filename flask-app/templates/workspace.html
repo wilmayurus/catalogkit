@@ -72,18 +72,21 @@
     <button class="btn btn-danger btn-sm" onclick="clearAll()">&#10005; Clear all</button>
   </div>
 
-  <p class="text-muted" style="font-size:0.82rem;margin:-4px 0 10px;{% if not catalog.get_pages() %}display:none{% endif %}" id="price-hint">
-    &#128176; Add a price below each image — it will show as a badge in the flipbook
+  <p class="text-muted" id="price-hint"
+     style="font-size:0.82rem;margin:-4px 0 10px;{% if not catalog.get_pages() %}display:none;{% endif %}">
+    &#128176; Type a price below each image — it appears as a badge in the flipbook
   </p>
 
   {# ── Thumbnail grid — pre-populated from saved page data ── #}
   <div id="sort-grid">
     {% for item in catalog.get_page_data() %}
     <div class="thumb-item" data-filename="{{ item.file }}">
-      <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}" loading="lazy" alt="">
-      <span class="thumb-num">{{ loop.index }}</span>
-      <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
-      <input type="text" class="thumb-price" placeholder="K 0.00"
+      <div class="thumb-img-wrap">
+        <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}" loading="lazy" alt="">
+        <span class="thumb-num">{{ loop.index }}</span>
+        <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
+      </div>
+      <input type="text" class="thumb-price" placeholder="e.g. K 25.00"
              value="{{ item.price }}" onchange="onPriceChange(this)"
              onclick="event.stopPropagation()" title="Enter price (e.g. K 25.00)">
     </div>
@@ -120,7 +123,7 @@ Sortable.create(grid, {
   animation: 200,
   ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', dragClass: 'sortable-drag',
   delay: 60, delayOnTouchOnly: true, touchStartThreshold: 8,
-  filter: '.thumb-price',   // don't drag when clicking price input
+  filter: '.thumb-price',
   preventOnFilter: false,
   onEnd() {
     updateNumbers();
@@ -224,10 +227,12 @@ function addThumb(filename, price = '') {
   item.className = 'thumb-item';
   item.dataset.filename = filename;
   item.innerHTML = `
-    <img src="/static/uploads/${USER_ID}/${CATALOG_ID}/${filename}" loading="lazy" alt="">
-    <span class="thumb-num">1</span>
-    <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
-    <input type="text" class="thumb-price" placeholder="K 0.00" value="${price}"
+    <div class="thumb-img-wrap">
+      <img src="/static/uploads/${USER_ID}/${CATALOG_ID}/${filename}" loading="lazy" alt="">
+      <span class="thumb-num">1</span>
+      <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
+    </div>
+    <input type="text" class="thumb-price" placeholder="e.g. K 25.00" value="${price}"
            onchange="onPriceChange(this)" onclick="event.stopPropagation()" title="Enter price">
   `;
   grid.appendChild(item);
