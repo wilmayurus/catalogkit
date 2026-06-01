@@ -39,9 +39,9 @@
       {% if can_create %}
         Tap to choose — your catalog is built automatically
       {% elif current_user.is_basic %}
-        <a href="/upgrade?plan=pro">Upgrade to Pro (K20/mo)</a> for unlimited catalogs
+        <a href="/upgrade">See upgrade options</a> for more catalogs
       {% else %}
-        <a href="/upgrade?plan=basic">Upgrade to Basic (K5/mo)</a> for 2 catalogs a month
+        <a href="/upgrade">See upgrade options</a> — Basic K5/mo or Pro K20/mo
       {% endif %}
     </p>
     {% if can_create %}
