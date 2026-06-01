@@ -11,11 +11,9 @@
 
 <nav>
   <a href="/" class="nav-brand">&#9670; CatalogKit</a>
-
   <div class="nav-links">
     {% if current_user %}
-      <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Upload</a>
-      <a href="/catalog" {% if request.endpoint == 'catalog' %}class="active"{% endif %}>Catalog</a>
+      <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Catalogs</a>
       <a href="/dashboard" {% if request.endpoint == 'dashboard' %}class="active"{% endif %}>My Plan</a>
       {% if current_user.is_admin %}
         <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
@@ -42,7 +40,6 @@
 {% endwith %}
 
 {% block body %}{% endblock %}
-
 {% block scripts %}{% endblock %}
 </body>
 </html>

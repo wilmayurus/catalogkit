@@ -1,9 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}Catalog — CatalogKit{% endblock %}
+{% block title %}{{ catalog.name }} — CatalogKit{% endblock %}
 {% block head %}
-<style>
-  .catalog-container { padding-top: 20px; }
-</style>
+<style>.catalog-container { padding-top: 20px; }</style>
 {% endblock %}
 
 {% block body %}
@@ -11,16 +9,17 @@
 <div class="catalog-container">
 
   <div class="catalog-header">
-    <h1>&#128218; Product Catalog</h1>
+    <h1>&#128218; {{ catalog.name }}</h1>
     <p>{{ pages|length }} page{{ 's' if pages|length != 1 }} &nbsp;·&nbsp; Click or swipe to flip</p>
   </div>
 
   <div id="flipbook-wrap">
     <div id="flipbook">
-      <div class="hard">&#9670; CatalogKit</div>
+      <div class="hard">&#9670; {{ catalog.name }}</div>
       {% for page in pages %}
       <div class="page">
-        <img src="/static/processed/{{ current_user.id }}/{{ page }}" alt="Page {{ loop.index }}" loading="lazy">
+        <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ page }}"
+             alt="Page {{ loop.index }}" loading="lazy">
       </div>
       {% endfor %}
       <div class="hard">&#9670; End</div>
@@ -34,9 +33,10 @@
   </div>
 
   <div class="catalog-actions">
-    <button class="btn btn-secondary" onclick="copyShareLink()" id="copy-btn">&#128279; Copy Share Link</button>
-    <a href="/download-all" class="btn btn-secondary" download>&#128190; Download All</a>
-    <a href="/" class="btn btn-secondary">&#8592; Back to Upload</a>
+    <button class="btn btn-secondary" onclick="copyShareLink()">&#128279; Copy Share Link</button>
+    <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download ZIP</a>
+    <a href="/workspace/{{ catalog.id }}" class="btn btn-secondary">&#9998; Edit</a>
+    <a href="/" class="btn btn-ghost btn-sm">&#8592; All Catalogs</a>
   </div>
 
   <div id="toast">Link copied!</div>
@@ -56,8 +56,7 @@ $(document).ready(function () {
     const isMobile = window.innerWidth < 640;
     let bookW, bookH;
     if (isMobile) {
-      bookW = Math.min(vw, 380);
-      bookH = bookW / ratio;
+      bookW = Math.min(vw, 380); bookH = bookW / ratio;
     } else {
       bookH = Math.min(vh, 600);
       bookW = Math.min(bookH * ratio * 2, vw);
@@ -69,38 +68,34 @@ $(document).ready(function () {
   function initFlipbook() {
     const { w, h, single } = calcSize();
     $('#flipbook').turn({
-      width: w, height: h,
-      autoCenter: true,
+      width: w, height: h, autoCenter: true,
       display: single ? 'single' : 'double',
-      acceleration: true,
-      gradients: !single,
-      elevation: 50,
+      acceleration: true, gradients: !single, elevation: 50,
       when: { turned: function (e, page) { updateIndicator(page); } }
     });
     updateIndicator($('#flipbook').turn('page'));
   }
 
   function updateIndicator(page) {
-    const total = totalPages + 2;
     $('#page-indicator').text('Page ' + Math.max(1, page - 1) + ' of ' + totalPages);
     $('#prev-btn').prop('disabled', page <= 1);
-    $('#next-btn').prop('disabled', page >= total);
+    $('#next-btn').prop('disabled', page >= totalPages + 2);
   }
 
-  window.flipPrev = function () { $('#flipbook').turn('previous'); };
-  window.flipNext = function () { $('#flipbook').turn('next'); };
+  window.flipPrev = () => $('#flipbook').turn('previous');
+  window.flipNext = () => $('#flipbook').turn('next');
 
   window.copyShareLink = function () {
     const url = window.location.href.split('?')[0];
     navigator.clipboard.writeText(url).then(function () {
-      const toast = document.getElementById('toast');
-      toast.classList.add('show');
-      setTimeout(function () { toast.classList.remove('show'); }, 2200);
-    }).catch(function () { prompt('Copy this link:', url); });
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }).catch(() => prompt('Copy this link:', url));
   };
 
-  $(document).keydown(function (e) {
-    if (e.key === 'ArrowLeft') flipPrev();
+  $(document).keydown(e => {
+    if (e.key === 'ArrowLeft')  flipPrev();
     if (e.key === 'ArrowRight') flipNext();
   });
 
@@ -124,9 +119,9 @@ $(document).ready(function () {
 <div class="catalog-container">
   <div class="empty-state" style="padding:80px 24px">
     <div class="icon">&#128436;</div>
-    <p style="font-size:1.1rem; font-weight:600; margin-bottom:8px">No catalog yet</p>
-    <p class="text-muted" style="margin-bottom:28px">Upload your product images and click "Process &amp; Build Catalog" first.</p>
-    <a href="/" class="btn btn-primary btn-lg">&#8592; Go to Upload</a>
+    <p style="font-size:1.1rem;font-weight:600;margin-bottom:8px">No pages yet</p>
+    <p class="text-muted" style="margin-bottom:28px">Upload images in the workspace to build this catalog.</p>
+    <a href="/workspace/{{ catalog.id }}" class="btn btn-primary btn-lg">&#9998; Go to Workspace</a>
   </div>
 </div>
 {% endif %}
