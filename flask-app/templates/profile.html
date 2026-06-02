@@ -92,7 +92,7 @@
 
       {% set saved_delv = (user.delivery_methods or '[]') | fromjson %}
       <div style="display:flex;flex-direction:column;gap:10px">
-        {% for method in ['Local Courier / Drop-off (Same Town/City)', 'PMV Freight (Highlands Highway & Ground Routes)', 'TNT / FedEx (Premium Tracked Air Freight)', 'EMS (Post PNG Express Mail)', 'Air Niugini / PNG Air Cargo (Airport-to-Airport)', 'Post PNG Standard Parcel (Cheap Counter-to-Counter)', 'DHL / UPS (International Worldwide Shipping)'] %}
+        {% for method in ['Local Courier / Drop-off (Same Town/City)', 'PMV Freight (Highlands Highway & Ground Routes)', 'TNT / FedEx (Premium Tracked Air Freight)', 'EMS (Post PNG Express Mail)', 'Air Niugini / PNG Air Cargo (Airport-to-Airport)', 'Post PNG Standard Parcel (Affordable Counter-to-Counter)', 'DHL / UPS (International Worldwide Shipping)'] %}
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
           <input type="checkbox" name="delivery_methods" value="{{ method }}"
                  {% if method in saved_delv %}checked{% endif %}
