@@ -1489,9 +1489,9 @@ nav {
   font-size: 0.7rem;
   font-weight: 700;
   font-family: 'Inter', 'Helvetica Neue', sans-serif;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
-  padding: 6px 12px 4px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
+  padding: 4px 12px;
+  background: rgba(15,15,30,0.82);
+  backdrop-filter: blur(4px);
   pointer-events: none;
   z-index: 3;
   white-space: nowrap;
@@ -1511,9 +1511,9 @@ nav {
   font-size: 0.78rem;
   font-weight: 800;
   font-family: 'Inter', 'Helvetica Neue', sans-serif;
-  text-shadow: 0 1px 6px rgba(0,0,0,0.8);
-  background: linear-gradient(0deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%);
-  padding: 4px 12px 6px;
+  background: rgba(15,15,30,0.82);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px;
   white-space: nowrap;
 }
 
