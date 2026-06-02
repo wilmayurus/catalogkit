@@ -15,6 +15,7 @@
     {% if current_user %}
       <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Catalogs</a>
       <a href="/dashboard" {% if request.endpoint == 'dashboard' %}class="active"{% endif %}>My Plan</a>
+      <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>Profile</a>
       {% if current_user.is_admin %}
         <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
       {% endif %}

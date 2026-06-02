@@ -249,16 +249,46 @@
       {% endfor %}
       <div class="hard cover-back">
         <div class="cover-back-body">
-          <p class="cover-back-brand">{{ user.name }}</p>
+          <p class="cover-back-brand">{{ user.business_name or user.name }}</p>
           <h2 class="cover-back-heading">Thank you<br>for browsing</h2>
           <p class="cover-back-sub">We'd love to hear from you</p>
           <span class="cover-back-cta">Get in Touch</span>
           <div class="cover-contact-section">
+            {% if user.contact_person %}
+            <div class="cover-contact-row">
+              <span class="cover-contact-icon">👤</span>
+              <span class="cover-contact-label">Contact</span>
+              <span class="cover-contact-text">{{ user.contact_person }}</span>
+            </div>
+            {% endif %}
+            {% if user.location %}
+            <div class="cover-contact-row">
+              <span class="cover-contact-icon">📍</span>
+              <span class="cover-contact-label">Location</span>
+              <span class="cover-contact-text">{{ user.location }}</span>
+            </div>
+            {% endif %}
+            {% if user.whatsapp %}
+            <div class="cover-contact-row">
+              <span class="cover-contact-icon">💬</span>
+              <span class="cover-contact-label">WhatsApp</span>
+              <span class="cover-contact-text">{{ user.whatsapp }}</span>
+            </div>
+            {% endif %}
+            {% if user.phone %}
+            <div class="cover-contact-row">
+              <span class="cover-contact-icon">📞</span>
+              <span class="cover-contact-label">Phone</span>
+              <span class="cover-contact-text">{{ user.phone }}</span>
+            </div>
+            {% endif %}
+            {% if user.email %}
             <div class="cover-contact-row">
               <span class="cover-contact-icon">✉</span>
               <span class="cover-contact-label">Email</span>
               <span class="cover-contact-text">{{ user.email }}</span>
             </div>
+            {% endif %}
           </div>
         </div>
       </div>

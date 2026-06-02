@@ -51,6 +51,11 @@ class User(db.Model):
     email         = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     name          = db.Column(db.String(255), nullable=False)
+    business_name = db.Column(db.String(255), nullable=True)
+    contact_person= db.Column(db.String(255), nullable=True)
+    location      = db.Column(db.String(255), nullable=True)
+    whatsapp      = db.Column(db.String(50),  nullable=True)
+    phone         = db.Column(db.String(50),  nullable=True)
     plan          = db.Column(db.String(20), default='free')
     plan_expires  = db.Column(db.DateTime, nullable=True)
     plan_start    = db.Column(db.DateTime, nullable=True)
@@ -477,6 +482,25 @@ def dashboard():
                            basic_monthly_limit=BASIC_MONTHLY_LIMIT)
 
 
+# ── Profile ───────────────────────────────────────────────────────────────────
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    user = current_user()
+    if request.method == 'POST':
+        user.business_name  = request.form.get('business_name', '').strip() or None
+        user.contact_person = request.form.get('contact_person', '').strip() or None
+        user.location       = request.form.get('location', '').strip() or None
+        user.whatsapp       = request.form.get('whatsapp', '').strip() or None
+        user.phone          = request.form.get('phone', '').strip() or None
+        user.email          = request.form.get('email', '').strip().lower() or user.email
+        db.session.commit()
+        flash('Profile updated!', 'success')
+        return redirect(url_for('profile'))
+    return render_template('profile.html', user=user)
+
+
 # ── Upgrade ───────────────────────────────────────────────────────────────────
 
 @app.route('/upgrade')
@@ -640,6 +664,11 @@ if __name__ == '__main__':
                 'ALTER TABLE catalog ADD COLUMN updated_at DATETIME',
                 'ALTER TABLE user ADD COLUMN plan_start DATETIME',
                 'ALTER TABLE payment_request ADD COLUMN requested_plan VARCHAR(20) DEFAULT "pro"',
+                'ALTER TABLE user ADD COLUMN business_name VARCHAR(255)',
+                'ALTER TABLE user ADD COLUMN contact_person VARCHAR(255)',
+                'ALTER TABLE user ADD COLUMN location VARCHAR(255)',
+                'ALTER TABLE user ADD COLUMN whatsapp VARCHAR(50)',
+                'ALTER TABLE user ADD COLUMN phone VARCHAR(50)',
             ]:
                 try:
                     conn.execute(text(stmt))

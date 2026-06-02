@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}My Profile — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="max-width:560px;padding-top:40px;padding-bottom:60px">
+
+  <div style="margin-bottom:28px">
+    <h2 style="font-size:1.5rem;font-weight:700;margin:0 0 4px">My Profile</h2>
+    <p class="text-muted" style="font-size:0.88rem;margin:0">
+      This information appears on the back cover of every catalog you share.
+    </p>
+  </div>
+
+  <form method="POST" action="/profile">
+
+    <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
+      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 18px">Business Details</h3>
+
+      <div class="field">
+        <label>Business Name</label>
+        <input type="text" name="business_name" placeholder="e.g. Grace's Fashion Boutique"
+               value="{{ user.business_name or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Contact Person</label>
+        <input type="text" name="contact_person" placeholder="e.g. Grace Kila"
+               value="{{ user.contact_person or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Location <span class="text-muted" style="font-weight:400;font-size:0.8rem">(optional)</span></label>
+        <input type="text" name="location" placeholder="e.g. Port Moresby, Boroko"
+               value="{{ user.location or '' }}">
+      </div>
+    </div>
+
+    <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
+      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 18px">Contact Information</h3>
+
+      <div class="field">
+        <label>WhatsApp Number</label>
+        <input type="tel" name="whatsapp" placeholder="e.g. +675 7123 4567"
+               value="{{ user.whatsapp or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Phone Number</label>
+        <input type="tel" name="phone" placeholder="e.g. +675 3234 5678"
+               value="{{ user.phone or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="your@email.com"
+               value="{{ user.email or '' }}">
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;border-radius:12px">
+      Save Profile
+    </button>
+
+  </form>
+
+</div>
+{% endblock %}
