@@ -280,6 +280,7 @@
       {% endfor %}
       <div class="hard cover-back">
         <div class="cover-back-body">
+          {% if user.business_name %}<p class="cover-back-brand">{{ user.business_name }}</p>{% endif %}
           <h2 class="cover-back-heading">Thank you<br>for browsing</h2>
           <p class="cover-back-sub">We'd love to hear from you</p>
           <span class="cover-back-cta">Get in Touch</span>
