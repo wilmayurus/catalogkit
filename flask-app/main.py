@@ -1,4 +1,4 @@
-import io, os, uuid, json, zipfile, shutil, re
+import io, os, uuid, json, zipfile, shutil, re, secrets
 from urllib.parse import quote as url_quote
 from datetime import datetime, timedelta
 from functools import wraps
@@ -58,9 +58,11 @@ class User(db.Model):
     location      = db.Column(db.String(255), nullable=True)
     whatsapp      = db.Column(db.String(50),  nullable=True)
     phone         = db.Column(db.String(50),  nullable=True)
-    facebook_url  = db.Column(db.String(500), nullable=True)
+    facebook_url     = db.Column(db.String(500), nullable=True)
     payment_methods  = db.Column(db.Text, nullable=True)
     delivery_methods = db.Column(db.Text, nullable=True)
+    reset_token      = db.Column(db.String(100), nullable=True)
+    reset_token_exp  = db.Column(db.DateTime, nullable=True)
     plan          = db.Column(db.String(20), default='free')
     plan_expires  = db.Column(db.DateTime, nullable=True)
     plan_start    = db.Column(db.DateTime, nullable=True)
@@ -179,11 +181,13 @@ class PaymentRequest(db.Model):
 
 def send_email(to, subject, body):
     if not app.config.get('MAIL_SERVER') or not app.config.get('MAIL_USERNAME'):
-        return
+        return False
     try:
         mail.send(Message(subject, recipients=[to], body=body))
+        return True
     except Exception as exc:
         app.logger.error('Email failed: %s', exc)
+        return False
 
 def admin_email():
     admin = User.query.filter_by(is_admin=True).first()
@@ -511,6 +515,56 @@ def dashboard():
                            basic_monthly_limit=BASIC_MONTHLY_LIMIT)
 
 
+# ── Forgot / Reset Password ───────────────────────────────────────────────────
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        user  = User.query.filter_by(email=email).first()
+        # Always show success to avoid user enumeration
+        if user:
+            token = secrets.token_urlsafe(32)
+            user.reset_token     = token
+            user.reset_token_exp = datetime.utcnow() + timedelta(hours=1)
+            db.session.commit()
+            reset_url = request.host_url.rstrip('/') + f'/reset-password/{token}'
+            sent = send_email(
+                user.email,
+                'CatalogKit — Reset your password',
+                f'Hi {user.name},\n\nClick the link below to reset your password. '
+                f'It expires in 1 hour.\n\n{reset_url}\n\n'
+                f'If you did not request this, you can ignore this email.'
+            )
+            return render_template('forgot_password.html',
+                                   sent=sent, reset_url=(None if sent else reset_url),
+                                   mail_configured=sent)
+        return render_template('forgot_password.html', sent=True, reset_url=None, mail_configured=True)
+    return render_template('forgot_password.html', sent=False, reset_url=None, mail_configured=None)
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.query.filter_by(reset_token=token).first()
+    if not user or not user.reset_token_exp or user.reset_token_exp < datetime.utcnow():
+        flash('This reset link is invalid or has expired. Please request a new one.', 'error')
+        return redirect(url_for('forgot_password'))
+    if request.method == 'POST':
+        pw  = request.form.get('password', '')
+        pw2 = request.form.get('password2', '')
+        if len(pw) < 6:
+            return render_template('reset_password.html', token=token, error='Password must be at least 6 characters.')
+        if pw != pw2:
+            return render_template('reset_password.html', token=token, error='Passwords do not match.')
+        user.password_hash  = generate_password_hash(pw)
+        user.reset_token    = None
+        user.reset_token_exp = None
+        db.session.commit()
+        flash('Your password has been reset. Please sign in.', 'success')
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', token=token, error=None)
+
+
 # ── Profile ───────────────────────────────────────────────────────────────────
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -706,6 +760,8 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN facebook_url VARCHAR(500)',
                 'ALTER TABLE user ADD COLUMN payment_methods TEXT',
                 'ALTER TABLE user ADD COLUMN delivery_methods TEXT',
+                'ALTER TABLE user ADD COLUMN reset_token VARCHAR(100)',
+                'ALTER TABLE user ADD COLUMN reset_token_exp DATETIME',
             ]:
                 try:
                     conn.execute(text(stmt))
