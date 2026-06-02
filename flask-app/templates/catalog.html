@@ -244,6 +244,10 @@
       {% for item in page_data %}
       <div class="page">
         <div class="page-inner">
+          <div class="page-header-bar">
+            {% if user.business_name %}<span class="page-header-biz">{{ user.business_name }}</span><span class="page-header-sep">·</span>{% endif %}
+            <span class="page-header-cat">{{ catalog.name }}</span>
+          </div>
           <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}"
                alt="Page {{ loop.index }}" loading="lazy">
           {% if item.item_name or item.price %}

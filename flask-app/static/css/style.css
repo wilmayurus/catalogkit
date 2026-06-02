@@ -486,6 +486,47 @@ nav {
   display: block;
 }
 
+.page-header-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  background: rgba(15,15,30,0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 8px;
+  z-index: 4;
+  overflow: hidden;
+}
+
+.page-header-biz {
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.page-header-sep {
+  color: rgba(255,255,255,0.4);
+  font-size: 0.55rem;
+  flex-shrink: 0;
+}
+
+.page-header-cat {
+  color: rgba(255,255,255,0.75);
+  font-size: 0.55rem;
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .page-footer-bar {
   position: absolute;
   bottom: 0; left: 0; right: 0;
