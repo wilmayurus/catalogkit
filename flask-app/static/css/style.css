@@ -486,6 +486,18 @@ nav {
   display: block;
 }
 
+#flipbook .page:not(.hard) .page-inner img {
+  position: absolute;
+  top: 52px;
+  bottom: 52px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: calc(100% - 104px);
+  object-fit: cover;
+  display: block;
+}
+
 .page-header-bar {
   position: absolute;
   top: 0; left: 0; right: 0;
