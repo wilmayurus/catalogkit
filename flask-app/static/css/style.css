@@ -486,6 +486,46 @@ nav {
   display: block;
 }
 
+.page-footer-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(15,15,30,0.72);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 8px;
+  z-index: 4;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.page-footer-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #e2e8f0;
+  font-size: 0.55rem;
+  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-footer-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 0.6rem;
+}
+
+.page-footer-sep {
+  color: rgba(255,255,255,0.35);
+  font-size: 0.6rem;
+  flex-shrink: 0;
+}
+
 #flipbook .page.hard {
   background: var(--surface2);
   display: flex;
