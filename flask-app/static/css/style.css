@@ -494,7 +494,8 @@ nav {
   right: 0;
   width: 100%;
   height: calc(100% - 104px);
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
   display: block;
 }
 
