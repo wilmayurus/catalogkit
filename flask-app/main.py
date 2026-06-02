@@ -14,6 +14,15 @@ from sqlalchemy import text
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', 'dev-only-change-in-prod')
 app.jinja_env.filters['fromjson'] = json.loads
+
+@app.after_request
+def no_cache(response):
+    if 'text/html' in response.content_type:
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    return response
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///catalogkit.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
