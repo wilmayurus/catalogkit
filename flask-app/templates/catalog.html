@@ -264,12 +264,6 @@
           <p class="cover-back-sub">We'd love to hear from you</p>
           <span class="cover-back-cta">Get in Touch</span>
           <div class="cover-contact-section">
-            {% if user.contact_person %}
-            <div class="cover-contact-row">
-              <span class="cover-contact-icon">👤</span>
-              <span class="cover-contact-text">{{ user.contact_person }}</span>
-            </div>
-            {% endif %}
             {% if user.location %}
             <div class="cover-contact-row">
               <span class="cover-contact-icon">📍</span>
