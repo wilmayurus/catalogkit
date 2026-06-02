@@ -245,7 +245,9 @@
       <div class="page">
         <div class="page-inner">
           <div class="page-header-bar">
-            {% if user.business_name %}<span class="page-header-biz">{{ user.business_name }}</span><span class="page-header-sep">·</span>{% endif %}
+            <span class="page-header-label">Product Catalog</span>
+            {% if user.business_name %}<span class="page-header-sep">·</span><span class="page-header-biz">{{ user.business_name }}</span>{% endif %}
+            <span class="page-header-sep">·</span>
             <span class="page-header-cat">{{ catalog.name }}</span>
           </div>
           <div class="page-item-name">{{ item.item_name or 'Item ' ~ loop.index }}</div>
