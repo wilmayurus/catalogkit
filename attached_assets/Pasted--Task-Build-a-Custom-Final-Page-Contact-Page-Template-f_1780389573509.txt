@@ -1,0 +1,60 @@
+### Task: Build a Custom "Final Page / Contact Page" Template for a PNG SME Flipbook App
+
+We are building an interactive digital flipbook catalog app specifically for Small and Medium Enterprises (SMEs) in Papua New Guinea (PNG). The final page of the flipbook must act as a seamless checkout/closing page since these businesses operate primarily on WhatsApp and Facebook, rarely use email, and rely on local PNG payment/logistics methods.
+
+Please build/generate this final page layout as a modular, responsive component based on the specifications below.
+
+---
+
+### 1. Data Structure / Configuration State
+The final page needs to read from a configuration state (so the SME can toggle options in the app creator). Please use this data model structure:
+- `whatsappNumber`: String (e.g., "+67570000000")
+- `facebookUrl`: String
+- `emailAddress`: String (Optional, default empty/hidden)
+- `showWhatsAppButton`: Boolean (Default: true)
+- `showHowToOrderSteps`: Boolean (Default: true)
+- `paymentMethods`: Array of Strings (Options: 'BSP', 'Kina Bank', 'ANZ', 'MiBank', 'Cash on Delivery')
+- `deliveryMethods`: Array of Strings (Options: 'Local Courier/Drop-off', 'PMV Freight', 'Air Niugini / PNG Air Cargo')
+
+---
+
+### 2. UI Layout & Component Breakdown
+
+#### Header Section
+- A warm, friendly closing headline. 
+- Text: "Thank you for supporting a local PNG SME!" 
+- Subtext: "Got questions or ready to order? Follow the simple steps below."
+
+#### Section A: The 3-Step "How to Order" Guide (Conditional on `showHowToOrderSteps`)
+Display a clean, 3-step horizontal or vertical grid using simple icons:
+1. **Step 1: Screenshot & Share** -> "Take a screenshot of the items you love from this flipbook."
+2. **Step 2: Confirm Details** -> "Tap the 'Order via WhatsApp' button below to send us your screenshots. We will check stock and calculate freight/delivery costs."
+3. **Step 3: Pay & Collect** -> "Make payment via Mobile Banking or Cash, send us the transfer receipt screenshot, and we will dispatch your order!"
+
+#### Section B: The Primary Action (The WhatsApp Button)
+- A prominent, full-width, or large high-contrast button colored in **WhatsApp Green**.
+- Include the WhatsApp Icon next to the text: **"Order via WhatsApp Now"**.
+- **Logic:** The button must dynamically generate a clickable hyperlink using the format: 
+  `https://wa.me/[whatsappNumber]?text=Hi!%20I%20just%20viewed%20your%20flipbook%20catalog%20and%20would%20like%20to%20make%20an%20order.`
+- Ensure the country code logic automatically handles or assumes `+675` if the user enters a local 8-digit PNG mobile number.
+
+#### Section C: Payment & Delivery Badges (Conditional on Selected Arrays)
+Create two neat grid columns or flex blocks displaying localized options:
+- **Payment Methods Panel:** 
+  - Render crisp, visual labels/badges based on the selected `paymentMethods`. 
+  - If 'BSP' is selected, display a neat badge text or standard placeholder placeholder for "BSP Mobile Banking Transfer". Include 'Kina Bank', 'ANZ', 'MiBank', or 'Cash on Delivery' depending on the active state.
+- **Delivery & Freighting Panel:**
+  - Render badges based on `deliveryMethods`.
+  - Include specific emphasis if **'PMV Freight'** or **'Air Freight (PNG Air / Air Niugini)'** are toggled active, as outside-province shipping is crucial for PNG buyers.
+
+#### Footer Section: Alternative Links
+- A clean row of secondary social connections.
+- **Facebook Icon:** Links directly to `facebookUrl`. Label: "Follow our Facebook Page for Daily Updates".
+- **Email Icon:** (Only display if `emailAddress` is provided). Label: "For Bulk/Corporate Inquiries Only: [email]".
+
+---
+
+### 3. Styling Guidelines
+- **Mobile-First Design:** 99% of users will view this flipbook on a mobile phone (WhatsApp/Facebook browser wrapper). Ensure high touch targets and zero horizontal scaling bugs.
+- **Clean Typography:** Bold headings, clear section dividers (`---` or faint borders), and distinct visual groupings so it doesn't look like a wall of text.
+- **No Friction:** The transition from reading the flipbook to tapping the WhatsApp button must be the most visually obvious flow on the screen.

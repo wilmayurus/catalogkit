@@ -98,124 +98,164 @@
   flex-shrink: 0;
 }
 
-/* ── BACK COVER ──────────────────────────────────────────────────── */
+/* ── BACK COVER (PNG SME closing page) ───────────────────────────── */
 .cover-back {
-  background: #f8f9fb;
+  background: #ffffff;
   display: flex !important;
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
-  padding: 20px 24px 20px;
+  padding: 18px 16px 12px;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  gap: 7px;
 }
 .cover-back::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 5px;
+  height: 4px;
   background: linear-gradient(90deg, #6c63ff 0%, #f50057 55%, #ff6d00 100%);
-  flex-shrink: 0;
 }
-.cover-back-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  width: 100%;
-  margin-top: 10px;
-  flex: 1;
-  min-height: 0;
-}
-.cover-back-brand {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.55rem;
+/* Header */
+.cb-brand {
+  font-size: 0.5rem;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
   color: #9ca3af;
-  margin-bottom: 8px;
-  flex-shrink: 0;
+  margin: 4px 0 0;
+  text-align: center;
 }
-.cover-back-heading {
-  font-family: 'Montserrat', 'Inter', 'Helvetica Neue', sans-serif;
-  font-size: clamp(0.95rem, 3.5vw, 1.45rem);
+.cb-headline {
+  font-family: 'Montserrat', 'Inter', sans-serif;
+  font-size: clamp(0.78rem, 2.8vw, 1.05rem);
   font-weight: 800;
-  line-height: 1.15;
   color: #0f172a;
-  letter-spacing: -0.3px;
-  margin: 0 0 4px;
-  flex-shrink: 0;
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
 }
-.cover-back-sub {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.65rem;
-  color: #94a3b8;
-  letter-spacing: 0.5px;
-  margin: 0 0 12px;
-  flex-shrink: 0;
+.cb-sub {
+  font-size: 0.56rem;
+  color: #64748b;
+  text-align: center;
+  margin: 0;
+  line-height: 1.35;
 }
-.cover-back-cta {
-  display: inline-block;
-  background: #0f172a;
-  color: #fff;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 9px 22px;
-  border-radius: 6px;
-  text-decoration: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin-bottom: 14px;
-  border: none;
-  cursor: default;
-  flex-shrink: 0;
-}
-.cover-back-cta:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.14);
-}
-.cover-contact-section {
-  width: 100%;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px 14px;
+/* 3-step guide */
+.cb-steps {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  flex-shrink: 0;
+  gap: 5px;
+  background: #f8f9fb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e2e8f0;
 }
-.cover-contact-row {
+.cb-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+.cb-step-num {
+  width: 17px; height: 17px;
+  background: linear-gradient(135deg, #6c63ff, #f50057);
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 800;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
-  text-align: left;
-  padding: 5px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-.cover-contact-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-.cover-contact-row:first-child {
-  padding-top: 0;
-}
-.cover-contact-icon {
-  font-size: 0.72rem;
-  width: 16px;
-  text-align: center;
+  justify-content: center;
   flex-shrink: 0;
+  margin-top: 1px;
 }
-.cover-contact-text {
-  font-size: 0.68rem;
-  color: #334155;
-  font-weight: 500;
-  word-break: break-all;
-  line-height: 1.3;
+.cb-step-title {
+  font-size: 0.57rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 1px;
+}
+.cb-step-desc {
+  font-size: 0.5rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.35;
+}
+/* WhatsApp button */
+.cb-wa-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #25D366;
+  color: #fff !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  text-decoration: none !important;
+  box-shadow: 0 3px 12px rgba(37,211,102,0.4);
+}
+/* Payment & Delivery badges */
+.cb-badges-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.cb-badge-group {
+  background: #f8f9fb;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  padding: 6px 8px;
+}
+.cb-badge-label {
+  font-size: 0.48rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 4px;
+}
+.cb-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.cb-badge {
+  font-size: 0.46rem;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+.cb-badge-pay { background: #ede9fe; color: #5b21b6; }
+.cb-badge-del { background: #dcfce7; color: #15803d; }
+/* Footer */
+.cb-footer {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cb-footer-link {
+  font-size: 0.5rem;
+  color: #1877f2;
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cb-footer-email {
+  font-size: 0.48rem;
+  color: #94a3b8;
+  margin: 0;
 }
 </style>
 {% endblock %}
@@ -279,43 +319,81 @@
       </div>
       {% endfor %}
       <div class="hard cover-back">
-        <div class="cover-back-body">
-          {% if user.business_name %}<p class="cover-back-brand">{{ user.business_name }}</p>{% endif %}
-          <h2 class="cover-back-heading">Thank you<br>for browsing</h2>
-          <p class="cover-back-sub">We'd love to hear from you</p>
-          <span class="cover-back-cta">Get in Touch</span>
-          <div class="cover-contact-section">
-            {% if user.location %}
-            <div class="cover-contact-row">
-              <span class="cover-contact-icon">📍</span>
-              <span class="cover-contact-text">{{ user.location }}</span>
+
+        {% if user.business_name %}<p class="cb-brand">{{ user.business_name }}</p>{% endif %}
+        <h2 class="cb-headline">Thank you for supporting<br>a local PNG SME!</h2>
+        <p class="cb-sub">Got questions or ready to order?<br>Follow the simple steps below.</p>
+
+        <!-- 3-Step How to Order -->
+        <div class="cb-steps">
+          <div class="cb-step">
+            <span class="cb-step-num">1</span>
+            <div>
+              <p class="cb-step-title">📸 Screenshot &amp; Share</p>
+              <p class="cb-step-desc">Take a screenshot of items you love from this catalog.</p>
             </div>
-            {% endif %}
-            {% if user.whatsapp %}
-            <div class="cover-contact-row">
-              <span class="cover-contact-icon">
-                <svg viewBox="0 0 32 32" width="13" height="13" xmlns="http://www.w3.org/2000/svg">
-                  <path fill="#25D366" d="M16 3C9.373 3 4 8.373 4 15c0 2.385.668 4.61 1.832 6.504L4 29l7.695-1.813A12.94 12.94 0 0016 28c6.627 0 12-5.373 12-12S22.627 3 16 3z"/>
-                  <path fill="#fff" d="M21.5 18.9c-.3-.15-1.77-.87-2.04-.97-.28-.1-.48-.15-.68.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51-.17-.01-.37-.01-.57-.01s-.52.07-.8.37c-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.87 1.22 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.11.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.19-.57-.34z"/>
-                </svg>
-              </span>
-              <span class="cover-contact-text">{{ user.whatsapp }}</span>
+          </div>
+          <div class="cb-step">
+            <span class="cb-step-num">2</span>
+            <div>
+              <p class="cb-step-title">💬 Confirm Details</p>
+              <p class="cb-step-desc">Tap 'Order via WhatsApp' below. We'll check stock and calculate delivery costs.</p>
             </div>
-            {% endif %}
-            {% if user.phone %}
-            <div class="cover-contact-row">
-              <span class="cover-contact-icon">📞</span>
-              <span class="cover-contact-text">{{ user.phone }}</span>
+          </div>
+          <div class="cb-step">
+            <span class="cb-step-num">3</span>
+            <div>
+              <p class="cb-step-title">💰 Pay &amp; Collect</p>
+              <p class="cb-step-desc">Pay via Mobile Banking or Cash, send receipt, and we'll dispatch your order!</p>
             </div>
-            {% endif %}
-            {% if user.email %}
-            <div class="cover-contact-row">
-              <span class="cover-contact-icon">✉</span>
-              <span class="cover-contact-text">{{ user.email }}</span>
-            </div>
-            {% endif %}
           </div>
         </div>
+
+        <!-- WhatsApp CTA -->
+        {% if wa_link %}
+        <a href="{{ wa_link }}" class="cb-wa-btn" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="white" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.38 1.26 4.8L2.05 22l5.39-1.41c1.37.74 2.92 1.16 4.6 1.16 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01C17.18 3.03 14.69 2 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42 1.56 1.56 2.41 3.63 2.41 5.83 0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.41-4.19-1.18l-.3-.17-3.12.82.83-3.04-.2-.32c-.84-1.32-1.28-2.85-1.28-4.42 0-4.54 3.7-8.17 8.27-8.17M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.86-.87 2.07s.89 2.39 1.01 2.56c.14.17 1.76 2.67 4.25 3.73.59.27 1.05.42 1.41.53.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.16-.48-.27-.25-.14-1.47-.74-1.69-.82-.23-.08-.37-.12-.56.12-.16.25-.64.81-.78.97-.15.17-.29.19-.53.07-.26-.13-1.06-.39-2.02-1.25-.74-.66-1.23-1.47-1.38-1.72-.14-.24-.01-.39.11-.5.11-.11.27-.29.37-.44.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.11-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.43-.14 0-.3-.01-.47-.01z"/>
+          </svg>
+          Order via WhatsApp Now
+        </a>
+        {% endif %}
+
+        <!-- Payment & Delivery Badges -->
+        {% if payment_methods_list or delivery_methods_list %}
+        <div class="cb-badges-wrap">
+          {% if payment_methods_list %}
+          <div class="cb-badge-group">
+            <p class="cb-badge-label">💳 Payment</p>
+            <div class="cb-badges">
+              {% for m in payment_methods_list %}<span class="cb-badge cb-badge-pay">{{ m }}</span>{% endfor %}
+            </div>
+          </div>
+          {% endif %}
+          {% if delivery_methods_list %}
+          <div class="cb-badge-group">
+            <p class="cb-badge-label">🚚 Delivery</p>
+            <div class="cb-badges">
+              {% for d in delivery_methods_list %}<span class="cb-badge cb-badge-del">{{ d }}</span>{% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Footer Links -->
+        <div class="cb-footer">
+          {% if user.facebook_url %}
+          <a href="{{ user.facebook_url }}" class="cb-footer-link" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="#1877f2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+            Follow our Facebook Page for Daily Updates
+          </a>
+          {% endif %}
+          {% if user.email %}
+          <p class="cb-footer-email">✉ Bulk/Corporate Inquiries: {{ user.email }}</p>
+          {% endif %}
+        </div>
+
       </div>
     </div>
   </div>

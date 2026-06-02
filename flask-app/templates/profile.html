@@ -6,9 +6,15 @@
   <div style="margin-bottom:28px">
     <h2 style="font-size:1.5rem;font-weight:700;margin:0 0 4px">My Profile</h2>
     <p class="text-muted" style="font-size:0.88rem;margin:0">
-      This information appears on the back cover of every catalog you share.
+      This information appears on the last page of every catalog you share.
     </p>
   </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }}" style="margin-bottom:16px">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
 
   <form method="POST" action="/profile">
 
@@ -41,6 +47,7 @@
         <label>WhatsApp Number</label>
         <input type="tel" name="whatsapp" placeholder="e.g. +675 7123 4567"
                value="{{ user.whatsapp or '' }}">
+        <p class="text-muted" style="font-size:0.78rem;margin:4px 0 0">Used for the "Order via WhatsApp" button on the last page.</p>
       </div>
 
       <div class="field">
@@ -53,6 +60,46 @@
         <label>Email</label>
         <input type="email" name="email" placeholder="your@email.com"
                value="{{ user.email or '' }}">
+      </div>
+
+      <div class="field">
+        <label>Facebook Page URL <span class="text-muted" style="font-weight:400;font-size:0.8rem">(optional)</span></label>
+        <input type="url" name="facebook_url" placeholder="https://www.facebook.com/yourbusiness"
+               value="{{ user.facebook_url or '' }}">
+      </div>
+    </div>
+
+    <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
+      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Payment Methods</h3>
+      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the payment options your business accepts.</p>
+
+      {% set saved_pay = (user.payment_methods or '[]') | fromjson %}
+      <div style="display:flex;flex-direction:column;gap:10px">
+        {% for method in ['BSP Mobile Banking', 'Kina Bank', 'ANZ Bank', 'MiBank', 'Cash on Delivery'] %}
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
+          <input type="checkbox" name="payment_methods" value="{{ method }}"
+                 {% if method in saved_pay %}checked{% endif %}
+                 style="width:16px;height:16px;accent-color:var(--accent)">
+          {{ method }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
+      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Delivery & Freight Options</h3>
+      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the delivery methods you offer.</p>
+
+      {% set saved_delv = (user.delivery_methods or '[]') | fromjson %}
+      <div style="display:flex;flex-direction:column;gap:10px">
+        {% for method in ['Local Courier / Drop-off', 'PMV Freight', 'Air Niugini / PNG Air Cargo'] %}
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
+          <input type="checkbox" name="delivery_methods" value="{{ method }}"
+                 {% if method in saved_delv %}checked{% endif %}
+                 style="width:16px;height:16px;accent-color:var(--accent)">
+          {{ method }}
+        </label>
+        {% endfor %}
       </div>
     </div>
 

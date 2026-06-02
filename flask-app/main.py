@@ -1,4 +1,5 @@
-import io, os, uuid, json, zipfile, shutil
+import io, os, uuid, json, zipfile, shutil, re
+from urllib.parse import quote as url_quote
 from datetime import datetime, timedelta
 from functools import wraps
 
@@ -12,6 +13,7 @@ from sqlalchemy import text
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', 'dev-only-change-in-prod')
+app.jinja_env.filters['fromjson'] = json.loads
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///catalogkit.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -56,6 +58,9 @@ class User(db.Model):
     location      = db.Column(db.String(255), nullable=True)
     whatsapp      = db.Column(db.String(50),  nullable=True)
     phone         = db.Column(db.String(50),  nullable=True)
+    facebook_url  = db.Column(db.String(500), nullable=True)
+    payment_methods  = db.Column(db.Text, nullable=True)
+    delivery_methods = db.Column(db.Text, nullable=True)
     plan          = db.Column(db.String(20), default='free')
     plan_expires  = db.Column(db.DateTime, nullable=True)
     plan_start    = db.Column(db.DateTime, nullable=True)
@@ -433,8 +438,23 @@ def catalog_view(catalog_id):
     if not catalog:
         flash('Catalog not found.', 'error')
         return redirect(url_for('index'))
+    # Build WhatsApp deep-link with PNG number normalisation
+    wa_link = None
+    if user.whatsapp:
+        digits = re.sub(r'[^\d]', '', user.whatsapp)
+        if len(digits) == 8:           # local PNG 8-digit
+            digits = '675' + digits
+        elif digits.startswith('0') and len(digits) == 9:
+            digits = '675' + digits[1:]
+        msg = "Hi! I just viewed your flipbook catalog and would like to make an order."
+        wa_link = f"https://wa.me/{digits}?text={url_quote(msg)}"
+    pay_list  = json.loads(user.payment_methods  or '[]')
+    delv_list = json.loads(user.delivery_methods or '[]')
     return render_template('catalog.html', user=user, catalog=catalog,
-                           page_data=catalog.get_page_data())
+                           page_data=catalog.get_page_data(),
+                           wa_link=wa_link,
+                           payment_methods_list=pay_list,
+                           delivery_methods_list=delv_list)
 
 @app.route('/catalog/<int:catalog_id>/download')
 @login_required
@@ -504,6 +524,11 @@ def profile():
         user.whatsapp       = request.form.get('whatsapp', '').strip() or None
         user.phone          = request.form.get('phone', '').strip() or None
         user.email          = request.form.get('email', '').strip().lower() or user.email
+        user.facebook_url   = request.form.get('facebook_url', '').strip() or None
+        pay  = request.form.getlist('payment_methods')
+        delv = request.form.getlist('delivery_methods')
+        user.payment_methods  = json.dumps(pay)  if pay  else None
+        user.delivery_methods = json.dumps(delv) if delv else None
         db.session.commit()
         flash('Profile updated!', 'success')
         return redirect(url_for('profile'))
@@ -678,6 +703,9 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN location VARCHAR(255)',
                 'ALTER TABLE user ADD COLUMN whatsapp VARCHAR(50)',
                 'ALTER TABLE user ADD COLUMN phone VARCHAR(50)',
+                'ALTER TABLE user ADD COLUMN facebook_url VARCHAR(500)',
+                'ALTER TABLE user ADD COLUMN payment_methods TEXT',
+                'ALTER TABLE user ADD COLUMN delivery_methods TEXT',
             ]:
                 try:
                     conn.execute(text(stmt))
