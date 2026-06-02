@@ -45,13 +45,14 @@ FREE_CATALOG_LIMIT    = 2
 FREE_MAX_IMAGES       = 5
 GRASSROOTS_MAX_IMAGES = 10
 FREE_PDF_DOWNLOADS    = 1   # downloads allowed per catalog on Grassroots plan
+HUSTLER_PDF_DOWNLOADS = 5   # downloads allowed per catalog on Kina Hustler plan
 BASIC_MAX_IMAGES      = 20
 BASIC_PRICE_PGK       = 5
 BASIC_MONTHLY_LIMIT   = 2
 PRO_PRICE_PGK         = 20
 HUSTLER_PRICE_PGK     = 15
 HUSTLER_MAX_IMAGES    = 30
-GROWTH_PRICE_PGK      = 40
+GROWTH_PRICE_PGK      = 50
 
 PAYMENT_INFO = {
     'cell_moni':        os.environ.get('CELL_MONI_NUMBER',  '7XX XXX XXX'),
@@ -748,16 +749,20 @@ def download_catalog(catalog_id):
     if not catalog.get_pages():
         flash('No images in this catalog yet.', 'error')
         return redirect(url_for('workspace', catalog_id=catalog_id))
-    # Enforce Grassroots PDF download limit
+    # Enforce per-plan PDF download limits
     is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or
                          user.is_hustler or user.is_basic)
-    if is_grassroots and (catalog.pdf_downloads or 0) >= FREE_PDF_DOWNLOADS:
+    downloads_so_far = catalog.pdf_downloads or 0
+    if is_grassroots and downloads_so_far >= FREE_PDF_DOWNLOADS:
         flash('You have used your free PDF download for this catalog. Upgrade to download again.', 'error')
         return redirect(url_for('workspace', catalog_id=catalog_id))
+    if user.is_hustler and downloads_so_far >= HUSTLER_PDF_DOWNLOADS:
+        flash('You have used all 5 PDF downloads for this catalog. Upgrade to SME Growth for unlimited downloads.', 'error')
+        return redirect(url_for('workspace', catalog_id=catalog_id))
     buf = generate_catalog_pdf(catalog, user)
-    # Increment counter for free users
-    if is_grassroots:
-        catalog.pdf_downloads = (catalog.pdf_downloads or 0) + 1
+    # Increment counter for limited plans
+    if is_grassroots or user.is_hustler:
+        catalog.pdf_downloads = downloads_so_far + 1
         db.session.commit()
     safe_name = ''.join(c for c in catalog.name if c.isalnum() or c in ' _-')[:40].strip()
     return send_file(buf, mimetype='application/pdf',

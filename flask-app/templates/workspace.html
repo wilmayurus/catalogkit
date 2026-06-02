@@ -104,8 +104,13 @@
       <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link</button>
       <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">&#43; Add More Images</button>
       {% set is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or user.is_hustler or user.is_basic) %}
-      {% if is_grassroots and catalog.pdf_downloads >= 1 %}
-        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="Upgrade to download more PDFs">&#128190; PDF used (upgrade to unlock)</span>
+      {% set pdf_used = catalog.pdf_downloads or 0 %}
+      {% if is_grassroots and pdf_used >= 1 %}
+        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="Upgrade to download more PDFs">&#128190; PDF used &mdash; upgrade to unlock</span>
+      {% elif user.is_hustler and pdf_used >= 5 %}
+        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="5/5 downloads used — upgrade to SME Growth">&#128190; PDF limit reached (5/5)</span>
+      {% elif user.is_hustler %}
+        <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF ({{ pdf_used }}/5)</a>
       {% else %}
         <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF</a>
       {% endif %}
