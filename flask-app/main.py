@@ -513,30 +513,33 @@ def clear(catalog_id):
 # ── Flipbook view ─────────────────────────────────────────────────────────────
 
 @app.route('/catalog/<int:catalog_id>')
-@login_required
 def catalog_view(catalog_id):
-    user    = current_user()
-    catalog = get_catalog_or_404(catalog_id, user)
+    # Public route — no login required so customers can view shared links
+    catalog = db.session.get(Catalog, catalog_id)
     if not catalog:
         flash('Catalog not found.', 'error')
         return redirect(url_for('index'))
+    owner    = db.session.get(User, catalog.user_id)
+    viewer   = current_user() if 'user_id' in session else None
+    is_owner = viewer is not None and viewer.id == owner.id
     # Build WhatsApp deep-link with PNG number normalisation
     wa_link = None
-    if user.whatsapp:
-        digits = re.sub(r'[^\d]', '', user.whatsapp)
-        if len(digits) == 8:           # local PNG 8-digit
+    if owner.whatsapp:
+        digits = re.sub(r'[^\d]', '', owner.whatsapp)
+        if len(digits) == 8:
             digits = '675' + digits
         elif digits.startswith('0') and len(digits) == 9:
             digits = '675' + digits[1:]
         msg = "Hi! I just viewed your flipbook catalog and would like to make an order."
         wa_link = f"https://wa.me/{digits}?text={url_quote(msg)}"
-    pay_list  = json.loads(user.payment_methods  or '[]')
-    delv_list = json.loads(user.delivery_methods or '[]')
-    return render_template('catalog.html', user=user, catalog=catalog,
+    pay_list  = json.loads(owner.payment_methods  or '[]')
+    delv_list = json.loads(owner.delivery_methods or '[]')
+    return render_template('catalog.html', user=owner, catalog=catalog,
                            page_data=catalog.get_page_data(),
                            wa_link=wa_link,
                            payment_methods_list=pay_list,
-                           delivery_methods_list=delv_list)
+                           delivery_methods_list=delv_list,
+                           is_owner=is_owner)
 
 _FONT_BOLD = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 _FONT_REG  = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'

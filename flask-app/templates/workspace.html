@@ -98,10 +98,19 @@
           {{ catalog.page_count }} page{{ 's' if catalog.page_count != 1 }} · 800×1000px · ready to share
         {% endif %}
       </div>
+      {# ── Share URL display ── #}
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;max-width:100%">
+        <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap">&#128279; Share:</span>
+        <input id="share-url-display" type="text" readonly
+               style="flex:1;background:none;border:none;outline:none;font-size:0.78rem;color:var(--accent);font-family:monospace;cursor:pointer;min-width:0"
+               onclick="this.select()"
+               value="">
+        <button onclick="copyLink()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85rem;padding:0 2px" title="Copy link">&#128203;</button>
+      </div>
     </div>
     <div class="catalog-ready-actions">
       <a href="/catalog/{{ catalog.id }}" class="btn btn-success" target="_blank">&#128218; Open Flipbook</a>
-      <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link</button>
+      <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link + Message</button>
       <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">&#43; Add More Images</button>
       {% set is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or user.is_hustler or user.is_basic) %}
       {% set pdf_used = catalog.pdf_downloads or 0 %}
@@ -358,11 +367,18 @@ async function clearAll() {
   updateUI();
 }
 
+const SHARE_URL = window.location.origin + `/catalog/${CATALOG_ID}`;
+
+// Populate the visible share URL box as soon as the page loads
+(function() {
+  const box = document.getElementById('share-url-display');
+  if (box) box.value = SHARE_URL;
+})();
+
 function copyLink() {
-  const url = window.location.origin + `/catalog/${CATALOG_ID}`;
   const bizName = {{ (user.business_name or user.name) | tojson }};
   const catName = {{ catalog.name | tojson }};
-  const msg = `Hi! 👋 Browse our latest catalog *${catName}* from *${bizName}* and check out our products:\n${url}`;
+  const msg = `Hi! 👋 Browse our latest catalog *${catName}* from *${bizName}* and check out our products:\n${SHARE_URL}`;
   navigator.clipboard.writeText(msg)
     .then(() => { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2200); })
     .catch(() => prompt('Copy this message:', msg));
