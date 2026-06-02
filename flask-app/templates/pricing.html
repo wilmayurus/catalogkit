@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% block title %}Pricing — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="max-width:900px">
+
+  <div style="text-align:center; margin-bottom:36px; padding-top:20px">
+    <div style="font-size:2.5rem; margin-bottom:10px">&#128176;</div>
+    <h1 style="font-size:1.9rem; font-weight:800; margin-bottom:8px">Simple, Honest Pricing</h1>
+    <p class="text-muted" style="font-size:0.95rem">Built for PNG market vendors and SME businesses. Pick the plan that fits your hustle.</p>
+  </div>
+
+  {% if pending %}
+  <div class="alert alert-info" style="margin-bottom:32px">
+    <strong>&#10010; Upgrade request under review</strong><br>
+    You submitted a <strong>{{ pending.tier_label }}</strong> upgrade on
+    {{ pending.submitted_at.strftime('%d %b %Y at %I:%M %p') }}.
+    We'll activate it once your receipt is confirmed — usually within a few hours.
+  </div>
+  {% endif %}
+
+  <!-- Tier Cards -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px; margin-bottom:40px">
+
+    <!-- Grassroots (Free) -->
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px 22px; display:flex; flex-direction:column; gap:12px">
+      <div style="font-size:1.6rem">&#127807;</div>
+      <div>
+        <div style="font-size:1.2rem; font-weight:700; color:var(--text)">Grassroots</div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:2px">Free Forever</div>
+      </div>
+      <div style="font-size:2rem; font-weight:800; color:var(--text)">K0<span style="font-size:1rem; font-weight:400; color:var(--muted)">/mo</span></div>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; flex:1">
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; 1 catalog total</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Up to 10 product images</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Interactive flipbook viewer</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; PDF download</li>
+        <li style="font-size:0.85rem; color:var(--muted)">&#10005; "Made with CatalogKit" watermark on PDF</li>
+        <li style="font-size:0.85rem; color:var(--muted)">&#10005; Multiple catalogs</li>
+      </ul>
+      {% if user.plan_css == 'free' %}
+      <div style="text-align:center; padding:10px; border-radius:8px; background:var(--surface2); color:var(--muted); font-size:0.85rem">&#10003; Your current plan</div>
+      {% endif %}
+    </div>
+
+    <!-- Kina Hustler -->
+    <div style="background:var(--surface); border:2px solid var(--accent); border-radius:var(--radius); padding:28px 22px; display:flex; flex-direction:column; gap:12px; position:relative">
+      <div style="position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; font-size:0.72rem; font-weight:700; letter-spacing:0.5px; padding:4px 14px; border-radius:100px; white-space:nowrap">&#11088; POPULAR</div>
+      <div style="font-size:1.6rem">&#128293;</div>
+      <div>
+        <div style="font-size:1.2rem; font-weight:700; color:var(--text)">Kina Hustler</div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:2px">For growing market sellers</div>
+      </div>
+      <div style="font-size:2rem; font-weight:800; color:var(--accent)">K{{ hustler_price }}<span style="font-size:1rem; font-weight:400; color:var(--muted)">/mo</span></div>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; flex:1">
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Unlimited catalogs</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Up to {{ hustler_max }} product images per catalog</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Interactive flipbook viewer</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; PDF download</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; <strong>No watermark</strong> on PDF</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Share link</li>
+      </ul>
+      {% if user.plan_css == 'hustler' %}
+      <div style="text-align:center; padding:10px; border-radius:8px; background:var(--surface2); color:var(--muted); font-size:0.85rem">&#10003; Your current plan</div>
+      {% elif not pending %}
+      <button onclick="openModal('hustler')" class="btn btn-primary btn-block" style="margin-top:4px">&#11088; Upgrade — K{{ hustler_price }}/mo</button>
+      {% endif %}
+    </div>
+
+    <!-- SME Growth -->
+    <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); border:2px solid #f6c44e; border-radius:var(--radius); padding:28px 22px; display:flex; flex-direction:column; gap:12px; position:relative">
+      <div style="position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:#f6c44e; color:#0f0f13; font-size:0.72rem; font-weight:700; letter-spacing:0.5px; padding:4px 14px; border-radius:100px; white-space:nowrap">&#9733; BEST VALUE</div>
+      <div style="font-size:1.6rem">&#127881;</div>
+      <div>
+        <div style="font-size:1.2rem; font-weight:700; color:#f6c44e">SME Growth</div>
+        <div style="font-size:0.8rem; color:var(--muted); margin-top:2px">For serious PNG businesses</div>
+      </div>
+      <div style="font-size:2rem; font-weight:800; color:#f6c44e">K{{ growth_price }}<span style="font-size:1rem; font-weight:400; color:var(--muted)">/mo</span></div>
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; flex:1">
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Unlimited catalogs</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; <strong>Unlimited</strong> product images</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Interactive flipbook viewer</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; PDF download — <strong>no watermark</strong></li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Custom logo on PDF cover</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Brand colour for PDF header</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Premium layout choices</li>
+        <li style="font-size:0.88rem; color:var(--text)">&#10003; Priority support</li>
+      </ul>
+      {% if user.plan_css == 'growth' %}
+      <div style="text-align:center; padding:10px; border-radius:8px; background:var(--surface2); color:var(--muted); font-size:0.85rem">&#10003; Your current plan</div>
+      {% elif not pending %}
+      <button onclick="openModal('growth')" class="btn btn-block" style="background:#f6c44e;color:#0f0f13;font-weight:700;margin-top:4px">&#9733; Upgrade — K{{ growth_price }}/mo</button>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Done-For-You CTA -->
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px 28px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:40px">
+    <div>
+      <div style="font-weight:700; font-size:1rem; margin-bottom:4px">&#128101; Not tech-savvy? We'll set it up for you.</div>
+      <div style="color:var(--muted); font-size:0.875rem">Our agent visits your market stall and builds your first catalog on the spot. K50 cash on site.</div>
+    </div>
+    <a href="/assisted-setup" class="btn btn-secondary" style="white-space:nowrap">Book a Setup Visit</a>
+  </div>
+
+</div>
+
+<!-- Upgrade Modal -->
+<div id="upgrade-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; padding:20px">
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); max-width:480px; width:100%; padding:32px; position:relative; max-height:90vh; overflow-y:auto">
+    <button onclick="closeModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1">&#10005;</button>
+
+    <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:6px" id="modal-title">Upgrade Plan</h2>
+    <p class="text-muted" style="font-size:0.875rem; margin-bottom:24px">Transfer the tier amount via Kina Bank mobile banking, take a screenshot of your receipt, and upload it below.</p>
+
+    <!-- Bank details -->
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin-bottom:20px">
+      <div style="font-size:0.75rem; font-weight:700; letter-spacing:1px; color:var(--muted); text-transform:uppercase; margin-bottom:10px">&#127981; Kina Bank Transfer Details</div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <div style="display:flex; justify-content:space-between; font-size:0.875rem">
+          <span style="color:var(--muted)">Bank</span>
+          <strong>Kina Bank</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.875rem">
+          <span style="color:var(--muted)">Account Name</span>
+          <strong>{{ payment_info.kina_bank_name }}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.875rem">
+          <span style="color:var(--muted)">Account Number</span>
+          <strong>{{ payment_info.kina_bank_account }}</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.875rem">
+          <span style="color:var(--muted)">Amount</span>
+          <strong id="modal-amount" style="color:var(--accent)">K0/mo</strong>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:0.82rem; color:var(--muted); margin-bottom:20px; line-height:1.5; background:var(--surface2); border-radius:8px; padding:12px 14px">
+      &#128221; Transfer the amount, take a <strong>screenshot of the successful receipt</strong>, then upload it below to request activation. We usually approve within a few hours.
+    </div>
+
+    <form method="POST" action="/pricing/upgrade" enctype="multipart/form-data">
+      <input type="hidden" name="tier" id="modal-tier" value="">
+
+      <div class="field" style="margin-bottom:16px">
+        <label>Upload your bank receipt screenshot <span style="color:var(--danger)">*</span></label>
+        <input type="file" name="receipt" accept="image/*,.pdf" required
+               style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);width:100%">
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">JPG, PNG, WebP or PDF accepted</div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="modal-submit">
+        &#10003; Submit Upgrade Request
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+const prices = { hustler: {{ hustler_price }}, growth: {{ growth_price }} };
+const labels = { hustler: 'Kina Hustler', growth: 'SME Growth' };
+
+function openModal(tier) {
+  document.getElementById('modal-tier').value = tier;
+  document.getElementById('modal-title').textContent = 'Upgrade to ' + labels[tier];
+  document.getElementById('modal-amount').textContent = 'K' + prices[tier] + '/mo';
+  document.getElementById('upgrade-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('upgrade-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('upgrade-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+{% endblock %}

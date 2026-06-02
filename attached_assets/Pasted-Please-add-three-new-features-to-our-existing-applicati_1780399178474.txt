@@ -1,0 +1,30 @@
+Please add three new features to our existing application: an In-App Subscription system, a "Done-For-You" Service request system, and an Admin Dashboard. Please implement them using our existing framework and UI styles:
+
+1. In-App Subscription Tier UI & Verification Flow:
+- Create a new view/route for pricing tiers (`/pricing` or `/billing`).
+- Display three tiers using clean, scannable cards/sections:
+  * "Grassroots" Tier (Free Forever): 1 catalog, up to 10 products, standard PDF download with a "Made with Catalog Kit" watermark.
+  * "Kina Hustler" Tier (K15 / month): Up to 30 products, completely removes the watermark from the PDF.
+  * "SME Growth" Tier (K40 / month): Unlimited products, custom branding (logo upload slot, brand color selector for the PDF header), and premium layout choices.
+- Add an "Upgrade" button to the K15 and K40 tiers. Clicking this button must launch a modal showing local mobile bank transfer instructions:
+  * Bank: Kina Bank
+  * Account Name: [Insert Business Name Placeholder]
+  * Account Number: [Insert Account Number Placeholder]
+  * Instructions: "Please transfer the tier amount via your mobile banking app, take a screenshot of the successful receipt, and upload it below to request activation."
+- Include a file upload field inside the modal for the user to upload their receipt screenshot, saving this request to the database with a status of "Pending".
+
+2. "Done-For-You" Agency Service Request Form:
+- Create a dedicated route/page (`/assisted-setup`) specifically for grassroots or non-tech savvy market vendors who need hands-on help.
+- Build a simple, clean form to capture:
+  * Vendor / Business Name
+  * Market Location / Stall Number (e.g., Gordons Market, Boroko Market, Koki Market)
+  * WhatsApp Contact Number
+  * Preferred Date & Time for an Agent Visit
+- On submission, save this request to the database with a status of "New Request" and display a clear success message telling them an agent will message them on WhatsApp to confirm the K50 cash-on-site setup.
+
+3. Admin Dashboard (`/admin`):
+- Create a simple, secure admin route (`/admin`) to manage these two new systems. 
+- Section A (Subscription Upgrades): Display a table of all pending tier upgrades showing the Username, Requested Tier, Timestamp, and a clickable link to view the uploaded bank receipt image. Add an "Approve" button next to each row that toggles their account status to "Active/Premium".
+- Section B (Agency Service Requests): Display a clean table of all K50 setup requests sorted by Market Location. Include a status dropdown or checkbox to mark them as "Assigned", "In Progress", or "Completed".
+
+Ensure all database tables (SQLite/Replit DB) link up properly and that the new UI elements use our established dark grey and bright blue color scheme.

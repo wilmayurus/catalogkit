@@ -40,19 +40,28 @@ mail = Mail(app)
 # ── Plan constants ────────────────────────────────────────────────────────────
 TARGET_WIDTH  = 800
 TARGET_HEIGHT = 1000
-ALLOWED_EXTENSIONS  = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
-FREE_CATALOG_LIMIT  = 1
-FREE_MAX_IMAGES     = 5
-BASIC_MAX_IMAGES    = 20
-BASIC_PRICE_PGK     = 5
-BASIC_MONTHLY_LIMIT = 2
-PRO_PRICE_PGK       = 20
+ALLOWED_EXTENSIONS    = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+FREE_CATALOG_LIMIT    = 1
+FREE_MAX_IMAGES       = 5
+GRASSROOTS_MAX_IMAGES = 10
+BASIC_MAX_IMAGES      = 20
+BASIC_PRICE_PGK       = 5
+BASIC_MONTHLY_LIMIT   = 2
+PRO_PRICE_PGK         = 20
+HUSTLER_PRICE_PGK     = 15
+HUSTLER_MAX_IMAGES    = 30
+GROWTH_PRICE_PGK      = 40
 
 PAYMENT_INFO = {
-    'cell_moni': os.environ.get('CELL_MONI_NUMBER', '7XX XXX XXX'),
-    'bank':      os.environ.get('BANK_ACCOUNT',     'BSP — Account: 1000XXXXXX — Name: Your Business Name'),
-    'contact':   os.environ.get('ADMIN_CONTACT',    'admin@youremail.com'),
+    'cell_moni':        os.environ.get('CELL_MONI_NUMBER',  '7XX XXX XXX'),
+    'bank':             os.environ.get('BANK_ACCOUNT',      'BSP — Account: 1000XXXXXX — Name: Your Business Name'),
+    'contact':          os.environ.get('ADMIN_CONTACT',     'admin@youremail.com'),
+    'kina_bank_name':   os.environ.get('KINA_BANK_NAME',    'Your Business Name'),
+    'kina_bank_account':os.environ.get('KINA_BANK_ACCOUNT', 'XXXX XXXX XXXX'),
 }
+
+RECEIPTS_DIR = os.path.join('static', 'receipts')
+os.makedirs(RECEIPTS_DIR, exist_ok=True)
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -89,17 +98,37 @@ class User(db.Model):
         return self.plan == 'pro' and bool(self.plan_expires) and self.plan_expires > datetime.utcnow()
 
     @property
+    def is_hustler(self):
+        return self.plan == 'hustler' and bool(self.plan_expires) and self.plan_expires > datetime.utcnow()
+
+    @property
+    def is_growth(self):
+        return self.plan == 'growth' and bool(self.plan_expires) and self.plan_expires > datetime.utcnow()
+
+    @property
     def plan_label(self):
-        if self.is_admin: return 'Admin'
-        if self.is_pro:   return 'Pro'
-        if self.is_basic: return 'Basic'
-        return 'Free'
+        if self.is_admin:   return 'Admin'
+        if self.is_growth:  return 'SME Growth'
+        if self.is_hustler: return 'Kina Hustler'
+        if self.is_pro:     return 'Pro'
+        if self.is_basic:   return 'Basic'
+        return 'Grassroots'
+
+    @property
+    def plan_css(self):
+        if self.is_admin:   return 'admin'
+        if self.is_growth:  return 'growth'
+        if self.is_hustler: return 'hustler'
+        if self.is_pro:     return 'pro'
+        if self.is_basic:   return 'basic'
+        return 'free'
 
     @property
     def max_images(self):
-        if self.is_admin or self.is_pro: return None
-        if self.is_basic: return BASIC_MAX_IMAGES
-        return FREE_MAX_IMAGES
+        if self.is_admin or self.is_pro or self.is_growth: return None
+        if self.is_hustler: return HUSTLER_MAX_IMAGES
+        if self.is_basic:   return BASIC_MAX_IMAGES
+        return GRASSROOTS_MAX_IMAGES
 
     @property
     def catalogs_this_period(self):
@@ -118,7 +147,7 @@ class User(db.Model):
 
     @property
     def can_create_catalog(self):
-        if self.is_admin or self.is_pro: return True
+        if self.is_admin or self.is_pro or self.is_growth or self.is_hustler: return True
         if self.is_basic: return self.catalogs_this_period < BASIC_MONTHLY_LIMIT
         return self.catalog_count < FREE_CATALOG_LIMIT
 
@@ -184,6 +213,38 @@ class PaymentRequest(db.Model):
     months         = db.Column(db.Integer, default=1)
     submitted_at   = db.Column(db.DateTime, default=datetime.utcnow)
     processed_at   = db.Column(db.DateTime, nullable=True)
+
+
+class SubscriptionRequest(db.Model):
+    """Receipt-upload based subscription upgrade requests (new tier system)."""
+    id               = db.Column(db.Integer, primary_key=True)
+    user_id          = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    requested_tier   = db.Column(db.String(20))   # 'hustler' | 'growth'
+    amount           = db.Column(db.Float)
+    receipt_filename = db.Column(db.String(500), nullable=True)
+    status           = db.Column(db.String(20), default='pending')  # pending|approved|rejected
+    submitted_at     = db.Column(db.DateTime, default=datetime.utcnow)
+    processed_at     = db.Column(db.DateTime, nullable=True)
+    user             = db.relationship('User', backref=db.backref('subscription_requests', lazy=True))
+
+    @property
+    def tier_label(self):
+        return 'Kina Hustler' if self.requested_tier == 'hustler' else 'SME Growth'
+
+    @property
+    def tier_css(self):
+        return 'hustler' if self.requested_tier == 'hustler' else 'growth'
+
+
+class AgencyRequest(db.Model):
+    """Done-For-You K50 on-site setup requests."""
+    id                 = db.Column(db.Integer, primary_key=True)
+    business_name      = db.Column(db.String(255), nullable=False)
+    market_location    = db.Column(db.String(255), nullable=False)
+    whatsapp           = db.Column(db.String(50),  nullable=False)
+    preferred_datetime = db.Column(db.String(255), nullable=False)
+    status             = db.Column(db.String(30),  default='New Request')
+    submitted_at       = db.Column(db.DateTime,    default=datetime.utcnow)
 
 
 # ── Email ─────────────────────────────────────────────────────────────────────
@@ -852,17 +913,105 @@ def submit_payment():
     return redirect(url_for('dashboard'))
 
 
+# ── Pricing page ──────────────────────────────────────────────────────────────
+
+@app.route('/pricing')
+@login_required
+def pricing():
+    user    = current_user()
+    pending = SubscriptionRequest.query.filter_by(user_id=user.id, status='pending').first()
+    return render_template('pricing.html', user=user, pending=pending,
+                           hustler_price=HUSTLER_PRICE_PGK,
+                           growth_price=GROWTH_PRICE_PGK,
+                           hustler_max=HUSTLER_MAX_IMAGES,
+                           payment_info=PAYMENT_INFO)
+
+@app.route('/pricing/upgrade', methods=['POST'])
+@login_required
+def pricing_upgrade():
+    user = current_user()
+    tier = request.form.get('tier', '')
+    if tier not in ('hustler', 'growth'):
+        flash('Invalid tier selected.', 'error')
+        return redirect(url_for('pricing'))
+
+    existing = SubscriptionRequest.query.filter_by(user_id=user.id, status='pending').first()
+    if existing:
+        flash('You already have a pending upgrade request.', 'error')
+        return redirect(url_for('pricing'))
+
+    receipt_filename = None
+    receipt_file = request.files.get('receipt')
+    if receipt_file and receipt_file.filename:
+        ext = os.path.splitext(receipt_file.filename)[1].lower()
+        if ext not in {'.jpg', '.jpeg', '.png', '.webp', '.pdf'}:
+            flash('Receipt must be a JPG, PNG, WebP, or PDF file.', 'error')
+            return redirect(url_for('pricing'))
+        fname = f"{uuid.uuid4().hex}{ext}"
+        receipt_file.save(os.path.join(RECEIPTS_DIR, fname))
+        receipt_filename = fname
+
+    amount = HUSTLER_PRICE_PGK if tier == 'hustler' else GROWTH_PRICE_PGK
+    sr = SubscriptionRequest(user_id=user.id, requested_tier=tier,
+                             amount=amount, receipt_filename=receipt_filename)
+    db.session.add(sr)
+    db.session.commit()
+
+    ae = admin_email()
+    if ae:
+        tier_label = 'Kina Hustler' if tier == 'hustler' else 'SME Growth'
+        send_email(ae,
+            f'CatalogKit — Tier upgrade request: {user.name} → {tier_label}',
+            f'{user.name} ({user.email}) has requested an upgrade to {tier_label} (K{amount}/mo).\n'
+            f'Receipt uploaded: {"Yes" if receipt_filename else "No"}\n'
+            f'Review in the admin panel.')
+
+    flash('Upgrade request submitted! We\'ll review your receipt and activate your plan shortly.', 'success')
+    return redirect(url_for('pricing'))
+
+
+# ── Done-For-You / Agency setup ───────────────────────────────────────────────
+
+@app.route('/assisted-setup', methods=['GET', 'POST'])
+def assisted_setup():
+    if request.method == 'POST':
+        business_name      = request.form.get('business_name', '').strip()
+        market_location    = request.form.get('market_location', '').strip()
+        whatsapp           = request.form.get('whatsapp', '').strip()
+        preferred_datetime = request.form.get('preferred_datetime', '').strip()
+        if not business_name or not market_location or not whatsapp or not preferred_datetime:
+            flash('All fields are required.', 'error')
+            return render_template('assisted_setup.html', success=False)
+        ar = AgencyRequest(business_name=business_name, market_location=market_location,
+                           whatsapp=whatsapp, preferred_datetime=preferred_datetime)
+        db.session.add(ar)
+        db.session.commit()
+        ae = admin_email()
+        if ae:
+            send_email(ae,
+                f'CatalogKit — New agency setup request: {business_name}',
+                f'New Done-For-You request:\nBusiness: {business_name}\n'
+                f'Location: {market_location}\nWhatsApp: {whatsapp}\n'
+                f'Preferred visit: {preferred_datetime}')
+        return render_template('assisted_setup.html', success=True)
+    return render_template('assisted_setup.html', success=False)
+
+
 # ── Admin ─────────────────────────────────────────────────────────────────────
 
 @app.route('/admin')
 @admin_required
 def admin():
-    pending   = PaymentRequest.query.filter_by(status='pending').order_by(PaymentRequest.submitted_at).all()
-    all_users = User.query.order_by(User.created_at.desc()).all()
-    recent    = PaymentRequest.query.filter(PaymentRequest.status != 'pending') \
-                    .order_by(PaymentRequest.processed_at.desc()).limit(20).all()
+    pending          = PaymentRequest.query.filter_by(status='pending').order_by(PaymentRequest.submitted_at).all()
+    all_users        = User.query.order_by(User.created_at.desc()).all()
+    recent           = PaymentRequest.query.filter(PaymentRequest.status != 'pending') \
+                           .order_by(PaymentRequest.processed_at.desc()).limit(20).all()
+    sub_requests     = SubscriptionRequest.query.filter_by(status='pending') \
+                           .order_by(SubscriptionRequest.submitted_at).all()
+    agency_requests  = AgencyRequest.query.order_by(AgencyRequest.market_location, AgencyRequest.submitted_at).all()
     return render_template('admin.html', pending=pending, all_users=all_users,
-                           recent=recent, basic_price=BASIC_PRICE_PGK, pro_price=PRO_PRICE_PGK)
+                           recent=recent, basic_price=BASIC_PRICE_PGK, pro_price=PRO_PRICE_PGK,
+                           sub_requests=sub_requests, agency_requests=agency_requests)
 
 @app.route('/admin/payment/<int:payment_id>/approve', methods=['POST'])
 @admin_required
@@ -913,6 +1062,70 @@ def reject_payment(payment_id):
         f'Contact: {PAYMENT_INFO["contact"]}\n\n'
         f'Please include your payment reference when you get in touch.'
     )
+    return redirect(url_for('admin'))
+
+@app.route('/admin/subscription/<int:sr_id>/approve', methods=['POST'])
+@admin_required
+def approve_subscription(sr_id):
+    sr = db.session.get(SubscriptionRequest, sr_id)
+    if not sr:
+        flash('Request not found.', 'error')
+        return redirect(url_for('admin'))
+    sr.status       = 'approved'
+    sr.processed_at = datetime.utcnow()
+    user              = sr.user
+    start             = max(datetime.utcnow(), user.plan_expires or datetime.utcnow())
+    user.plan         = sr.requested_tier
+    user.plan_start   = datetime.utcnow()
+    user.plan_expires = start + timedelta(days=30)
+    db.session.commit()
+    tier_label = sr.tier_label
+    flash(f'Approved! {user.name} is now on {tier_label}.', 'success')
+    send_email(user.email,
+        f'Your CatalogKit {tier_label} plan is now active!',
+        f'Hi {user.name},\n\nYour payment has been confirmed and your {tier_label} plan '
+        f'is now active until {user.plan_expires.strftime("%d %b %Y")}.\n\n'
+        f'Log in and start building your catalogs!\n\nThank you for subscribing to CatalogKit.')
+    return redirect(url_for('admin'))
+
+@app.route('/admin/subscription/<int:sr_id>/reject', methods=['POST'])
+@admin_required
+def reject_subscription(sr_id):
+    sr = db.session.get(SubscriptionRequest, sr_id)
+    if not sr:
+        flash('Request not found.', 'error')
+        return redirect(url_for('admin'))
+    sr.status       = 'rejected'
+    sr.processed_at = datetime.utcnow()
+    db.session.commit()
+    flash('Subscription request rejected.', 'success')
+    return redirect(url_for('admin'))
+
+@app.route('/admin/receipt/<int:sr_id>')
+@admin_required
+def view_receipt(sr_id):
+    sr = db.session.get(SubscriptionRequest, sr_id)
+    if not sr or not sr.receipt_filename:
+        flash('Receipt not found.', 'error')
+        return redirect(url_for('admin'))
+    path = os.path.join(RECEIPTS_DIR, sr.receipt_filename)
+    if not os.path.exists(path):
+        flash('Receipt file missing from server.', 'error')
+        return redirect(url_for('admin'))
+    return send_file(path)
+
+@app.route('/admin/agency/<int:ar_id>/status', methods=['POST'])
+@admin_required
+def update_agency_status(ar_id):
+    ar = db.session.get(AgencyRequest, ar_id)
+    if not ar:
+        flash('Request not found.', 'error')
+        return redirect(url_for('admin'))
+    new_status = request.form.get('status', ar.status)
+    allowed = ('New Request', 'Assigned', 'In Progress', 'Completed')
+    if new_status in allowed:
+        ar.status = new_status
+        db.session.commit()
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/<int:user_id>/revoke', methods=['POST'])
@@ -969,6 +1182,7 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN delivery_methods TEXT',
                 'ALTER TABLE user ADD COLUMN reset_token VARCHAR(100)',
                 'ALTER TABLE user ADD COLUMN reset_token_exp DATETIME',
+                # New tier tables created by db.create_all() above
             ]:
                 try:
                     conn.execute(text(stmt))

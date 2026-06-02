@@ -7,7 +7,7 @@
   <div class="plan-card">
     <div class="plan-card-left">
       <div class="plan-card-label">Current plan</div>
-      <div class="plan-card-name plan-{{ user.plan_label | lower }}">
+      <div class="plan-card-name plan-{{ user.plan_css }}">
         {% if user.is_admin %}&#9670; Admin
         {% elif user.is_pro %}&#9733; Pro
         {% elif user.is_basic %}&#11088; Basic

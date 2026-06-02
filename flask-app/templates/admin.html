@@ -8,9 +8,95 @@
     <span class="badge">{{ all_users | length }} users</span>
   </div>
 
-  <!-- Pending Payments -->
+  <!-- Section A: Subscription Upgrades (receipt upload) -->
   <h3 class="sub-heading">
-    Pending Payments
+    &#10022; Section A — Subscription Upgrade Requests
+    {% if sub_requests %}<span class="badge badge-warning">{{ sub_requests | length }}</span>{% endif %}
+  </h3>
+
+  {% if sub_requests %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>User</th><th>Tier</th><th>Amount</th><th>Receipt</th><th>Date</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for sr in sub_requests %}
+        <tr>
+          <td>
+            <strong>{{ sr.user.name }}</strong><br>
+            <span class="text-muted" style="font-size:0.8rem">{{ sr.user.email }}</span>
+          </td>
+          <td><span class="plan-badge plan-{{ sr.tier_css }}">{{ sr.tier_label }}</span></td>
+          <td>K{{ "%.0f"|format(sr.amount) }}/mo</td>
+          <td>
+            {% if sr.receipt_filename %}
+              <a href="/admin/receipt/{{ sr.id }}" target="_blank" class="btn btn-secondary btn-sm">&#128247; View</a>
+            {% else %}
+              <span class="text-muted">No receipt</span>
+            {% endif %}
+          </td>
+          <td style="white-space:nowrap">{{ sr.submitted_at.strftime('%d %b %Y') }}</td>
+          <td style="white-space:nowrap">
+            <form method="POST" action="/admin/subscription/{{ sr.id }}/approve" style="display:inline">
+              <button type="submit" class="btn btn-success btn-sm">&#10003; Approve</button>
+            </form>
+            <form method="POST" action="/admin/subscription/{{ sr.id }}/reject" style="display:inline; margin-left:6px">
+              <button type="submit" class="btn btn-danger btn-sm"
+                      onclick="return confirm('Reject this upgrade request?')">&#10005;</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state" style="padding:32px"><p>&#10003; No pending upgrade requests.</p></div>
+  {% endif %}
+
+  <!-- Section B: Agency Service Requests -->
+  <h3 class="sub-heading" style="margin-top:40px">
+    &#128101; Section B — Done-For-You Setup Requests (K50)
+    {% if agency_requests %}<span class="badge">{{ agency_requests | length }}</span>{% endif %}
+  </h3>
+
+  {% if agency_requests %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Submitted</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for ar in agency_requests %}
+        <tr>
+          <td><strong>{{ ar.business_name }}</strong></td>
+          <td>{{ ar.market_location }}</td>
+          <td><a href="https://wa.me/{{ ar.whatsapp | replace(' ','') | replace('+','') }}" target="_blank">{{ ar.whatsapp }}</a></td>
+          <td>{{ ar.preferred_datetime }}</td>
+          <td style="white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
+          <td>
+            <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center">
+              <select name="status" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:0.8rem">
+                {% for s in ['New Request','Assigned','In Progress','Completed'] %}
+                <option value="{{ s }}" {% if ar.status == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state" style="padding:32px"><p>No setup requests yet.</p></div>
+  {% endif %}
+
+  <!-- Pending Payments (old system) -->
+  <h3 class="sub-heading" style="margin-top:40px">
+    &#128184; Legacy Pending Payments
     {% if pending %}<span class="badge badge-warning">{{ pending | length }}</span>{% endif %}
   </h3>
 
@@ -70,7 +156,7 @@
             {% if u.is_admin %}<span style="color:var(--warning);font-size:0.75rem"> admin</span>{% endif %}
           </td>
           <td>{{ u.email }}</td>
-          <td><span class="plan-badge plan-{{ u.plan_label | lower }}">{{ u.plan_label }}</span></td>
+          <td><span class="plan-badge plan-{{ u.plan_css }}">{{ u.plan_label }}</span></td>
           <td>{{ u.plan_expires.strftime('%d %b %Y') if u.plan_expires else '—' }}</td>
           <td>{{ u.catalog_count }}</td>
           <td style="white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>

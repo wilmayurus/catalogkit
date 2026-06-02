@@ -830,9 +830,12 @@ nav {
   letter-spacing: 0.05em;
 }
 
-.plan-free { background: var(--surface2); color: var(--muted); }
-.plan-pro { background: linear-gradient(135deg,#7c5cfc,#fc5c9c); color:#fff; }
-.plan-admin { background: rgba(246,196,78,0.15); color: var(--warning); border:1px solid rgba(246,196,78,0.3); }
+.plan-free     { background: var(--surface2); color: var(--muted); }
+.plan-pro      { background: linear-gradient(135deg,#7c5cfc,#fc5c9c); color:#fff; }
+.plan-admin    { background: rgba(246,196,78,0.15); color: var(--warning); border:1px solid rgba(246,196,78,0.3); }
+.plan-hustler  { background: linear-gradient(135deg,#7c5cfc,#5c9cfc); color:#fff; }
+.plan-growth   { background: linear-gradient(135deg,#f6a01a,#f6c44e); color:#0f0f13; }
+.plan-basic    { background: rgba(124,92,252,0.15); color:var(--accent); border:1px solid rgba(124,92,252,0.3); }
 
 /* ── FLASH MESSAGES ── */
 .flash-wrap { padding: 0 20px; max-width: 960px; margin: 12px auto 0; }

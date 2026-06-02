@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Done-For-You Setup — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="max-width:600px">
+
+  <div style="text-align:center; margin-bottom:36px; padding-top:20px">
+    <div style="font-size:2.5rem; margin-bottom:10px">&#128101;</div>
+    <h1 style="font-size:1.8rem; font-weight:800; margin-bottom:8px">Done-For-You Setup</h1>
+    <p class="text-muted" style="font-size:0.95rem; line-height:1.6">
+      Not tech-savvy? No problem. Our agent will come to your market stall or shop,
+      set up your CatalogKit account, and build your first product catalog right there with you.
+    </p>
+  </div>
+
+  <!-- Price callout -->
+  <div style="background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); border-radius:var(--radius); padding:20px 24px; text-align:center; margin-bottom:32px; color:#fff">
+    <div style="font-size:1.7rem; font-weight:800; margin-bottom:4px">K50 cash on site</div>
+    <div style="font-size:0.9rem; opacity:0.9">Paid directly to the agent when they visit you. No upfront payment needed.</div>
+  </div>
+
+  {% if success %}
+  <!-- Success state -->
+  <div style="background:var(--surface); border:1px solid var(--success); border-radius:var(--radius); padding:32px; text-align:center">
+    <div style="font-size:3rem; margin-bottom:16px">&#127881;</div>
+    <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:10px; color:var(--success)">Request Submitted!</h2>
+    <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:20px">
+      Thank you! Our agent will message you on <strong>WhatsApp</strong> to confirm your visit date and time.
+      Please have K50 cash ready for when they arrive.
+    </p>
+    <div style="background:var(--surface2); border-radius:10px; padding:16px; font-size:0.875rem; color:var(--muted); margin-bottom:24px">
+      &#128242; Keep an eye on your WhatsApp — we'll confirm within 24 hours.
+    </div>
+    <a href="/" class="btn btn-primary">&#8592; Back to my catalogs</a>
+  </div>
+
+  {% else %}
+  <!-- Request Form -->
+  <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px">
+    <h2 style="font-size:1.1rem; font-weight:700; margin-bottom:6px">Book a Setup Visit</h2>
+    <p class="text-muted" style="font-size:0.875rem; margin-bottom:24px">Fill in your details below and we'll reach out on WhatsApp to confirm.</p>
+
+    <form method="POST" action="/assisted-setup">
+
+      <div class="field" style="margin-bottom:16px">
+        <label>Vendor / Business Name <span style="color:var(--danger)">*</span></label>
+        <input type="text" name="business_name" placeholder="e.g. Mama Rosa's Fresh Produce" required>
+      </div>
+
+      <div class="field" style="margin-bottom:16px">
+        <label>Market Location / Stall Number <span style="color:var(--danger)">*</span></label>
+        <input type="text" name="market_location" list="markets-list"
+               placeholder="e.g. Gordons Market, Stall 12" required>
+        <datalist id="markets-list">
+          <option value="Gordons Market">
+          <option value="Boroko Market">
+          <option value="Koki Market">
+          <option value="Waigani Market">
+          <option value="Sabama Market">
+          <option value="Gerehu Market">
+          <option value="Badili Market">
+          <option value="Tokarara Market">
+          <option value="Six Mile Market">
+          <option value="Nine Mile Market">
+          <option value="Lae Market">
+          <option value="Madang Market">
+          <option value="Mt Hagen Market">
+        </datalist>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">Include your stall/bay number if you have one</div>
+      </div>
+
+      <div class="field" style="margin-bottom:16px">
+        <label>WhatsApp Contact Number <span style="color:var(--danger)">*</span></label>
+        <input type="tel" name="whatsapp" placeholder="e.g. +675 7XXX XXXX" required>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">Our agent will message you here to confirm</div>
+      </div>
+
+      <div class="field" style="margin-bottom:24px">
+        <label>Preferred Date &amp; Time for Agent Visit <span style="color:var(--danger)">*</span></label>
+        <input type="text" name="preferred_datetime"
+               placeholder="e.g. Monday 9am, or any weekday morning" required>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">We'll confirm via WhatsApp — subject to agent availability</div>
+      </div>
+
+      <!-- What to expect -->
+      <div style="background:var(--surface2); border-radius:10px; padding:16px 18px; margin-bottom:24px">
+        <div style="font-size:0.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px">What happens next</div>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <div style="display:flex; gap:10px; font-size:0.875rem">
+            <span style="color:var(--accent); font-weight:700; min-width:20px">1</span>
+            <span>We receive your request and assign an agent</span>
+          </div>
+          <div style="display:flex; gap:10px; font-size:0.875rem">
+            <span style="color:var(--accent); font-weight:700; min-width:20px">2</span>
+            <span>Agent messages you on WhatsApp to confirm the visit</span>
+          </div>
+          <div style="display:flex; gap:10px; font-size:0.875rem">
+            <span style="color:var(--accent); font-weight:700; min-width:20px">3</span>
+            <span>Agent arrives at your stall, sets up everything &amp; builds your catalog</span>
+          </div>
+          <div style="display:flex; gap:10px; font-size:0.875rem">
+            <span style="color:var(--accent); font-weight:700; min-width:20px">4</span>
+            <span>You pay K50 cash to the agent — done!</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg">
+        &#128101; Submit Setup Request
+      </button>
+    </form>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
