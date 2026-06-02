@@ -246,7 +246,6 @@
         <div class="page-inner">
           <div class="page-header-bar">
             <span class="page-header-label">Product Catalog</span>
-            {% if user.business_name %}<span class="page-header-sep">·</span><span class="page-header-biz">{{ user.business_name }}</span>{% endif %}
             <span class="page-header-sep">·</span>
             <span class="page-header-cat">{{ catalog.name }}</span>
           </div>
@@ -255,6 +254,10 @@
                alt="Page {{ loop.index }}" loading="lazy">
           <div class="page-price-center">{{ item.price or 'K 0.00' }}</div>
           <div class="page-footer-bar">
+            {% if user.business_name %}
+            <span class="page-footer-item page-footer-biz">{{ user.business_name }}</span>
+            {% if user.email or user.whatsapp %}<span class="page-footer-sep">|</span>{% endif %}
+            {% endif %}
             {% if user.email %}
             <span class="page-footer-item">
               <span class="page-footer-icon">✉</span>{{ user.email }}
