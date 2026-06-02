@@ -488,12 +488,12 @@ nav {
 
 #flipbook .page:not(.hard) .page-inner img {
   position: absolute;
-  top: 52px;
-  bottom: 52px;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: calc(100% - 104px);
+  top: 58px;
+  bottom: 58px;
+  left: 10px;
+  right: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 116px);
   object-fit: contain;
   background: #fff;
   display: block;
@@ -1491,7 +1491,8 @@ nav {
 .page-inner img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
   display: block;
 }
 .page-item-name {
