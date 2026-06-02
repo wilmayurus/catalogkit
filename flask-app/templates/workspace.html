@@ -62,7 +62,7 @@
   {# ── Thumbnail grid — pre-populated from saved page data ── #}
   <div id="sort-grid">
     {% for item in catalog.get_page_data() %}
-    <div class="thumb-item" data-filename="{{ item.file }}">
+    <div class="thumb-item" data-filename="{{ item.src_file or item.file }}">
       <div class="thumb-img-wrap">
         <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}" loading="lazy" alt="">
         <span class="thumb-num">{{ loop.index }}</span>

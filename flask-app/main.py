@@ -370,13 +370,21 @@ def process(catalog_id):
     for i, filename in enumerate(order):
         src = os.path.join(catalog.upload_dir, filename)
         if not os.path.exists(src):
+            # Fall back: user is re-editing an already-processed catalog
+            src = os.path.join(catalog.processed_dir, filename)
+        if not os.path.exists(src):
             errors.append(f'Missing: {filename}'); continue
         try:
             img      = Image.open(src).convert('RGB')
             img      = fit_with_padding(img, TARGET_WIDTH, TARGET_HEIGHT)
             out_name = f'page_{i + 1:03d}.jpg'
             img.save(os.path.join(proc_dir, out_name), 'JPEG', quality=72, optimize=True, progressive=True)
-            processed.append({'file': out_name, 'price': prices.get(filename, ''), 'item_name': names.get(filename, '')})
+            processed.append({
+                'file':      out_name,
+                'src_file':  filename,
+                'price':     prices.get(filename, ''),
+                'item_name': names.get(filename, ''),
+            })
         except Exception as e:
             errors.append(str(e))
 
