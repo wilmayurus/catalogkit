@@ -56,8 +56,8 @@ PAYMENT_INFO = {
     'cell_moni':        os.environ.get('CELL_MONI_NUMBER',  '7XX XXX XXX'),
     'bank':             os.environ.get('BANK_ACCOUNT',      'BSP — Account: 1000XXXXXX — Name: Your Business Name'),
     'contact':          os.environ.get('ADMIN_CONTACT',     'admin@youremail.com'),
-    'kina_bank_name':   os.environ.get('KINA_BANK_NAME',    'Your Business Name'),
-    'kina_bank_account':os.environ.get('KINA_BANK_ACCOUNT', 'XXXX XXXX XXXX'),
+    'kina_bank_name':   os.environ.get('KINA_BANK_NAME',    'CatalogKit PNG'),
+    'kina_bank_account':os.environ.get('KINA_BANK_ACCOUNT', '1000 0000 0000'),
 }
 
 RECEIPTS_DIR = os.path.join('static', 'receipts')
