@@ -344,9 +344,12 @@ async function clearAll() {
 
 function copyLink() {
   const url = window.location.origin + `/catalog/${CATALOG_ID}`;
-  navigator.clipboard.writeText(url)
+  const bizName = {{ (user.business_name or user.name) | tojson }};
+  const catName = {{ catalog.name | tojson }};
+  const msg = `Hi! 👋 Browse our latest catalog *${catName}* from *${bizName}* and check out our products:\n${url}`;
+  navigator.clipboard.writeText(msg)
     .then(() => { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2200); })
-    .catch(() => prompt('Copy this link:', url));
+    .catch(() => prompt('Copy this message:', msg));
 }
 
 // ── Rename ────────────────────────────────────────────────────────────────────

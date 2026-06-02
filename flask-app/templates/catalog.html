@@ -367,11 +367,14 @@ $(document).ready(function () {
 
   window.copyShareLink = function () {
     const url = window.location.href.split('?')[0];
-    navigator.clipboard.writeText(url).then(function () {
+    const bizName = {{ (user.business_name or user.name) | tojson }};
+    const catName = {{ catalog.name | tojson }};
+    const msg = `Hi! 👋 Browse our latest catalog *${catName}* from *${bizName}* and check out our products:\n${url}`;
+    navigator.clipboard.writeText(msg).then(function () {
       const t = document.getElementById('toast');
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 2200);
-    }).catch(() => prompt('Copy this link:', url));
+    }).catch(() => prompt('Copy this message:', msg));
   };
 
   $(document).keydown(e => {
