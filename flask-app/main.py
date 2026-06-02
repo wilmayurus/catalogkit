@@ -182,22 +182,14 @@ def admin_email():
 
 # ── Image helpers ─────────────────────────────────────────────────────────────
 
-def smart_crop_resize(img, target_w, target_h):
-    ratio        = img.width / img.height
-    target_ratio = target_w / target_h
-    if ratio > target_ratio:
-        new_h = target_h
-        new_w = int(img.width * target_h / img.height)
-        img   = img.resize((new_w, new_h), Image.LANCZOS)
-        left  = (new_w - target_w) // 2
-        img   = img.crop((left, 0, left + target_w, target_h))
-    else:
-        new_w = target_w
-        new_h = int(img.height * target_w / img.width)
-        img   = img.resize((new_w, new_h), Image.LANCZOS)
-        top   = (new_h - target_h) // 2
-        img   = img.crop((0, top, target_w, top + target_h))
-    return img
+def fit_with_padding(img, target_w, target_h, bg=(255, 255, 255)):
+    """Resize image to fit inside target dimensions, pad remainder with bg colour."""
+    img.thumbnail((target_w, target_h), Image.LANCZOS)
+    canvas = Image.new('RGB', (target_w, target_h), bg)
+    x = (target_w - img.width)  // 2
+    y = (target_h - img.height) // 2
+    canvas.paste(img, (x, y))
+    return canvas
 
 def allowed_file(filename):
     return os.path.splitext(filename)[1].lower() in ALLOWED_EXTENSIONS
@@ -375,7 +367,7 @@ def process(catalog_id):
             errors.append(f'Missing: {filename}'); continue
         try:
             img      = Image.open(src).convert('RGB')
-            img      = smart_crop_resize(img, TARGET_WIDTH, TARGET_HEIGHT)
+            img      = fit_with_padding(img, TARGET_WIDTH, TARGET_HEIGHT)
             out_name = f'page_{i + 1:03d}.jpg'
             img.save(os.path.join(proc_dir, out_name), 'JPEG', quality=72, optimize=True, progressive=True)
             processed.append({'file': out_name, 'price': prices.get(filename, '')})
