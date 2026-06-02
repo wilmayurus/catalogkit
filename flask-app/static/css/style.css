@@ -1428,9 +1428,9 @@ nav {
 }
 .page-label-wrap {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
+  bottom: 26px; left: 0; right: 0;
   background: linear-gradient(0deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0) 100%);
-  padding: 28px 14px 14px;
+  padding: 28px 14px 10px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
