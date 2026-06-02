@@ -46,24 +46,6 @@
   {# ── Status ── #}
   <div id="status-bar"></div>
 
-  {# ── Ready card ── #}
-  <div id="catalog-ready-card" class="catalog-ready-card {% if not catalog.get_pages() %}hidden{% endif %}">
-    <div class="catalog-ready-icon">&#127881;</div>
-    <div class="catalog-ready-body">
-      <div class="catalog-ready-title">Catalog ready!</div>
-      <div class="catalog-ready-meta" id="catalog-ready-meta">
-        {% if catalog.get_pages() %}
-          {{ catalog.page_count }} page{{ 's' if catalog.page_count != 1 }} · 800×1000px · ready to share
-        {% endif %}
-      </div>
-    </div>
-    <div class="catalog-ready-actions">
-      <a href="/catalog/{{ catalog.id }}" class="btn btn-success" target="_blank">&#128218; Open Flipbook</a>
-      <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link</button>
-      <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download ZIP</a>
-    </div>
-  </div>
-
   <div id="toast">Link copied!</div>
 
   {# ── Grid header ── #}
@@ -101,6 +83,24 @@
     <p class="text-muted" style="font-size:0.78rem;margin-top:8px;text-align:center">
       Saves your prices and generates the shareable flipbook link
     </p>
+  </div>
+
+  {# ── Ready card — shown after build ── #}
+  <div id="catalog-ready-card" class="catalog-ready-card {% if not catalog.get_pages() %}hidden{% endif %}">
+    <div class="catalog-ready-icon">&#127881;</div>
+    <div class="catalog-ready-body">
+      <div class="catalog-ready-title">Catalog ready!</div>
+      <div class="catalog-ready-meta" id="catalog-ready-meta">
+        {% if catalog.get_pages() %}
+          {{ catalog.page_count }} page{{ 's' if catalog.page_count != 1 }} · 800×1000px · ready to share
+        {% endif %}
+      </div>
+    </div>
+    <div class="catalog-ready-actions">
+      <a href="/catalog/{{ catalog.id }}" class="btn btn-success" target="_blank">&#128218; Open Flipbook</a>
+      <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link</button>
+      <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download ZIP</a>
+    </div>
   </div>
 
 </div>
