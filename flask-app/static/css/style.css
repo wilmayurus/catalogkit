@@ -466,6 +466,17 @@ nav {
 #flipbook .page {
   background: #fff;
   overflow: hidden;
+  box-shadow: inset 0 0 0 2px rgba(108,99,255,0.18);
+}
+
+#flipbook .page:not(.hard) .page-inner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #6c63ff 0%, #f50057 55%, #ff6d00 100%);
+  z-index: 3;
+  pointer-events: none;
 }
 
 #flipbook .page img {
