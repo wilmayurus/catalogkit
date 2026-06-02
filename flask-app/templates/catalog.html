@@ -209,15 +209,6 @@
   text-align: center;
   flex-shrink: 0;
 }
-.cover-contact-label {
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: #94a3b8;
-  width: 36px;
-  flex-shrink: 0;
-}
 .cover-contact-text {
   font-size: 0.68rem;
   color: #334155;
@@ -277,35 +268,30 @@
             {% if user.contact_person %}
             <div class="cover-contact-row">
               <span class="cover-contact-icon">👤</span>
-              <span class="cover-contact-label">Contact</span>
               <span class="cover-contact-text">{{ user.contact_person }}</span>
             </div>
             {% endif %}
             {% if user.location %}
             <div class="cover-contact-row">
               <span class="cover-contact-icon">📍</span>
-              <span class="cover-contact-label">Location</span>
               <span class="cover-contact-text">{{ user.location }}</span>
             </div>
             {% endif %}
             {% if user.whatsapp %}
             <div class="cover-contact-row">
               <span class="cover-contact-icon">💬</span>
-              <span class="cover-contact-label">WhatsApp</span>
               <span class="cover-contact-text">{{ user.whatsapp }}</span>
             </div>
             {% endif %}
             {% if user.phone %}
             <div class="cover-contact-row">
               <span class="cover-contact-icon">📞</span>
-              <span class="cover-contact-label">Phone</span>
               <span class="cover-contact-text">{{ user.phone }}</span>
             </div>
             {% endif %}
             {% if user.email %}
             <div class="cover-contact-row">
               <span class="cover-contact-icon">✉</span>
-              <span class="cover-contact-label">Email</span>
               <span class="cover-contact-text">{{ user.email }}</span>
             </div>
             {% endif %}
