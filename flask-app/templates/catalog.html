@@ -144,47 +144,6 @@
   margin: 0;
   line-height: 1.3;
 }
-/* 3-step guide */
-.cb-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  background: #f8f9fb;
-  border-radius: 7px;
-  padding: 6px 8px;
-  border: 1px solid #e2e8f0;
-  flex-shrink: 0;
-}
-.cb-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-}
-.cb-step-num {
-  width: 15px; height: 15px;
-  background: linear-gradient(135deg, #6c63ff, #f50057);
-  color: #fff;
-  font-size: 0.45rem;
-  font-weight: 800;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.cb-step-title {
-  font-size: 0.52rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 1px;
-}
-.cb-step-desc {
-  font-size: 0.44rem;
-  color: #64748b;
-  margin: 0;
-  line-height: 1.3;
-}
 /* WhatsApp button */
 .cb-wa-btn {
   display: flex;
@@ -340,32 +299,7 @@
 
         {% if user.business_name %}<p class="cb-brand">{{ user.business_name }}</p>{% endif %}
         <h2 class="cb-headline">Thank you for supporting<br>a local PNG SME!</h2>
-        <p class="cb-sub">Got questions or ready to order?<br>Follow the simple steps below.</p>
-
-        <!-- 3-Step How to Order -->
-        <div class="cb-steps">
-          <div class="cb-step">
-            <span class="cb-step-num">1</span>
-            <div>
-              <p class="cb-step-title">📸 Screenshot &amp; Share</p>
-              <p class="cb-step-desc">Take a screenshot of items you love from this catalog.</p>
-            </div>
-          </div>
-          <div class="cb-step">
-            <span class="cb-step-num">2</span>
-            <div>
-              <p class="cb-step-title">💬 Confirm Details</p>
-              <p class="cb-step-desc">Tap 'Order via WhatsApp' below. We'll check stock and calculate delivery costs.</p>
-            </div>
-          </div>
-          <div class="cb-step">
-            <span class="cb-step-num">3</span>
-            <div>
-              <p class="cb-step-title">💰 Pay &amp; Collect</p>
-              <p class="cb-step-desc">Pay via Mobile Banking or Cash, send receipt, and we'll dispatch your order!</p>
-            </div>
-          </div>
-        </div>
+        <p class="cb-sub">Got questions or ready to order? Tap the button below to message us on WhatsApp.</p>
 
         <!-- WhatsApp CTA -->
         {% if wa_link %}
