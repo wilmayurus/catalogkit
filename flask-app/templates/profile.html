@@ -92,7 +92,7 @@
 
       {% set saved_delv = (user.delivery_methods or '[]') | fromjson %}
       <div style="display:flex;flex-direction:column;gap:10px">
-        {% for method in ['Local Courier / Drop-off', 'PMV Freight', 'Air Niugini / PNG Air Cargo'] %}
+        {% for method in ['Local Courier / Drop-off', 'Air Niugini / PNG Air Cargo'] %}
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
           <input type="checkbox" name="delivery_methods" value="{{ method }}"
                  {% if method in saved_delv %}checked{% endif %}
