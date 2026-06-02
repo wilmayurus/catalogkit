@@ -239,6 +239,9 @@ async function processImages(msg = 'Building catalog…') {
 
 // ── Thumbs ────────────────────────────────────────────────────────────────────
 function addThumb(filename, price = '', itemName = '') {
+  const itemNum = grid.children.length + 1;
+  const defaultName = itemName || `Item ${itemNum}`;
+  const defaultPrice = price || 'K 0.00';
   const item = document.createElement('div');
   item.className = 'thumb-item';
   item.dataset.filename = filename;
@@ -248,9 +251,9 @@ function addThumb(filename, price = '', itemName = '') {
       <span class="thumb-num">1</span>
       <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
     </div>
-    <input type="text" class="thumb-item-name" placeholder="Product name (e.g. Red Dress)" value="${itemName}"
+    <input type="text" class="thumb-item-name" placeholder="Product name (e.g. Red Dress)" value="${defaultName}"
            onclick="event.stopPropagation()" title="Enter product name">
-    <input type="text" class="thumb-price" placeholder="Price (e.g. K 25.00)" value="${price}"
+    <input type="text" class="thumb-price" placeholder="Price (e.g. K 25.00)" value="${defaultPrice}"
            onclick="event.stopPropagation()" title="Enter price">
   `;
   grid.appendChild(item);
