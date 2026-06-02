@@ -71,7 +71,7 @@
         <div class="catalog-card-actions" onclick="event.stopPropagation()">
           {% if cat.page_count > 0 %}
           <a href="/catalog/{{ cat.id }}" class="btn btn-success btn-sm" target="_blank">&#128218; View</a>
-          <a href="/catalog/{{ cat.id }}/download" class="btn btn-secondary btn-sm" download>&#128190; ZIP</a>
+          <a href="/catalog/{{ cat.id }}/download" class="btn btn-secondary btn-sm" download>&#128190; PDF</a>
           {% endif %}
           <form method="POST" action="/catalog/{{ cat.id }}/delete" style="margin:0"
                 onsubmit="return confirm('Delete \'{{ cat.name }}\'? This cannot be undone.')">
