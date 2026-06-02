@@ -75,7 +75,7 @@
 
       {% set saved_pay = (user.payment_methods or '[]') | fromjson %}
       <div style="display:flex;flex-direction:column;gap:10px">
-        {% for method in ['BSP Mobile Banking', 'Kina Bank', 'ANZ Bank', 'MiBank', 'Cash on Delivery'] %}
+        {% for method in ['BSP Mobile Banking', 'BSP Wantok Wallet (Phone Number / Cardless ATM)', 'CellMoni (Digicel Mobile Wallet)', 'Kina Bank', 'ANZ Bank', 'MiBank', 'Cash on Delivery'] %}
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
           <input type="checkbox" name="payment_methods" value="{{ method }}"
                  {% if method in saved_pay %}checked{% endif %}
@@ -92,7 +92,7 @@
 
       {% set saved_delv = (user.delivery_methods or '[]') | fromjson %}
       <div style="display:flex;flex-direction:column;gap:10px">
-        {% for method in ['Local Courier / Drop-off', 'Air Niugini / PNG Air Cargo'] %}
+        {% for method in ['Local Courier / Drop-off (Same Town/City)', 'PMV Freight (Highlands Highway & Ground Routes)', 'TNT / FedEx (Premium Tracked Air Freight)', 'EMS (Post PNG Express Mail)', 'Air Niugini / PNG Air Cargo (Airport-to-Airport)', 'Post PNG Standard Parcel (Cheap Counter-to-Counter)', 'DHL / UPS (International Worldwide Shipping)'] %}
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
           <input type="checkbox" name="delivery_methods" value="{{ method }}"
                  {% if method in saved_delv %}checked{% endif %}
