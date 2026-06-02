@@ -585,6 +585,21 @@ def _paste_logo_centered(img, logo, cx, y):
     img.paste(logo, (lx, y), logo)
     return y + logo.height
 
+def _apply_watermark(img, user):
+    """Stamp 'Made with CatalogKit' on the cover for Grassroots (free) users."""
+    is_free = not (user.is_admin or user.is_hustler or user.is_growth or
+                   user.is_basic or user.is_pro)
+    if not is_free:
+        return img
+    d = ImageDraw.Draw(img)
+    txt = 'Made with CatalogKit'
+    fnt = _font(_FONT_REG, 13)
+    W = img.width
+    # semi-transparent dark bar at very bottom
+    d.rectangle([0, img.height - 24, W, img.height], fill=(10, 10, 20))
+    _centered_text(d, txt, W // 2, img.height - 19, fnt, (140, 140, 160))
+    return img
+
 def _gradient_stripe(draw, y0, y1, width):
     stops = [(108,99,255), (200,30,120), (245,0,87), (255,109,0)]
     for x in range(width):
@@ -660,7 +675,7 @@ def _make_cover(catalog, user):
         if parts:
             _centered_text(draw, '  ·  '.join(parts), W // 2, H - 40,
                            _font(_FONT_REG, 13), (150, 150, 160))
-        return img
+        return _apply_watermark(img, user)
 
     # ── Layout: Bold ──────────────────────────────────────────────────────────
     elif layout == 'bold':
@@ -698,7 +713,7 @@ def _make_cover(catalog, user):
         if user.business_name:
             _centered_text(draw, user.business_name.upper(), W // 2, y + 140,
                            _font(_FONT_REG, 22), (255, 255, 255))
-        return img
+        return _apply_watermark(img, user)
 
     # ── Layout: Classic (default) ─────────────────────────────────────────────
     else:
@@ -728,7 +743,7 @@ def _make_cover(catalog, user):
         if user.business_name:
             _centered_text(draw, user.business_name.upper(), W // 2, H // 2 + 34,
                            _font(_FONT_REG, 18), (200, 200, 220))
-        return img
+        return _apply_watermark(img, user)
 
 def _make_product_page(item, proc_dir, catalog, user):
     W, H  = 800, 1000

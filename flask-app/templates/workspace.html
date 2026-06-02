@@ -20,12 +20,12 @@
   {# ── Plan cap notice ── #}
   {% if max_images %}
   <div class="plan-info-bar" style="margin-bottom:18px">
-    {% if current_user.is_basic %}
-      <span>&#11088; <strong>Basic</strong> &nbsp;·&nbsp; Up to {{ basic_max_images }} images per catalog</span>
+    {% if user.is_hustler %}
+      <span>&#128293; <strong>Kina Hustler</strong> &nbsp;·&nbsp; Up to {{ max_images }} images per catalog</span>
     {% else %}
-      <span>&#9675; <strong>Free</strong> &nbsp;·&nbsp; Up to {{ free_max_images }} images per catalog</span>
+      <span>&#127807; <strong>Grassroots</strong> &nbsp;·&nbsp; Up to {{ max_images }} images per catalog</span>
     {% endif %}
-    <a href="/upgrade" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade for more &#8594;</a>
+    <a href="/pricing" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade for more &#8594;</a>
   </div>
   {% endif %}
 
@@ -106,11 +106,13 @@
       {% set is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or user.is_hustler or user.is_basic) %}
       {% set pdf_used = catalog.pdf_downloads or 0 %}
       {% if is_grassroots and pdf_used >= 1 %}
-        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="Upgrade to download more PDFs">&#128190; PDF used &mdash; upgrade to unlock</span>
+        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="1 PDF download used — upgrade to download more">&#128190; PDF used (1/1) &mdash; <a href="/pricing" style="color:inherit;text-decoration:underline">upgrade</a></span>
       {% elif user.is_hustler and pdf_used >= 5 %}
         <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="5/5 downloads used — upgrade to SME Growth">&#128190; PDF limit reached (5/5)</span>
       {% elif user.is_hustler %}
         <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF ({{ pdf_used }}/5)</a>
+      {% elif is_grassroots %}
+        <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF (0/1 free)</a>
       {% else %}
         <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF</a>
       {% endif %}
