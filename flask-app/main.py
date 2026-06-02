@@ -1,4 +1,4 @@
-import io, os, uuid, json, zipfile, shutil, re, secrets
+import io, os, uuid, json, zipfile, shutil, re, secrets, textwrap
 from urllib.parse import quote as url_quote
 from datetime import datetime, timedelta
 from functools import wraps
@@ -8,7 +8,7 @@ from flask import (Flask, render_template, request, jsonify,
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from sqlalchemy import text
 
 app = Flask(__name__)
@@ -460,6 +460,212 @@ def catalog_view(catalog_id):
                            payment_methods_list=pay_list,
                            delivery_methods_list=delv_list)
 
+_FONT_BOLD = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+_FONT_REG  = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+
+def _font(path, size):
+    try:
+        return ImageFont.truetype(path, size)
+    except Exception:
+        return ImageFont.load_default()
+
+def _gradient_stripe(draw, y0, y1, width):
+    stops = [(108,99,255), (200,30,120), (245,0,87), (255,109,0)]
+    for x in range(width):
+        t   = x / max(width - 1, 1)
+        seg = t * (len(stops) - 1)
+        i   = min(int(seg), len(stops) - 2)
+        f   = seg - i
+        c   = tuple(int(stops[i][j] + (stops[i+1][j] - stops[i][j]) * f) for j in range(3))
+        draw.line([(x, y0), (x, y1)], fill=c)
+
+def _centered_text(draw, text, x, y, font, fill):
+    bb = draw.textbbox((0, 0), text, font=font)
+    w  = bb[2] - bb[0]
+    draw.text((x - w // 2, y), text, font=font, fill=fill)
+
+def _wrapped_text(draw, text, cx, y, font, fill, max_width):
+    words = text.split()
+    line  = ''
+    for word in words:
+        test = (line + ' ' + word).strip()
+        bb   = draw.textbbox((0, 0), test, font=font)
+        if bb[2] - bb[0] > max_width and line:
+            _centered_text(draw, line, cx, y, font, fill)
+            y    += (bb[3] - bb[1]) + 6
+            line  = word
+        else:
+            line = test
+    if line:
+        _centered_text(draw, line, cx, y, font, fill)
+    return y
+
+def _make_cover(catalog, user):
+    W, H = 800, 1000
+    img  = Image.new('RGB', (W, H), (26, 26, 46))
+    draw = ImageDraw.Draw(img)
+    _gradient_stripe(draw, 0, 6, W)
+    # subtle circle accent
+    for r in range(200, 0, -1):
+        alpha = int(40 * (1 - r / 200))
+        draw.ellipse([W - r - 30, H - r - 30, W - 30 + r, H - 30 + r],
+                     outline=(108, 99, 255, alpha))
+    # eyebrow
+    _centered_text(draw, 'PRODUCT CATALOG', W // 2, 90,
+                   _font(_FONT_BOLD, 13), (255, 255, 255, 90))
+    # catalog name (wrapped)
+    name_font = _font(_FONT_BOLD, 52)
+    name      = catalog.name
+    bb        = draw.textbbox((0, 0), name, font=name_font)
+    nw        = bb[2] - bb[0]
+    if nw > W - 80:
+        name_font = _font(_FONT_BOLD, 36)
+    _wrapped_text(draw, name, W // 2, H // 2 - 70, name_font, (255, 255, 255), W - 80)
+    # rule
+    draw.rectangle([W // 2 - 32, H // 2 + 10, W // 2 + 32, H // 2 + 14], fill=(108, 99, 255))
+    # business name
+    if user.business_name:
+        _centered_text(draw, user.business_name.upper(), W // 2, H // 2 + 34,
+                       _font(_FONT_REG, 18), (255, 255, 255, 100))
+    return img
+
+def _make_product_page(item, proc_dir, catalog, user):
+    W, H  = 800, 1000
+    fname = item['file'] if isinstance(item, dict) else item
+    iname = (item.get('item_name') or '') if isinstance(item, dict) else ''
+    price = (item.get('price') or '')    if isinstance(item, dict) else ''
+    path  = os.path.join(proc_dir, fname)
+    if os.path.exists(path):
+        pg = Image.open(path).convert('RGB').resize((W, H), Image.LANCZOS)
+    else:
+        pg = Image.new('RGB', (W, H), (255, 255, 255))
+    draw = ImageDraw.Draw(pg)
+    DARK = (15, 15, 30)
+    TXT  = (210, 210, 230)
+    # header bar
+    draw.rectangle([0, 0, W, 28], fill=DARK)
+    _gradient_stripe(draw, 0, 4, W)
+    header = f"Product Catalog  —  {catalog.name}"
+    _centered_text(draw, header, W // 2, 7, _font(_FONT_REG, 13), TXT)
+    # item name bar
+    if iname:
+        draw.rectangle([0, 28, W, 60], fill=(20, 20, 40))
+        _centered_text(draw, iname, W // 2, 35, _font(_FONT_BOLD, 18), (255, 255, 255))
+    # price bar
+    if price:
+        draw.rectangle([0, H - 56, W, H - 28], fill=(20, 20, 40))
+        _centered_text(draw, price, W // 2, H - 50, _font(_FONT_BOLD, 22), (255, 255, 255))
+    # footer bar
+    draw.rectangle([0, H - 28, W, H], fill=DARK)
+    parts = []
+    if user.business_name: parts.append(user.business_name)
+    if user.email:          parts.append(user.email)
+    if user.whatsapp:       parts.append(f"WhatsApp: {user.whatsapp}")
+    _centered_text(draw, '  |  '.join(parts), W // 2, H - 22,
+                   _font(_FONT_REG, 11), (150, 150, 170))
+    return pg
+
+def _make_back_cover(catalog, user):
+    W, H = 800, 1000
+    img  = Image.new('RGB', (W, H), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    _gradient_stripe(draw, 0, 5, W)
+    y = 38
+    if user.business_name:
+        _centered_text(draw, user.business_name.upper(), W // 2, y,
+                       _font(_FONT_BOLD, 13), (156, 163, 175))
+        y += 32
+    _centered_text(draw, 'Thank you for supporting', W // 2, y,
+                   _font(_FONT_BOLD, 34), (15, 23, 42))
+    y += 44
+    _centered_text(draw, 'a local PNG SME!', W // 2, y,
+                   _font(_FONT_BOLD, 34), (15, 23, 42))
+    y += 44
+    _centered_text(draw, 'Got questions or ready to order? Follow the simple steps below.',
+                   W // 2, y, _font(_FONT_REG, 16), (100, 116, 139))
+    y += 36
+    # steps box
+    steps = [
+        ('1', 'Browse & Choose', 'Pick your favourite items from this catalog.'),
+        ('2', 'Contact Us',      'Send us a message on WhatsApp with your order details.'),
+        ('3', 'Confirm & Pay',   'We confirm your order and agree on payment & delivery.'),
+    ]
+    pad  = 60
+    bx0, bx1 = pad, W - pad
+    bh   = 36 + len(steps) * 62
+    try:
+        draw.rounded_rectangle([bx0, y, bx1, y + bh], radius=10,
+                                fill=(248, 249, 251), outline=(226, 232, 240))
+    except AttributeError:
+        draw.rectangle([bx0, y, bx1, y + bh], fill=(248, 249, 251), outline=(226, 232, 240))
+    sy = y + 18
+    for num, title, desc in steps:
+        draw.ellipse([bx0 + 12, sy, bx0 + 38, sy + 26], fill=(108, 99, 255))
+        _centered_text(draw, num, bx0 + 25, sy + 5, _font(_FONT_BOLD, 13), (255, 255, 255))
+        draw.text((bx0 + 50, sy + 2),  title, font=_font(_FONT_BOLD, 15), fill=(15, 23, 42))
+        draw.text((bx0 + 50, sy + 20), desc,  font=_font(_FONT_REG, 12),  fill=(100, 116, 139))
+        sy += 62
+    y = sy + 22
+    # WhatsApp button
+    if user.whatsapp:
+        try:
+            draw.rounded_rectangle([pad, y, W - pad, y + 44], radius=8, fill=(37, 211, 102))
+        except AttributeError:
+            draw.rectangle([pad, y, W - pad, y + 44], fill=(37, 211, 102))
+        _centered_text(draw, f"WhatsApp Us: {user.whatsapp}", W // 2, y + 12,
+                       _font(_FONT_BOLD, 17), (255, 255, 255))
+        y += 58
+    # payment / delivery badges
+    pay_methods = json.loads(user.payment_methods or '[]')
+    del_methods  = json.loads(user.delivery_methods or '[]')
+    if pay_methods or del_methods:
+        col_w = (W - 120 - 10) // 2
+        for col_idx, (label, methods, badge_fill, badge_txt) in enumerate([
+            ('PAYMENT',  pay_methods, (237, 233, 254), (91, 33, 182)),
+            ('DELIVERY', del_methods, (220, 252, 231), (21, 128, 61)),
+        ]):
+            bx = pad + col_idx * (col_w + 10)
+            bh2 = 28 + max(len(methods), 1) * 20 + 12
+            try:
+                draw.rounded_rectangle([bx, y, bx + col_w, y + bh2], radius=7,
+                                        fill=(248, 249, 251), outline=(226, 232, 240))
+            except AttributeError:
+                draw.rectangle([bx, y, bx + col_w, y + bh2], fill=(248, 249, 251), outline=(226, 232, 240))
+            draw.text((bx + 10, y + 8), label, font=_font(_FONT_BOLD, 11), fill=(100, 116, 139))
+            my = y + 24
+            for m in methods:
+                short = m[:32] + ('…' if len(m) > 32 else '')
+                try:
+                    draw.rounded_rectangle([bx + 8, my, bx + col_w - 8, my + 16],
+                                            radius=3, fill=badge_fill)
+                except AttributeError:
+                    draw.rectangle([bx + 8, my, bx + col_w - 8, my + 16], fill=badge_fill)
+                draw.text((bx + 12, my + 3), short, font=_font(_FONT_REG, 10), fill=badge_txt)
+                my += 20
+    # footer links
+    fy = H - 52
+    draw.line([(pad, fy), (W - pad, fy)], fill=(241, 245, 249), width=1)
+    fy += 8
+    if user.facebook_url:
+        draw.text((pad, fy), f"fb  {user.facebook_url}", font=_font(_FONT_BOLD, 12), fill=(24, 119, 242))
+        fy += 20
+    if user.email:
+        draw.text((pad, fy), f"✉  {user.email}", font=_font(_FONT_REG, 11), fill=(148, 163, 184))
+    return img
+
+def generate_catalog_pdf(catalog, user):
+    page_data = catalog.get_page_data()
+    proc_dir  = catalog.processed_dir
+    pages     = [_make_cover(catalog, user)]
+    for item in page_data:
+        pages.append(_make_product_page(item, proc_dir, catalog, user))
+    pages.append(_make_back_cover(catalog, user))
+    buf = io.BytesIO()
+    pages[0].save(buf, format='PDF', save_all=True, append_images=pages[1:], resolution=96)
+    buf.seek(0)
+    return buf
+
+
 @app.route('/catalog/<int:catalog_id>/download')
 @login_required
 def download_catalog(catalog_id):
@@ -467,21 +673,13 @@ def download_catalog(catalog_id):
     catalog = get_catalog_or_404(catalog_id, user)
     if not catalog:
         return jsonify({'error': 'Not found'}), 404
-    pages    = catalog.get_pages()
-    proc_dir = catalog.processed_dir
-    if not pages:
+    if not catalog.get_pages():
         flash('No images in this catalog yet.', 'error')
         return redirect(url_for('workspace', catalog_id=catalog_id))
-    buf = io.BytesIO()
-    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-        for page in pages:
-            path = os.path.join(proc_dir, page)
-            if os.path.exists(path):
-                zf.write(path, page)
-    buf.seek(0)
+    buf       = generate_catalog_pdf(catalog, user)
     safe_name = ''.join(c for c in catalog.name if c.isalnum() or c in ' _-')[:40].strip()
-    return send_file(buf, mimetype='application/zip',
-                     as_attachment=True, download_name=f'{safe_name or "catalog"}.zip')
+    return send_file(buf, mimetype='application/pdf',
+                     as_attachment=True, download_name=f'{safe_name or "catalog"}.pdf')
 
 @app.route('/catalog/<int:catalog_id>/delete', methods=['POST'])
 @login_required
