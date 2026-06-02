@@ -41,9 +41,10 @@ mail = Mail(app)
 TARGET_WIDTH  = 800
 TARGET_HEIGHT = 1000
 ALLOWED_EXTENSIONS    = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
-FREE_CATALOG_LIMIT    = 1
+FREE_CATALOG_LIMIT    = 2
 FREE_MAX_IMAGES       = 5
 GRASSROOTS_MAX_IMAGES = 10
+FREE_PDF_DOWNLOADS    = 1   # downloads allowed per catalog on Grassroots plan
 BASIC_MAX_IMAGES      = 20
 BASIC_PRICE_PGK       = 5
 BASIC_MONTHLY_LIMIT   = 2
@@ -160,13 +161,14 @@ class User(db.Model):
 
 
 class Catalog(db.Model):
-    id         = db.Column(db.Integer, primary_key=True)
-    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    name       = db.Column(db.String(255), default='My Catalog')
-    pages      = db.Column(db.Text, nullable=True)   # JSON list of processed filenames
-    page_count = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name          = db.Column(db.String(255), default='My Catalog')
+    pages         = db.Column(db.Text, nullable=True)   # JSON list of processed filenames
+    page_count    = db.Column(db.Integer, default=0)
+    pdf_downloads = db.Column(db.Integer, default=0)    # total PDFs downloaded for this catalog
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
     def get_pages(self):
         """Return list of filenames only (backward compat)."""
@@ -746,7 +748,17 @@ def download_catalog(catalog_id):
     if not catalog.get_pages():
         flash('No images in this catalog yet.', 'error')
         return redirect(url_for('workspace', catalog_id=catalog_id))
-    buf       = generate_catalog_pdf(catalog, user)
+    # Enforce Grassroots PDF download limit
+    is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or
+                         user.is_hustler or user.is_basic)
+    if is_grassroots and (catalog.pdf_downloads or 0) >= FREE_PDF_DOWNLOADS:
+        flash('You have used your free PDF download for this catalog. Upgrade to download again.', 'error')
+        return redirect(url_for('workspace', catalog_id=catalog_id))
+    buf = generate_catalog_pdf(catalog, user)
+    # Increment counter for free users
+    if is_grassroots:
+        catalog.pdf_downloads = (catalog.pdf_downloads or 0) + 1
+        db.session.commit()
     safe_name = ''.join(c for c in catalog.name if c.isalnum() or c in ' _-')[:40].strip()
     return send_file(buf, mimetype='application/pdf',
                      as_attachment=True, download_name=f'{safe_name or "catalog"}.pdf')
@@ -1182,6 +1194,7 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN delivery_methods TEXT',
                 'ALTER TABLE user ADD COLUMN reset_token VARCHAR(100)',
                 'ALTER TABLE user ADD COLUMN reset_token_exp DATETIME',
+                'ALTER TABLE catalog ADD COLUMN pdf_downloads INTEGER DEFAULT 0',
                 # New tier tables created by db.create_all() above
             ]:
                 try:

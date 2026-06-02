@@ -103,7 +103,12 @@
       <a href="/catalog/{{ catalog.id }}" class="btn btn-success" target="_blank">&#128218; Open Flipbook</a>
       <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link</button>
       <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">&#43; Add More Images</button>
-      <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF</a>
+      {% set is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or user.is_hustler or user.is_basic) %}
+      {% if is_grassroots and catalog.pdf_downloads >= 1 %}
+        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="Upgrade to download more PDFs">&#128190; PDF used (upgrade to unlock)</span>
+      {% else %}
+        <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF</a>
+      {% endif %}
     </div>
   </div>
 
