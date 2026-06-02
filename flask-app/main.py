@@ -64,6 +64,8 @@ PAYMENT_INFO = {
 
 RECEIPTS_DIR = os.path.join('static', 'receipts')
 os.makedirs(RECEIPTS_DIR, exist_ok=True)
+LOGOS_DIR = os.path.join('static', 'logos')
+os.makedirs(LOGOS_DIR, exist_ok=True)
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -83,6 +85,9 @@ class User(db.Model):
     delivery_methods = db.Column(db.Text, nullable=True)
     reset_token      = db.Column(db.String(100), nullable=True)
     reset_token_exp  = db.Column(db.DateTime, nullable=True)
+    logo_filename = db.Column(db.String(500), nullable=True)
+    brand_color   = db.Column(db.String(7),   nullable=True)   # hex e.g. #7c5cfc
+    pdf_layout    = db.Column(db.String(20),  default='classic')
     plan          = db.Column(db.String(20), default='free')
     plan_expires  = db.Column(db.DateTime, nullable=True)
     plan_start    = db.Column(db.DateTime, nullable=True)
@@ -542,6 +547,44 @@ def _font(path, size):
     except Exception:
         return ImageFont.load_default()
 
+def _hex_to_rgb(hex_color, fallback=(108, 99, 255)):
+    try:
+        h = hex_color.lstrip('#')
+        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+    except Exception:
+        return fallback
+
+def _accent_rgb(user):
+    """Brand colour for SME Growth/Admin, default purple otherwise."""
+    if (user.is_growth or user.is_admin) and user.brand_color:
+        return _hex_to_rgb(user.brand_color)
+    return (108, 99, 255)
+
+def _brand_stripe(draw, y0, y1, width, rgb):
+    for x in range(width):
+        draw.line([(x, y0), (x, y1)], fill=rgb)
+
+def _load_logo(user, max_w, max_h):
+    if not user.logo_filename:
+        return None
+    path = os.path.join(LOGOS_DIR, user.logo_filename)
+    if not os.path.exists(path):
+        return None
+    try:
+        logo = Image.open(path).convert('RGBA')
+        logo.thumbnail((max_w, max_h), Image.LANCZOS)
+        return logo
+    except Exception:
+        return None
+
+def _paste_logo_centered(img, logo, cx, y):
+    """Paste RGBA logo centred at cx, top at y; returns bottom y."""
+    if not logo:
+        return y
+    lx = cx - logo.width // 2
+    img.paste(logo, (lx, y), logo)
+    return y + logo.height
+
 def _gradient_stripe(draw, y0, y1, width):
     stops = [(108,99,255), (200,30,120), (245,0,87), (255,109,0)]
     for x in range(width):
@@ -574,33 +617,118 @@ def _wrapped_text(draw, text, cx, y, font, fill, max_width):
     return y
 
 def _make_cover(catalog, user):
-    W, H = 800, 1000
-    img  = Image.new('RGB', (W, H), (26, 26, 46))
-    draw = ImageDraw.Draw(img)
-    _gradient_stripe(draw, 0, 6, W)
-    # subtle circle accent
-    for r in range(200, 0, -1):
-        alpha = int(40 * (1 - r / 200))
-        draw.ellipse([W - r - 30, H - r - 30, W - 30 + r, H - 30 + r],
-                     outline=(108, 99, 255, alpha))
-    # eyebrow
-    _centered_text(draw, 'PRODUCT CATALOG', W // 2, 90,
-                   _font(_FONT_BOLD, 13), (255, 255, 255, 90))
-    # catalog name (wrapped)
-    name_font = _font(_FONT_BOLD, 52)
-    name      = catalog.name
-    bb        = draw.textbbox((0, 0), name, font=name_font)
-    nw        = bb[2] - bb[0]
-    if nw > W - 80:
-        name_font = _font(_FONT_BOLD, 36)
-    _wrapped_text(draw, name, W // 2, H // 2 - 70, name_font, (255, 255, 255), W - 80)
-    # rule
-    draw.rectangle([W // 2 - 32, H // 2 + 10, W // 2 + 32, H // 2 + 14], fill=(108, 99, 255))
-    # business name
-    if user.business_name:
-        _centered_text(draw, user.business_name.upper(), W // 2, H // 2 + 34,
-                       _font(_FONT_REG, 18), (255, 255, 255, 100))
-    return img
+    W, H     = 800, 1000
+    accent   = _accent_rgb(user)
+    can_brand = user.is_growth or user.is_admin
+    layout   = (user.pdf_layout or 'classic') if can_brand else 'classic'
+
+    # ── Layout: Modern ────────────────────────────────────────────────────────
+    if layout == 'modern':
+        img  = Image.new('RGB', (W, H), (248, 249, 251))
+        draw = ImageDraw.Draw(img)
+        # Coloured top banner
+        banner_h = 340
+        banner   = Image.new('RGB', (W, banner_h), accent)
+        img.paste(banner, (0, 0))
+        draw = ImageDraw.Draw(img)
+        # Logo inside banner
+        y = 50
+        logo = _load_logo(user, 200, 100) if can_brand else None
+        if logo:
+            y = _paste_logo_centered(img, logo, W // 2, y) + 14
+        else:
+            y = 80
+        # Catalog name in banner (white)
+        _centered_text(draw, 'PRODUCT CATALOG', W // 2, y,
+                       _font(_FONT_BOLD, 12), (255, 255, 255))
+        y += 26
+        name_font = _font(_FONT_BOLD, 50)
+        bb = draw.textbbox((0, 0), catalog.name, font=name_font)
+        if bb[2] - bb[0] > W - 80:
+            name_font = _font(_FONT_BOLD, 36)
+        _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
+        # Divider
+        draw.rectangle([W // 2 - 40, banner_h + 26, W // 2 + 40, banner_h + 30], fill=accent)
+        # Business name below banner
+        if user.business_name:
+            _centered_text(draw, user.business_name.upper(), W // 2, banner_h + 46,
+                           _font(_FONT_BOLD, 20), accent)
+        # Contact snippet bottom
+        parts = []
+        if user.whatsapp: parts.append(f'WhatsApp: {user.whatsapp}')
+        if user.email:    parts.append(user.email)
+        if parts:
+            _centered_text(draw, '  ·  '.join(parts), W // 2, H - 40,
+                           _font(_FONT_REG, 13), (150, 150, 160))
+        return img
+
+    # ── Layout: Bold ──────────────────────────────────────────────────────────
+    elif layout == 'bold':
+        r, g, b  = accent
+        dark_bg  = (max(r - 35, 0), max(g - 35, 0), max(b - 35, 0))
+        img  = Image.new('RGB', (W, H), dark_bg)
+        draw = ImageDraw.Draw(img)
+        _brand_stripe(draw, 0, 8, W, accent)
+        # Logo with white pill behind it
+        y = 80
+        logo = _load_logo(user, 220, 110) if can_brand else None
+        if logo:
+            lx = (W - logo.width) // 2 - 12
+            ly = y - 10
+            try:
+                draw.rounded_rectangle([lx, ly, lx + logo.width + 24, ly + logo.height + 20],
+                                       radius=12, fill=(255, 255, 255))
+            except AttributeError:
+                draw.rectangle([lx, ly, lx + logo.width + 24, ly + logo.height + 20],
+                               fill=(255, 255, 255))
+            y = _paste_logo_centered(img, logo, W // 2, y) + 30
+            draw = ImageDraw.Draw(img)
+        else:
+            y = 120
+        # Large catalog name
+        name_font = _font(_FONT_BOLD, 60)
+        bb = draw.textbbox((0, 0), catalog.name, font=name_font)
+        if bb[2] - bb[0] > W - 80:
+            name_font = _font(_FONT_BOLD, 44)
+        _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
+        # Wide rule
+        draw.rectangle([W // 2 - 60, y + 120, W // 2 + 60, y + 125],
+                       fill=(255, 255, 255))
+        # Business name
+        if user.business_name:
+            _centered_text(draw, user.business_name.upper(), W // 2, y + 140,
+                           _font(_FONT_REG, 22), (255, 255, 255))
+        return img
+
+    # ── Layout: Classic (default) ─────────────────────────────────────────────
+    else:
+        img  = Image.new('RGB', (W, H), (26, 26, 46))
+        draw = ImageDraw.Draw(img)
+        _brand_stripe(draw, 0, 6, W, accent)
+        # Circle accent
+        for rv in range(180, 0, -20):
+            draw.ellipse([W - rv - 30, H - rv - 30, W - 30 + rv, H - 30 + rv],
+                         outline=accent)
+        _centered_text(draw, 'PRODUCT CATALOG', W // 2, 90,
+                       _font(_FONT_BOLD, 13), (200, 200, 220))
+        # Logo above catalog name for Growth users
+        y = H // 2 - 120
+        logo = _load_logo(user, 200, 90) if can_brand else None
+        if logo:
+            y = _paste_logo_centered(img, logo, W // 2, y) + 12
+            draw = ImageDraw.Draw(img)
+        else:
+            y = H // 2 - 70
+        name_font = _font(_FONT_BOLD, 52)
+        bb = draw.textbbox((0, 0), catalog.name, font=name_font)
+        if bb[2] - bb[0] > W - 80:
+            name_font = _font(_FONT_BOLD, 36)
+        _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
+        draw.rectangle([W // 2 - 32, H // 2 + 10, W // 2 + 32, H // 2 + 14], fill=accent)
+        if user.business_name:
+            _centered_text(draw, user.business_name.upper(), W // 2, H // 2 + 34,
+                           _font(_FONT_REG, 18), (200, 200, 220))
+        return img
 
 def _make_product_page(item, proc_dir, catalog, user):
     W, H  = 800, 1000
@@ -613,11 +741,12 @@ def _make_product_page(item, proc_dir, catalog, user):
     else:
         pg = Image.new('RGB', (W, H), (255, 255, 255))
     draw = ImageDraw.Draw(pg)
-    DARK = (15, 15, 30)
-    TXT  = (210, 210, 230)
+    DARK   = (15, 15, 30)
+    TXT    = (210, 210, 230)
+    accent = _accent_rgb(user)
     # header bar
     draw.rectangle([0, 0, W, 28], fill=DARK)
-    _gradient_stripe(draw, 0, 4, W)
+    _brand_stripe(draw, 0, 4, W, accent)
     header = f"Product Catalog  —  {catalog.name}"
     _centered_text(draw, header, W // 2, 7, _font(_FONT_REG, 13), TXT)
     # item name bar
@@ -639,10 +768,11 @@ def _make_product_page(item, proc_dir, catalog, user):
     return pg
 
 def _make_back_cover(catalog, user):
-    W, H = 800, 1000
-    img  = Image.new('RGB', (W, H), (255, 255, 255))
-    draw = ImageDraw.Draw(img)
-    _gradient_stripe(draw, 0, 5, W)
+    W, H   = 800, 1000
+    accent = _accent_rgb(user)
+    img    = Image.new('RGB', (W, H), (255, 255, 255))
+    draw   = ImageDraw.Draw(img)
+    _brand_stripe(draw, 0, 5, W, accent)
     y = 38
     if user.business_name:
         _centered_text(draw, user.business_name.upper(), W // 2, y,
@@ -868,6 +998,27 @@ def profile():
         delv = request.form.getlist('delivery_methods')
         user.payment_methods  = json.dumps(pay)  if pay  else None
         user.delivery_methods = json.dumps(delv) if delv else None
+        # ── SME Growth branding ────────────────────────────────────────────────
+        if user.is_growth or user.is_admin:
+            color = request.form.get('brand_color', '').strip()
+            if color and color.startswith('#') and len(color) == 7:
+                user.brand_color = color
+            layout = request.form.get('pdf_layout', 'classic')
+            if layout in ('classic', 'modern', 'bold'):
+                user.pdf_layout = layout
+            # Logo upload
+            logo_file = request.files.get('logo')
+            if logo_file and logo_file.filename:
+                ext = os.path.splitext(logo_file.filename)[1].lower()
+                if ext in {'.jpg', '.jpeg', '.png', '.webp'}:
+                    if user.logo_filename:
+                        old = os.path.join(LOGOS_DIR, user.logo_filename)
+                        if os.path.exists(old): os.remove(old)
+                    fname = f"logo_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
+                    logo_file.save(os.path.join(LOGOS_DIR, fname))
+                    user.logo_filename = fname
+                else:
+                    flash('Logo must be JPG, PNG, or WebP.', 'error')
         db.session.commit()
         flash('Profile updated!', 'success')
         return redirect(url_for('profile'))
@@ -1200,6 +1351,9 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN reset_token VARCHAR(100)',
                 'ALTER TABLE user ADD COLUMN reset_token_exp DATETIME',
                 'ALTER TABLE catalog ADD COLUMN pdf_downloads INTEGER DEFAULT 0',
+                'ALTER TABLE user ADD COLUMN logo_filename VARCHAR(500)',
+                'ALTER TABLE user ADD COLUMN brand_color VARCHAR(7)',
+                'ALTER TABLE user ADD COLUMN pdf_layout VARCHAR(20) DEFAULT "classic"',
                 # New tier tables created by db.create_all() above
             ]:
                 try:

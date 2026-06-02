@@ -16,7 +16,7 @@
     {% endfor %}
   {% endwith %}
 
-  <form method="POST" action="/profile">
+  <form method="POST" action="/profile" enctype="multipart/form-data">
 
     <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
       <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 18px">Business Details</h3>
@@ -102,6 +102,62 @@
         {% endfor %}
       </div>
     </div>
+
+    {% if user.is_growth or user.is_admin %}
+    <div class="field-group" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border:2px solid #f6c44e;border-radius:14px;padding:24px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <span style="font-size:1.1rem">&#9733;</span>
+        <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f6c44e;margin:0">SME Growth — Custom Branding</h3>
+      </div>
+      <p class="text-muted" style="font-size:0.8rem;margin:0 0 20px">Your logo, brand colour, and layout appear on every PDF you generate.</p>
+
+      <!-- Logo upload -->
+      <div class="field" style="margin-bottom:18px">
+        <label style="color:var(--text)">Business Logo <span class="text-muted" style="font-weight:400;font-size:0.8rem">(PNG or JPG recommended)</span></label>
+        {% if user.logo_filename %}
+        <div style="margin-bottom:10px;display:flex;align-items:center;gap:12px">
+          <img src="/static/logos/{{ user.logo_filename }}" alt="Current logo"
+               style="max-height:60px;max-width:200px;background:#fff;border-radius:6px;padding:6px;border:1px solid var(--border)">
+          <span style="font-size:0.8rem;color:var(--muted)">Current logo — upload a new file to replace it</span>
+        </div>
+        {% endif %}
+        <input type="file" name="logo" accept="image/png,image/jpeg,image/webp"
+               style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);width:100%">
+      </div>
+
+      <!-- Brand colour -->
+      <div class="field" style="margin-bottom:18px">
+        <label style="color:var(--text)">Brand Colour</label>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="color" name="brand_color" value="{{ user.brand_color or '#7c5cfc' }}"
+                 style="width:54px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:2px;background:var(--surface2)">
+          <span style="font-size:0.85rem;color:var(--muted)">Used as the accent colour on your PDF cover, header stripe, and back page.</span>
+        </div>
+      </div>
+
+      <!-- Layout selector -->
+      <div class="field" style="margin-bottom:4px">
+        <label style="color:var(--text)">PDF Cover Layout</label>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          {% for val, icon, title, desc in [
+            ('classic','&#9670;','Classic Dark','Dark navy background with your brand colour accent — clean and professional.'),
+            ('modern', '&#9632;','Modern Light','White background with a bold coloured banner at the top — magazine style.'),
+            ('bold',   '&#9733;','Bold Impact', 'Full brand-colour background with large white text — eye-catching and vibrant.')
+          ] %}
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--surface);border:1px solid {% if (user.pdf_layout or 'classic') == val %}#f6c44e{% else %}var(--border){% endif %};border-radius:10px;padding:12px 14px">
+            <input type="radio" name="pdf_layout" value="{{ val }}"
+                   {% if (user.pdf_layout or 'classic') == val %}checked{% endif %}
+                   style="margin-top:3px;accent-color:#f6c44e">
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;color:var(--text)">{{ icon | safe }} {{ title }}</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">{{ desc }}</div>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
     <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;border-radius:12px">
       Save Profile
