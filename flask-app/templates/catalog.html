@@ -238,6 +238,7 @@
           <p class="cover-eyebrow">Product Catalog</p>
           <h1 class="cover-title">{{ catalog.name }}</h1>
           <div class="cover-rule"></div>
+          <p class="cover-tagline">{{ user.business_name or user.name }}</p>
         </div>
       </div>
       {% for item in page_data %}
