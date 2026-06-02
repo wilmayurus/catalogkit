@@ -356,6 +356,7 @@ def process(catalog_id):
     order     = data.get('order', [])
     name      = data.get('name', '').strip() or catalog.name
     prices    = data.get('prices', {})   # {orig_filename: "K25"}
+    names     = data.get('names',  {})   # {orig_filename: "Red Dress"}
     image_cap = user.max_images
     capped    = False
     if image_cap and len(order) > image_cap:
@@ -375,7 +376,7 @@ def process(catalog_id):
             img      = fit_with_padding(img, TARGET_WIDTH, TARGET_HEIGHT)
             out_name = f'page_{i + 1:03d}.jpg'
             img.save(os.path.join(proc_dir, out_name), 'JPEG', quality=72, optimize=True, progressive=True)
-            processed.append({'file': out_name, 'price': prices.get(filename, '')})
+            processed.append({'file': out_name, 'price': prices.get(filename, ''), 'item_name': names.get(filename, '')})
         except Exception as e:
             errors.append(str(e))
 

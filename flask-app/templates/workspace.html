@@ -68,9 +68,12 @@
         <span class="thumb-num">{{ loop.index }}</span>
         <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
       </div>
-      <input type="text" class="thumb-price" placeholder="e.g. K 25.00"
+      <input type="text" class="thumb-item-name" placeholder="Product name (e.g. Red Dress)"
+             value="{{ item.item_name or '' }}"
+             onclick="event.stopPropagation()" title="Enter product name">
+      <input type="text" class="thumb-price" placeholder="Price (e.g. K 25.00)"
              value="{{ item.price }}"
-             onclick="event.stopPropagation()" title="Enter price (e.g. K 25.00)">
+             onclick="event.stopPropagation()" title="Enter price">
     </div>
     {% endfor %}
   </div>
@@ -198,7 +201,7 @@ async function processImages(msg = 'Building catalog…') {
     const res  = await fetch(`/workspace/${CATALOG_ID}/process`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ order, prices: getPrices(), name: catalogName })
+      body: JSON.stringify({ order, prices: getPrices(), names: getNames(), name: catalogName })
     });
     const data = await res.json();
 
@@ -235,7 +238,7 @@ async function processImages(msg = 'Building catalog…') {
 }
 
 // ── Thumbs ────────────────────────────────────────────────────────────────────
-function addThumb(filename, price = '') {
+function addThumb(filename, price = '', itemName = '') {
   const item = document.createElement('div');
   item.className = 'thumb-item';
   item.dataset.filename = filename;
@@ -245,7 +248,9 @@ function addThumb(filename, price = '') {
       <span class="thumb-num">1</span>
       <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
     </div>
-    <input type="text" class="thumb-price" placeholder="e.g. K 25.00" value="${price}"
+    <input type="text" class="thumb-item-name" placeholder="Product name (e.g. Red Dress)" value="${itemName}"
+           onclick="event.stopPropagation()" title="Enter product name">
+    <input type="text" class="thumb-price" placeholder="Price (e.g. K 25.00)" value="${price}"
            onclick="event.stopPropagation()" title="Enter price">
   `;
   grid.appendChild(item);
@@ -317,6 +322,15 @@ function getPrices() {
     prices[el.dataset.filename] = inp ? inp.value.trim() : '';
   });
   return prices;
+}
+
+function getNames() {
+  const names = {};
+  grid.querySelectorAll('.thumb-item').forEach(el => {
+    const inp = el.querySelector('.thumb-item-name');
+    names[el.dataset.filename] = inp ? inp.value.trim() : '';
+  });
+  return names;
 }
 
 async function clearAll() {

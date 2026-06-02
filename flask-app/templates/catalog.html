@@ -241,8 +241,11 @@
         <div class="page-inner">
           <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}"
                alt="Page {{ loop.index }}" loading="lazy">
-          {% if item.price %}
-          <div class="price-badge">{{ item.price }}</div>
+          {% if item.item_name or item.price %}
+          <div class="page-label-wrap">
+            {% if item.item_name %}<div class="item-name-label">{{ item.item_name }}</div>{% endif %}
+            {% if item.price %}<div class="price-badge">{{ item.price }}</div>{% endif %}
+          </div>
           {% endif %}
         </div>
       </div>
