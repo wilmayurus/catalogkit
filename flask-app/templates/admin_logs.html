@@ -1,120 +1,137 @@
-{% extends 'base.html' %}
-{% block title %}Activity Logs — Admin{% endblock %}
-{% block body %}
-<div class="container">
+{% extends 'admin_base.html' %}
+{% block admin_title %}Logs{% endblock %}
+{% block page_title %}Activity & Access Logs{% endblock %}
+{% block page_crumb %}Track every login and in-app action{% endblock %}
 
-  <div class="section-header" style="padding-top:8px">
-    <h2 style="font-size:1.3rem;font-weight:700">&#128196; Activity &amp; Access Logs</h2>
-    <div style="display:flex;gap:8px">
-      <a href="/admin" class="btn btn-secondary btn-sm">&#8592; Admin</a>
-      <a href="/admin/reports" class="btn btn-secondary btn-sm">&#128202; Reports</a>
-    </div>
-  </div>
+{% block admin_body %}
 
-  <!-- Tab switch -->
-  <div style="display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content">
+<!-- Tab switcher -->
+<div class="admin-section">
+  <div class="log-tabs">
     <a href="/admin/logs?type=activity&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}"
-       class="btn btn-sm {% if log_type == 'activity' %}btn-primary{% else %}btn-secondary{% endif %}"
-       style="border-radius:0;border:none">&#9881; Activity Log</a>
+       class="log-tab {% if log_type == 'activity' %}active{% endif %}">
+      ⚙ Activity Log
+    </a>
     <a href="/admin/logs?type=access&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}"
-       class="btn btn-sm {% if log_type == 'access' %}btn-primary{% else %}btn-secondary{% endif %}"
-       style="border-radius:0;border:none;border-left:1px solid var(--border)">&#128274; Access Log</a>
+       class="log-tab {% if log_type == 'access' %}active{% endif %}">
+      🔒 Access Log (Logins)
+    </a>
   </div>
 
-  <!-- Filters -->
-  <form method="GET" action="/admin/logs" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:flex-end">
+  <!-- Filter bar -->
+  <form method="GET" action="/admin/logs">
     <input type="hidden" name="type" value="{{ log_type }}">
-    <div>
-      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">User</label>
-      <select name="user_id" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
-        <option value="">All users</option>
-        {% for u in all_users %}
-        <option value="{{ u.id }}" {% if user_id == u.id|string %}selected{% endif %}>{{ u.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div>
-      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Action</label>
-      <select name="action" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
-        <option value="">All actions</option>
-        {% if log_type == 'access' %}
-          <option value="login"  {% if action_f == 'login'  %}selected{% endif %}>Login</option>
-          <option value="logout" {% if action_f == 'logout' %}selected{% endif %}>Logout</option>
-        {% else %}
-          {% for a in ['catalog_created','catalog_published','catalog_deleted','images_uploaded','pdf_downloaded','plan_upgrade_submitted'] %}
-          <option value="{{ a }}" {% if action_f == a %}selected{% endif %}>{{ a | replace('_',' ') | title }}</option>
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="filter-label">User</label>
+        <select name="user_id" class="filter-select">
+          <option value="">All users</option>
+          {% for u in all_users %}
+          <option value="{{ u.id }}" {% if user_id == u.id|string %}selected{% endif %}>{{ u.name }}</option>
           {% endfor %}
-        {% endif %}
-      </select>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Action</label>
+        <select name="action" class="filter-select">
+          <option value="">All actions</option>
+          {% if log_type == 'access' %}
+            <option value="login"  {% if action_f == 'login'  %}selected{% endif %}>Login</option>
+            <option value="logout" {% if action_f == 'logout' %}selected{% endif %}>Logout</option>
+          {% else %}
+            {% for a in ['catalog_created','catalog_published','catalog_deleted','images_uploaded','pdf_downloaded','plan_upgrade_submitted'] %}
+            <option value="{{ a }}" {% if action_f == a %}selected{% endif %}>{{ a | replace('_',' ') | title }}</option>
+            {% endfor %}
+          {% endif %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">From</label>
+        <input type="date" name="date_from" value="{{ date_from }}" class="filter-input">
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">To</label>
+        <input type="date" name="date_to" value="{{ date_to }}" class="filter-input">
+      </div>
+
+      <div class="filter-group" style="justify-content:flex-end">
+        <label class="filter-label">&nbsp;</label>
+        <div style="display:flex;gap:6px">
+          <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+          <a href="/admin/logs?type={{ log_type }}" class="btn btn-secondary btn-sm">Clear</a>
+        </div>
+      </div>
     </div>
-    <div>
-      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">From</label>
-      <input type="date" name="date_from" value="{{ date_from }}"
-             style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
-    </div>
-    <div>
-      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">To</label>
-      <input type="date" name="date_to" value="{{ date_to }}"
-             style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
-    </div>
-    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-    <a href="/admin/logs?type={{ log_type }}" class="btn btn-secondary btn-sm">Clear</a>
   </form>
 
-  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">
-    Showing {{ logs|length }} of {{ total }} records
-    (page {{ page }} / {{ total_pages }})
-  </p>
+  <!-- Result count -->
+  <div style="padding:10px 20px;font-size:0.78rem;color:var(--muted);border-bottom:1px solid var(--border)">
+    Showing <strong style="color:var(--text)">{{ logs|length }}</strong> of <strong style="color:var(--text)">{{ total }}</strong> records
+    &nbsp;·&nbsp; Page {{ page }} / {{ total_pages }}
+  </div>
 
   <!-- Log table -->
   {% if logs %}
-  <div class="admin-table-wrap">
-    <table class="admin-table">
+  <div class="admin-tbl-wrap">
+    <table class="admin-tbl">
       <thead>
         {% if log_type == 'access' %}
-        <tr><th>When</th><th>User</th><th>Action</th><th>IP Address</th><th>Browser / Device</th></tr>
+        <tr><th>Timestamp</th><th>User</th><th>Plan</th><th>Action</th><th>IP Address</th><th>Browser / Device</th></tr>
         {% else %}
-        <tr><th>When</th><th>User</th><th>Plan</th><th>Action</th><th>Detail</th></tr>
+        <tr><th>Timestamp</th><th>User</th><th>Plan</th><th>Action</th><th>Detail</th></tr>
         {% endif %}
       </thead>
       <tbody>
         {% for log in logs %}
         <tr>
-          <td style="white-space:nowrap;font-size:0.82rem;color:var(--muted)">
-            {{ log.created_at.strftime('%d %b %Y %H:%M') }}
+          <td style="white-space:nowrap">
+            <div style="font-size:0.83rem">{{ log.created_at.strftime('%d %b %Y') }}</div>
+            <div style="font-size:0.75rem;color:var(--muted)">{{ log.created_at.strftime('%H:%M:%S') }}</div>
           </td>
           <td>
-            <strong style="font-size:0.88rem">{{ log.user.name }}</strong><br>
-            <span style="font-size:0.75rem;color:var(--muted)">{{ log.user.email }}</span>
+            <div class="user-cell">
+              <strong>{{ log.user.name }}</strong>
+              <span>{{ log.user.email }}</span>
+            </div>
           </td>
+          <td><span class="plan-badge plan-{{ log.user.plan_css }}">{{ log.user.plan_label }}</span></td>
           {% if log_type == 'access' %}
           <td>
             {% if log.action == 'login' %}
-              <span class="plan-badge" style="background:#16a34a;color:#fff">&#8594; Login</span>
+              <span class="chip chip-green">→ Login</span>
             {% else %}
-              <span class="plan-badge" style="background:#64748b;color:#fff">&#8592; Logout</span>
+              <span class="chip chip-gray">← Logout</span>
             {% endif %}
           </td>
-          <td style="font-size:0.82rem;font-family:monospace">{{ log.ip_address or '—' }}</td>
-          <td style="font-size:0.78rem;color:var(--muted);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
-              title="{{ log.user_agent or '' }}">{{ log.user_agent or '—' }}</td>
+          <td style="font-size:0.8rem;font-family:monospace;color:var(--muted)">{{ log.ip_address or '—' }}</td>
+          <td style="font-size:0.75rem;color:var(--muted);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+              title="{{ log.user_agent or '' }}">{{ (log.user_agent or '—')[:80] }}{% if log.user_agent and log.user_agent|length > 80 %}…{% endif %}</td>
           {% else %}
-          <td><span class="plan-badge plan-{{ log.user.plan_css }}">{{ log.user.plan_label }}</span></td>
           <td>
-            {% set action_icons = {
-              'catalog_created':        '&#128194;',
-              'catalog_published':      '&#9989;',
-              'catalog_deleted':        '&#128465;',
-              'images_uploaded':        '&#128247;',
-              'pdf_downloaded':         '&#128196;',
-              'plan_upgrade_submitted': '&#11088;'
+            {% set icons = {
+              'catalog_created':        '📁',
+              'catalog_published':      '✅',
+              'catalog_deleted':        '🗑',
+              'images_uploaded':        '📷',
+              'pdf_downloaded':         '📄',
+              'plan_upgrade_submitted': '⭐'
             } %}
-            <span style="font-size:0.85rem">
-              {{ action_icons.get(log.action, '&#9679;') | safe }}
-              {{ log.action | replace('_',' ') | title }}
+            {% set colors = {
+              'catalog_created':        'chip-blue',
+              'catalog_published':      'chip-green',
+              'catalog_deleted':        'chip-red',
+              'images_uploaded':        'chip-purple',
+              'pdf_downloaded':         'chip-yellow',
+              'plan_upgrade_submitted': 'chip-yellow'
+            } %}
+            <span class="chip {{ colors.get(log.action, 'chip-gray') }}">
+              {{ icons.get(log.action, '·') }} {{ log.action | replace('_',' ') | title }}
             </span>
           </td>
-          <td style="font-size:0.83rem;color:var(--muted)">{{ log.detail or '—' }}</td>
+          <td style="font-size:0.82rem;color:var(--muted)">{{ log.detail or '—' }}</td>
           {% endif %}
         </tr>
         {% endfor %}
@@ -124,22 +141,23 @@
 
   <!-- Pagination -->
   {% if total_pages > 1 %}
-  <div style="display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap">
+  <div class="admin-pagination">
     {% if page > 1 %}
     <a href="/admin/logs?type={{ log_type }}&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}&page={{ page - 1 }}"
-       class="btn btn-secondary btn-sm">&#8592; Prev</a>
+       class="btn btn-secondary btn-sm">← Prev</a>
     {% endif %}
-    <span style="padding:6px 12px;font-size:0.85rem;color:var(--muted)">Page {{ page }} of {{ total_pages }}</span>
+    <span style="font-size:0.83rem;color:var(--muted)">Page {{ page }} of {{ total_pages }}</span>
     {% if page < total_pages %}
     <a href="/admin/logs?type={{ log_type }}&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}&page={{ page + 1 }}"
-       class="btn btn-secondary btn-sm">Next &#8594;</a>
+       class="btn btn-secondary btn-sm">Next →</a>
     {% endif %}
   </div>
   {% endif %}
 
   {% else %}
-  <div class="empty-state" style="padding:40px">
-    <p>No log entries match your filters.</p>
+  <div class="admin-empty">
+    <div class="ae-icon">🔍</div>
+    <p>No log entries match your filters</p>
   </div>
   {% endif %}
 

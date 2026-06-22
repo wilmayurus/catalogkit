@@ -1293,9 +1293,12 @@ def admin():
     sub_requests     = SubscriptionRequest.query.filter_by(status='pending') \
                            .order_by(SubscriptionRequest.submitted_at).all()
     agency_requests  = AgencyRequest.query.order_by(AgencyRequest.market_location, AgencyRequest.submitted_at).all()
+    pending_count    = len(sub_requests) + len(pending)
     return render_template('admin.html', pending=pending, all_users=all_users,
                            recent=recent, basic_price=BASIC_PRICE_PGK, pro_price=PRO_PRICE_PGK,
-                           sub_requests=sub_requests, agency_requests=agency_requests)
+                           sub_requests=sub_requests, agency_requests=agency_requests,
+                           pending_count=pending_count, now=datetime.utcnow(),
+                           admin_active='dashboard')
 
 @app.route('/admin/payment/<int:payment_id>/approve', methods=['POST'])
 @admin_required
@@ -1518,12 +1521,16 @@ def admin_logs():
         logs      = q.order_by(ActivityLog.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
         total     = q.count()
 
-    total_pages = max(1, (total + per_page - 1) // per_page)
+    total_pages   = max(1, (total + per_page - 1) // per_page)
+    pending_count = SubscriptionRequest.query.filter_by(status='pending').count() + \
+                    PaymentRequest.query.filter_by(status='pending').count()
     return render_template('admin_logs.html',
                            logs=logs, log_type=log_type, page=page,
                            total=total, total_pages=total_pages,
                            all_users=all_users, user_id=user_id,
-                           action_f=action_f, date_from=date_from, date_to=date_to)
+                           action_f=action_f, date_from=date_from, date_to=date_to,
+                           pending_count=pending_count, now=datetime.utcnow(),
+                           admin_active='logs')
 
 
 # ── Admin — Reports ────────────────────────────────────────────────────────────
@@ -1604,6 +1611,8 @@ def admin_reports():
     pending_legacy = PaymentRequest.query.filter_by(status='pending').all()
     pending_rev   += sum(p.amount for p in pending_legacy)
 
+    pending_count = SubscriptionRequest.query.filter_by(status='pending').count() + \
+                    PaymentRequest.query.filter_by(status='pending').count()
     return render_template('admin_reports.html',
         now=now, total_users=total_users, active_30d=active_30d,
         suspended_ct=suspended_ct, new_users_30d=new_users_30d,
@@ -1611,7 +1620,8 @@ def admin_reports():
         plan_dist=plan_dist, signup_weeks=signup_weeks,
         activity_counts=activity_counts, login_days=login_days,
         top_users=top_users, pending_rev=pending_rev, approved_rev=approved_rev,
-        pending_subs=pending_subs, approved_subs=approved_subs)
+        pending_subs=pending_subs, approved_subs=approved_subs,
+        pending_count=pending_count, admin_active='reports')
 
 
 # ── Context processor ─────────────────────────────────────────────────────────

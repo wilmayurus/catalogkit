@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block admin_title %}Admin{% endblock %} — CatalogKit</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block head %}{% endblock %}
+</head>
+<body class="admin-body">
+
+<!-- Sidebar -->
+<aside class="admin-sidebar">
+  <div class="admin-sidebar-logo">
+    <span class="as-brand">⬡ CatalogKit</span>
+    <span class="as-tag">Admin Console</span>
+  </div>
+
+  <nav class="admin-nav">
+    <span class="admin-nav-section">Overview</span>
+    <a href="/admin" class="admin-nav-item {% if admin_active == 'dashboard' %}active{% endif %}">
+      <span class="admin-nav-icon">⬛</span> Dashboard
+      {% if pending_count %}<span class="admin-nav-badge">{{ pending_count }}</span>{% endif %}
+    </a>
+
+    <span class="admin-nav-section">Management</span>
+    <a href="/admin#users" class="admin-nav-item {% if admin_active == 'users' %}active{% endif %}">
+      <span class="admin-nav-icon">👥</span> Users
+    </a>
+    <a href="/admin#payments" class="admin-nav-item {% if admin_active == 'payments' %}active{% endif %}">
+      <span class="admin-nav-icon">💳</span> Payments
+    </a>
+    <a href="/admin#agency" class="admin-nav-item {% if admin_active == 'agency' %}active{% endif %}">
+      <span class="admin-nav-icon">🏪</span> Setup Requests
+    </a>
+
+    <span class="admin-nav-section">Analytics</span>
+    <a href="/admin/logs" class="admin-nav-item {% if admin_active == 'logs' %}active{% endif %}">
+      <span class="admin-nav-icon">📋</span> Logs
+    </a>
+    <a href="/admin/reports" class="admin-nav-item {% if admin_active == 'reports' %}active{% endif %}">
+      <span class="admin-nav-icon">📈</span> Reports
+    </a>
+
+    <span class="admin-nav-section">App</span>
+    <a href="/" class="admin-nav-item">
+      <span class="admin-nav-icon">🏠</span> Main App
+    </a>
+    <a href="/logout" class="admin-nav-item danger">
+      <span class="admin-nav-icon">↩</span> Sign Out
+    </a>
+  </nav>
+
+  <div class="admin-sidebar-footer">
+    <div class="admin-sidebar-avatar">{{ current_user.name[0].upper() if current_user else 'A' }}</div>
+    <div>
+      <div style="font-weight:600;font-size:0.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px">{{ current_user.name if current_user else 'Admin' }}</div>
+      <div style="color:var(--muted);font-size:0.72rem">Administrator</div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<div class="admin-main">
+
+  <!-- Top bar -->
+  <header class="admin-topbar">
+    <div class="admin-topbar-left">
+      <div class="admin-topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+      <div class="admin-topbar-crumb">{% block page_crumb %}CatalogKit Admin{% endblock %}</div>
+    </div>
+    <div class="admin-topbar-right">
+      {% block topbar_right %}{% endblock %}
+      <span style="font-size:0.78rem;color:var(--muted)">{{ now.strftime('%d %b %Y') }}</span>
+    </div>
+  </header>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="admin-flash-wrap">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Content -->
+  <div class="admin-content">
+    {% block admin_body %}{% endblock %}
+  </div>
+
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

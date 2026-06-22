@@ -1,248 +1,340 @@
-{% extends 'base.html' %}
-{% block title %}Admin — CatalogKit{% endblock %}
-{% block body %}
-<div class="container">
+{% extends 'admin_base.html' %}
+{% block admin_title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_crumb %}Overview of users, payments and requests{% endblock %}
 
-  <div class="section-header" style="padding-top:8px">
-    <h2 style="font-size:1.3rem; font-weight:700">&#9670; Admin Panel</h2>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span class="badge">{{ all_users | length }} users</span>
-      <a href="/admin/logs" class="btn btn-secondary btn-sm">&#128196; Logs</a>
-      <a href="/admin/reports" class="btn btn-primary btn-sm">&#128202; Reports</a>
+{% block topbar_right %}
+  <a href="/admin/reports" class="btn btn-primary btn-sm">📈 Reports</a>
+{% endblock %}
+
+{% block admin_body %}
+
+{% set paid_users     = all_users | selectattr('is_hustler') | list | length +
+                        all_users | selectattr('is_growth')  | list | length %}
+{% set suspended_ct   = all_users | selectattr('is_suspended') | list | length %}
+{% set total_pending  = (sub_requests | length) + (pending | length) %}
+
+<!-- ── Stat cards ───────────────────────────────────────── -->
+<div class="admin-stat-grid">
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">👥</span>
+    <div class="admin-stat-val">{{ all_users | length }}</div>
+    <div class="admin-stat-label">Total Users</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">⭐</span>
+    <div class="admin-stat-val" style="color:var(--accent)">{{ paid_users }}</div>
+    <div class="admin-stat-label">Paying Plans</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">⏳</span>
+    <div class="admin-stat-val" style="color:{% if total_pending %}var(--warning){% else %}var(--success){% endif %}">{{ total_pending }}</div>
+    <div class="admin-stat-label">Pending Reviews</div>
+    {% if total_pending %}<div class="admin-stat-delta warn">Action required</div>{% endif %}
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">🏪</span>
+    <div class="admin-stat-val">{{ agency_requests | length }}</div>
+    <div class="admin-stat-label">Setup Requests</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">🚫</span>
+    <div class="admin-stat-val" style="{% if suspended_ct %}color:var(--danger){% endif %}">{{ suspended_ct }}</div>
+    <div class="admin-stat-label">Suspended</div>
+  </div>
+
+</div>
+
+<!-- ── Pending alert ────────────────────────────────────── -->
+{% if total_pending %}
+<div class="admin-alert admin-alert-warn">
+  ⚠️ <strong>{{ total_pending }} request{{ 's' if total_pending > 1 }} need your attention</strong> — review and approve or reject below.
+</div>
+{% endif %}
+
+<!-- ── Section A: Upgrade requests ─────────────────────── -->
+<div class="admin-section" id="payments">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      💳 Subscription Upgrade Requests
+      {% if sub_requests %}<span class="chip chip-yellow">{{ sub_requests | length }} pending</span>{% endif %}
     </div>
   </div>
-
-  <!-- Section A: Subscription Upgrades (receipt upload) -->
-  <h3 class="sub-heading">
-    &#10022; Section A — Subscription Upgrade Requests
-    {% if sub_requests %}<span class="badge badge-warning">{{ sub_requests | length }}</span>{% endif %}
-  </h3>
-
-  {% if sub_requests %}
-  <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr><th>User</th><th>Tier</th><th>Amount</th><th>Receipt</th><th>Date</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for sr in sub_requests %}
-        <tr>
-          <td>
-            <strong>{{ sr.user.name }}</strong><br>
-            <span class="text-muted" style="font-size:0.8rem">{{ sr.user.email }}</span>
-          </td>
-          <td><span class="plan-badge plan-{{ sr.tier_css }}">{{ sr.tier_label }}</span></td>
-          <td>K{{ "%.0f"|format(sr.amount) }}/mo</td>
-          <td>
-            {% if sr.receipt_filename %}
-              <a href="/admin/receipt/{{ sr.id }}" target="_blank" class="btn btn-secondary btn-sm">&#128247; View</a>
-            {% else %}
-              <span class="text-muted">No receipt</span>
-            {% endif %}
-          </td>
-          <td style="white-space:nowrap">{{ sr.submitted_at.strftime('%d %b %Y') }}</td>
-          <td style="white-space:nowrap">
-            <form method="POST" action="/admin/subscription/{{ sr.id }}/approve" style="display:inline">
-              <button type="submit" class="btn btn-success btn-sm">&#10003; Approve</button>
-            </form>
-            <form method="POST" action="/admin/subscription/{{ sr.id }}/reject" style="display:inline; margin-left:6px">
-              <button type="submit" class="btn btn-danger btn-sm"
-                      onclick="return confirm('Reject this upgrade request?')">&#10005;</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="admin-section-body">
+    {% if sub_requests %}
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr>
+            <th>User</th><th>Tier</th><th>Amount</th><th>Receipt</th><th>Submitted</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sr in sub_requests %}
+          <tr>
+            <td>
+              <div class="user-cell">
+                <strong>{{ sr.user.name }}</strong>
+                <span>{{ sr.user.email }}</span>
+              </div>
+            </td>
+            <td><span class="plan-badge plan-{{ sr.tier_css }}">{{ sr.tier_label }}</span></td>
+            <td><strong>K{{ "%.0f"|format(sr.amount) }}</strong>/mo</td>
+            <td>
+              {% if sr.receipt_filename %}
+                <a href="/admin/receipt/{{ sr.id }}" target="_blank" class="btn btn-secondary btn-sm">🖼 View Receipt</a>
+              {% else %}
+                <span class="chip chip-gray">No receipt</span>
+              {% endif %}
+            </td>
+            <td style="color:var(--muted);font-size:0.8rem;white-space:nowrap">{{ sr.submitted_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div class="action-group">
+                <form method="POST" action="/admin/subscription/{{ sr.id }}/approve">
+                  <button class="btn btn-success btn-sm">✓ Approve</button>
+                </form>
+                <form method="POST" action="/admin/subscription/{{ sr.id }}/reject">
+                  <button class="btn btn-danger btn-sm" onclick="return confirm('Reject this upgrade?')">✕ Reject</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="admin-empty">
+      <div class="ae-icon">✅</div>
+      <p>No pending upgrade requests</p>
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div class="empty-state" style="padding:32px"><p>&#10003; No pending upgrade requests.</p></div>
-  {% endif %}
+</div>
 
-  <!-- Section B: Agency Service Requests -->
-  <h3 class="sub-heading" style="margin-top:40px">
-    &#128101; Section B — Done-For-You Setup Requests (K50)
-    {% if agency_requests %}<span class="badge">{{ agency_requests | length }}</span>{% endif %}
-  </h3>
-
-  {% if agency_requests %}
-  <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Submitted</th><th>Status</th></tr>
-      </thead>
-      <tbody>
-        {% for ar in agency_requests %}
-        <tr>
-          <td><strong>{{ ar.business_name }}</strong></td>
-          <td>{{ ar.market_location }}</td>
-          <td><a href="https://wa.me/{{ ar.whatsapp | replace(' ','') | replace('+','') }}" target="_blank">{{ ar.whatsapp }}</a></td>
-          <td>{{ ar.preferred_datetime }}</td>
-          <td style="white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
-          <td>
-            <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center">
-              <select name="status" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:0.8rem">
-                {% for s in ['New Request','Assigned','In Progress','Completed'] %}
-                <option value="{{ s }}" {% if ar.status == s %}selected{% endif %}>{{ s }}</option>
-                {% endfor %}
-              </select>
-              <button type="submit" class="btn btn-secondary btn-sm">Save</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<!-- ── Section B: Agency requests ──────────────────────── -->
+<div class="admin-section" id="agency">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      🏪 Done-For-You Setup Requests
+      {% if agency_requests %}<span class="chip chip-blue">{{ agency_requests | length }}</span>{% endif %}
+    </div>
   </div>
-  {% else %}
-  <div class="empty-state" style="padding:32px"><p>No setup requests yet.</p></div>
-  {% endif %}
-
-  <!-- Pending Payments (old system) -->
-  <h3 class="sub-heading" style="margin-top:40px">
-    &#128184; Legacy Pending Payments
-    {% if pending %}<span class="badge badge-warning">{{ pending | length }}</span>{% endif %}
-  </h3>
-
-  {% if pending %}
-  <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr><th>User</th><th>Plan</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th><th>Date</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for p in pending %}
-        <tr>
-          <td>
-            <strong>{{ p.user.name }}</strong><br>
-            <span class="text-muted" style="font-size:0.8rem">{{ p.user.email }}</span>
-          </td>
-          <td>
-            <span class="plan-badge plan-{{ p.requested_plan or 'pro' }}">
-              {{ (p.requested_plan or 'pro') | capitalize }}
-            </span>
-          </td>
-          <td>K{{ "%.0f"|format(p.amount) }} ({{ p.months }}mo)</td>
-          <td>{{ p.payment_method }}</td>
-          <td>{{ p.reference }}</td>
-          <td>{{ p.notes or '—' }}</td>
-          <td style="white-space:nowrap">{{ p.submitted_at.strftime('%d %b %Y') }}</td>
-          <td style="white-space:nowrap">
-            <form method="POST" action="/admin/payment/{{ p.id }}/approve" style="display:inline">
-              <button type="submit" class="btn btn-success btn-sm">&#10003; Approve</button>
-            </form>
-            <form method="POST" action="/admin/payment/{{ p.id }}/reject" style="display:inline; margin-left:6px">
-              <button type="submit" class="btn btn-danger btn-sm"
-                      onclick="return confirm('Reject this payment?')">&#10005;</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="admin-section-body">
+    {% if agency_requests %}
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Submitted</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for ar in agency_requests %}
+          <tr>
+            <td><strong>{{ ar.business_name }}</strong></td>
+            <td style="color:var(--muted)">{{ ar.market_location }}</td>
+            <td>
+              <a href="https://wa.me/{{ ar.whatsapp | replace(' ','') | replace('+','') }}" target="_blank"
+                 style="color:var(--success);text-decoration:none;font-size:0.83rem">
+                📱 {{ ar.whatsapp }}
+              </a>
+            </td>
+            <td style="font-size:0.83rem;color:var(--muted)">{{ ar.preferred_datetime }}</td>
+            <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center">
+                <select name="status" class="filter-select" style="padding:5px 8px;font-size:0.8rem">
+                  {% for s in ['New Request','Assigned','In Progress','Completed'] %}
+                  <option value="{{ s }}" {% if ar.status == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+                <button class="btn btn-secondary btn-sm">Save</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="admin-empty">
+      <div class="ae-icon">📭</div>
+      <p>No setup requests yet</p>
+    </div>
+    {% endif %}
   </div>
-  {% else %}
-  <div class="empty-state" style="padding:32px"><p>&#10003; No pending payments.</p></div>
-  {% endif %}
+</div>
 
-  <!-- All Users -->
-  <h3 class="sub-heading" style="margin-top:40px">
-    &#128100; All Users
-    <span class="badge">{{ all_users | length }}</span>
-  </h3>
-  <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr><th>Name</th><th>Email</th><th>Status</th><th>Plan</th><th>Expires</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
-      </thead>
-      <tbody>
-        {% for u in all_users %}
-        <tr {% if u.is_suspended %}style="opacity:0.6"{% endif %}>
-          <td>
-            <strong>{{ u.name }}</strong>
-            {% if u.is_admin %}<span style="color:var(--warning);font-size:0.75rem"> admin</span>{% endif %}
-          </td>
-          <td style="font-size:0.85rem">{{ u.email }}</td>
-          <td>
-            {% if u.is_suspended %}
-              <span class="plan-badge" style="background:#dc2626;color:#fff">Suspended</span>
-            {% elif u.is_admin %}
-              <span class="plan-badge plan-admin">Active</span>
-            {% else %}
-              <span class="plan-badge" style="background:#16a34a;color:#fff">Active</span>
-            {% endif %}
-          </td>
-          <td><span class="plan-badge plan-{{ u.plan_css }}">{{ u.plan_label }}</span></td>
-          <td style="white-space:nowrap">{{ u.plan_expires.strftime('%d %b %Y') if u.plan_expires else '—' }}</td>
-          <td>{{ u.catalog_count }}</td>
-          <td style="white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
-          <td style="white-space:nowrap">
-            {% if not u.is_admin %}
-              <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
-                <!-- Plan controls -->
-                {% if u.is_pro or u.is_basic or u.is_hustler or u.is_growth %}
-                  <form method="POST" action="/admin/user/{{ u.id }}/revoke" style="display:inline">
-                    <button type="submit" class="btn btn-secondary btn-sm"
-                            onclick="return confirm('Revert {{ u.name }} to Free plan?')">Revoke Plan</button>
+<!-- ── All Users ─────────────────────────────────────────── -->
+<div class="admin-section" id="users">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      👥 All Users
+      <span class="chip chip-gray">{{ all_users | length }}</span>
+    </div>
+    <div class="admin-section-actions">
+      <a href="/admin/logs?type=access" class="btn btn-secondary btn-sm">Access Logs</a>
+    </div>
+  </div>
+  <div class="admin-section-body">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>User</th><th>Status</th><th>Plan</th><th>Expires</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for u in all_users %}
+          <tr class="{% if u.is_suspended %}row-suspended{% endif %}">
+            <td>
+              <div class="user-cell">
+                <strong>{{ u.name }}{% if u.is_admin %} <span style="color:var(--warning);font-size:0.7rem">(admin)</span>{% endif %}</strong>
+                <span>{{ u.email }}</span>
+              </div>
+            </td>
+            <td>
+              {% if u.is_suspended %}
+                <span class="chip chip-red"><span class="status-dot" style="background:#fc5c5c"></span> Suspended</span>
+              {% elif u.is_admin %}
+                <span class="chip chip-yellow"><span class="status-dot" style="background:#f6c44e"></span> Admin</span>
+              {% else %}
+                <span class="chip chip-green"><span class="status-dot" style="background:#3ecf8e"></span> Active</span>
+              {% endif %}
+            </td>
+            <td><span class="plan-badge plan-{{ u.plan_css }}">{{ u.plan_label }}</span></td>
+            <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">
+              {{ u.plan_expires.strftime('%d %b %Y') if u.plan_expires else '—' }}
+            </td>
+            <td style="text-align:center">{{ u.catalog_count }}</td>
+            <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              {% if not u.is_admin %}
+              <div class="action-group">
+                {% if u.is_hustler or u.is_growth or u.is_pro or u.is_basic %}
+                  <form method="POST" action="/admin/user/{{ u.id }}/revoke">
+                    <button class="btn btn-secondary btn-sm" onclick="return confirm('Revert {{ u.name }} to Free?')">↩ Revoke Plan</button>
                   </form>
                 {% else %}
-                  <form method="POST" action="/admin/user/{{ u.id }}/grant" style="display:inline-flex;gap:4px;align-items:center">
-                    <select name="plan" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:0.8rem">
+                  <form method="POST" action="/admin/user/{{ u.id }}/grant" style="display:inline-flex;gap:5px;align-items:center">
+                    <select name="plan" class="filter-select" style="padding:5px 8px;font-size:0.78rem">
                       <option value="hustler">Kina Hustler</option>
                       <option value="growth">SME Growth</option>
                     </select>
                     <input type="hidden" name="months" value="1">
-                    <button type="submit" class="btn btn-secondary btn-sm">Grant</button>
+                    <button class="btn btn-secondary btn-sm">Grant</button>
                   </form>
                 {% endif %}
-                <!-- Suspend / Unsuspend -->
+
                 {% if u.is_suspended %}
-                  <form method="POST" action="/admin/user/{{ u.id }}/unsuspend" style="display:inline">
-                    <button type="submit" class="btn btn-success btn-sm"
-                            onclick="return confirm('Reinstate {{ u.name }}\'s account?')">&#10003; Reinstate</button>
+                  <form method="POST" action="/admin/user/{{ u.id }}/unsuspend">
+                    <button class="btn btn-success btn-sm" onclick="return confirm('Reinstate {{ u.name }}?')">✓ Reinstate</button>
                   </form>
                 {% else %}
-                  <form method="POST" action="/admin/user/{{ u.id }}/suspend" style="display:inline">
-                    <button type="submit" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Suspend {{ u.name }}\'s account? They will not be able to log in.')">&#9888; Suspend</button>
+                  <form method="POST" action="/admin/user/{{ u.id }}/suspend">
+                    <button class="btn btn-danger btn-sm" onclick="return confirm('Suspend {{ u.name }}? They cannot log in until reinstated.')">⊘ Suspend</button>
                   </form>
                 {% endif %}
               </div>
-            {% else %}—{% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+              {% else %}
+              <span style="color:var(--muted);font-size:0.8rem">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
-
-  <!-- Recent decisions -->
-  {% if recent %}
-  <h3 class="sub-heading" style="margin-top:40px">Recent Decisions</h3>
-  <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr><th>User</th><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Decided</th></tr>
-      </thead>
-      <tbody>
-        {% for p in recent %}
-        <tr>
-          <td>{{ p.user.name }}</td>
-          <td>{{ (p.requested_plan or 'pro') | capitalize }}</td>
-          <td>K{{ "%.0f"|format(p.amount) }}</td>
-          <td>{{ p.payment_method }}</td>
-          <td>
-            <span class="plan-badge {% if p.status == 'approved' %}plan-pro{% else %}plan-free{% endif %}">
-              {{ p.status | capitalize }}
-            </span>
-          </td>
-          <td>{{ p.processed_at.strftime('%d %b %Y') if p.processed_at else '—' }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endif %}
-
 </div>
+
+<!-- ── Legacy Pending Payments ──────────────────────────── -->
+{% if pending %}
+<div class="admin-section">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      💵 Legacy Pending Payments
+      <span class="chip chip-yellow">{{ pending | length }}</span>
+    </div>
+  </div>
+  <div class="admin-section-body">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>User</th><th>Plan</th><th>Amount</th><th>Method</th><th>Reference</th><th>Notes</th><th>Date</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for p in pending %}
+          <tr>
+            <td>
+              <div class="user-cell">
+                <strong>{{ p.user.name }}</strong>
+                <span>{{ p.user.email }}</span>
+              </div>
+            </td>
+            <td><span class="plan-badge plan-{{ p.requested_plan or 'pro' }}">{{ (p.requested_plan or 'pro') | capitalize }}</span></td>
+            <td><strong>K{{ "%.0f"|format(p.amount) }}</strong> ({{ p.months }}mo)</td>
+            <td style="font-size:0.82rem">{{ p.payment_method }}</td>
+            <td style="font-size:0.82rem;font-family:monospace">{{ p.reference }}</td>
+            <td style="font-size:0.8rem;color:var(--muted)">{{ p.notes or '—' }}</td>
+            <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ p.submitted_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div class="action-group">
+                <form method="POST" action="/admin/payment/{{ p.id }}/approve">
+                  <button class="btn btn-success btn-sm">✓ Approve</button>
+                </form>
+                <form method="POST" action="/admin/payment/{{ p.id }}/reject">
+                  <button class="btn btn-danger btn-sm" onclick="return confirm('Reject this payment?')">✕</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Recent Decisions ─────────────────────────────────── -->
+{% if recent %}
+<div class="admin-section">
+  <div class="admin-section-head">
+    <div class="admin-section-title">🕐 Recent Decisions</div>
+  </div>
+  <div class="admin-section-body">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>User</th><th>Plan</th><th>Amount</th><th>Method</th><th>Status</th><th>Decided</th></tr>
+        </thead>
+        <tbody>
+          {% for p in recent %}
+          <tr>
+            <td><strong>{{ p.user.name }}</strong></td>
+            <td>{{ (p.requested_plan or 'pro') | capitalize }}</td>
+            <td>K{{ "%.0f"|format(p.amount) }}</td>
+            <td style="color:var(--muted);font-size:0.82rem">{{ p.payment_method }}</td>
+            <td>
+              {% if p.status == 'approved' %}
+                <span class="chip chip-green">✓ Approved</span>
+              {% else %}
+                <span class="chip chip-red">✕ Rejected</span>
+              {% endif %}
+            </td>
+            <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">
+              {{ p.processed_at.strftime('%d %b %Y') if p.processed_at else '—' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {% endblock %}
