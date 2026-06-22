@@ -163,6 +163,10 @@ class User(db.Model):
     def has_pending_payment(self):
         return any(p.status == 'pending' for p in self.payments)
 
+    @property
+    def profile_complete(self):
+        return bool(self.business_name and self.whatsapp)
+
 
 class Catalog(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
@@ -362,6 +366,26 @@ def get_catalog_or_404(catalog_id, user):
     return catalog
 
 
+# ── Profile-completion gate ────────────────────────────────────────────────────
+
+_PROFILE_EXEMPT = {
+    'profile', 'logout', 'login', 'register',
+    'forgot_password', 'forgot_email', 'reset_password',
+    'static', 'assisted_setup', 'pricing', 'upgrade',
+}
+
+@app.before_request
+def require_profile_complete():
+    if 'user_id' not in session:
+        return
+    if request.endpoint in _PROFILE_EXEMPT or (request.endpoint or '').startswith('admin'):
+        return
+    user = db.session.get(User, session['user_id'])
+    if user and not user.profile_complete:
+        flash('Please complete your profile before continuing.', 'info')
+        return redirect(url_for('profile'))
+
+
 # ── Auth ──────────────────────────────────────────────────────────────────────
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -388,8 +412,8 @@ def register():
         db.session.add(user)
         db.session.commit()
         session['user_id'] = user.id
-        flash('Account created!' if not is_first else 'Account created! You are the admin.', 'success')
-        return redirect(url_for('index'))
+        flash('Account created! Please complete your profile to get started.', 'success')
+        return redirect(url_for('profile'))
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])

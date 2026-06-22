@@ -3,6 +3,14 @@
 {% block body %}
 <div class="container" style="max-width:560px;padding-top:40px;padding-bottom:60px">
 
+  {% if not user.profile_complete %}
+  <div style="background:linear-gradient(135deg,#6c63ff22,#7c5cfc11);border:1.5px solid var(--accent);border-radius:14px;padding:20px 22px;margin-bottom:28px">
+    <div style="font-size:1.25rem;margin-bottom:6px">&#128075; Welcome to CatalogKit!</div>
+    <div style="font-weight:700;font-size:0.95rem;margin-bottom:4px">Set up your profile to get started</div>
+    <div style="font-size:0.85rem;color:var(--muted)">Add your <strong>Business Name</strong> and <strong>WhatsApp number</strong> — these appear on every catalog you share. You can update everything else later.</div>
+  </div>
+  {% endif %}
+
   <div style="margin-bottom:28px">
     <h2 style="font-size:1.5rem;font-weight:700;margin:0 0 4px">My Profile</h2>
     <p class="text-muted" style="font-size:0.88rem;margin:0">
