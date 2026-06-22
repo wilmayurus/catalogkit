@@ -5,7 +5,11 @@
 
   <div class="section-header" style="padding-top:8px">
     <h2 style="font-size:1.3rem; font-weight:700">&#9670; Admin Panel</h2>
-    <span class="badge">{{ all_users | length }} users</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="badge">{{ all_users | length }} users</span>
+      <a href="/admin/logs" class="btn btn-secondary btn-sm">&#128196; Logs</a>
+      <a href="/admin/reports" class="btn btn-primary btn-sm">&#128202; Reports</a>
+    </div>
   </div>
 
   <!-- Section A: Subscription Upgrades (receipt upload) -->

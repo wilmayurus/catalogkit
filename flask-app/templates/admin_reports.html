@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% block title %}Reports — Admin{% endblock %}
+{% block body %}
+<div class="container">
+
+  <div class="section-header" style="padding-top:8px">
+    <h2 style="font-size:1.3rem;font-weight:700">&#128202; Business Reports</h2>
+    <div style="display:flex;gap:8px">
+      <a href="/admin" class="btn btn-secondary btn-sm">&#8592; Admin</a>
+      <a href="/admin/logs" class="btn btn-secondary btn-sm">&#128196; Logs</a>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:32px">
+    {% set cards = [
+      ('Total Users',         total_users,    '#6366f1'),
+      ('Active (30d)',        active_30d,     '#16a34a'),
+      ('New (30d)',           new_users_30d,  '#0ea5e9'),
+      ('Suspended',          suspended_ct,   '#dc2626'),
+      ('Total Catalogs',     total_catalogs, '#f59e0b'),
+      ('PDFs Downloaded',    total_pdfs,     '#8b5cf6'),
+    ] %}
+    {% for label, value, color in cards %}
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px 16px;text-align:center">
+      <div style="font-size:1.9rem;font-weight:800;color:{{ color }}">{{ value }}</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:4px">{{ label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
+
+    <!-- Plan distribution -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px">
+      <h3 style="font-size:1rem;font-weight:700;margin:0 0 16px">Users by Plan</h3>
+      {% set plan_colors = {'Grassroots':'#64748b','Kina Hustler':'#f59e0b','SME Growth':'#6366f1','Admin':'#dc2626','Pro':'#0ea5e9','Basic':'#16a34a'} %}
+      {% set max_plan = plan_dist.values() | max if plan_dist else 1 %}
+      {% for label, count in plan_dist.items() | sort(attribute='1', reverse=True) %}
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:0.83rem;margin-bottom:4px">
+          <span>{{ label }}</span>
+          <strong>{{ count }}</strong>
+        </div>
+        <div style="background:var(--surface);border-radius:99px;height:10px;overflow:hidden">
+          <div style="height:100%;width:{{ ((count / (total_users or 1)) * 100) | int }}%;background:{{ plan_colors.get(label,'#6366f1') }};border-radius:99px;transition:width 0.4s"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Activity breakdown last 30d -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px">
+      <h3 style="font-size:1rem;font-weight:700;margin:0 0 16px">Activity (Last 30 Days)</h3>
+      {% set max_act = activity_counts.values() | max if activity_counts else 1 %}
+      {% for label, count in activity_counts.items() %}
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:0.83rem;margin-bottom:4px">
+          <span>{{ label }}</span>
+          <strong>{{ count }}</strong>
+        </div>
+        <div style="background:var(--surface);border-radius:99px;height:10px;overflow:hidden">
+          <div style="height:100%;width:{{ ((count / (max_act or 1)) * 100) | int }}%;background:#6366f1;border-radius:99px;transition:width 0.4s"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <!-- Logins per day (last 30 days) -->
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px">
+    <h3 style="font-size:1rem;font-weight:700;margin:0 0 16px">Daily Logins — Last 30 Days</h3>
+    {% set max_login = login_days | map(attribute='count') | max if login_days else 1 %}
+    {% set max_login = max_login if max_login > 0 else 1 %}
+    <div style="display:flex;align-items:flex-end;gap:3px;height:100px;overflow-x:auto">
+      {% for d in login_days %}
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:18px" title="{{ d.label }}: {{ d.count }} logins">
+        <div style="width:100%;background:{% if d.count > 0 %}#6366f1{% else %}var(--border){% endif %};border-radius:3px 3px 0 0;height:{{ [(d.count / max_login * 80) | int, 2] | max }}px"></div>
+        {% if loop.index % 5 == 1 %}
+        <div style="font-size:0.6rem;color:var(--muted);margin-top:3px;white-space:nowrap">{{ d.label }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <div style="text-align:center;font-size:0.75rem;color:var(--muted);margin-top:8px">
+      Total logins this period: <strong>{{ login_days | sum(attribute='count') }}</strong>
+    </div>
+  </div>
+
+  <!-- New signups per week -->
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:32px">
+    <h3 style="font-size:1rem;font-weight:700;margin:0 0 16px">New Sign-Ups — Last 8 Weeks</h3>
+    {% set max_sig = signup_weeks | map(attribute='count') | max if signup_weeks else 1 %}
+    {% set max_sig = max_sig if max_sig > 0 else 1 %}
+    <div style="display:flex;align-items:flex-end;gap:8px;height:100px">
+      {% for w in signup_weeks %}
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1" title="{{ w.label }}: {{ w.count }} signups">
+        <div style="font-size:0.72rem;color:var(--text);margin-bottom:4px">{{ w.count }}</div>
+        <div style="width:100%;background:{% if w.count > 0 %}#16a34a{% else %}var(--border){% endif %};border-radius:3px 3px 0 0;height:{{ [(w.count / max_sig * 70) | int, 2] | max }}px"></div>
+        <div style="font-size:0.67rem;color:var(--muted);margin-top:4px;text-align:center">{{ w.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Revenue pipeline + Top users side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
+
+    <!-- Revenue pipeline -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px">
+      <h3 style="font-size:1rem;font-weight:700;margin:0 0 16px">&#128184; Revenue Pipeline</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div style="background:var(--surface);border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:#f59e0b">K{{ "%.0f"|format(pending_rev) }}</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Pending</div>
+        </div>
+        <div style="background:var(--surface);border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:1.5rem;font-weight:800;color:#16a34a">K{{ "%.0f"|format(approved_rev) }}</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Approved (30d)</div>
+        </div>
+      </div>
+      {% if pending_subs %}
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">Pending requests:</p>
+      {% for s in pending_subs %}
+      <div style="display:flex;justify-content:space-between;font-size:0.83rem;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span>{{ s.user.name }}
+          <span class="plan-badge plan-{{ s.tier_css }}" style="font-size:0.7rem">{{ s.tier_label }}</span>
+        </span>
+        <strong>K{{ "%.0f"|format(s.amount) }}/mo</strong>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="font-size:0.83rem;color:var(--muted)">No pending upgrade requests.</p>
+      {% endif %}
+    </div>
+
+    <!-- Top active users -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px">
+      <h3 style="font-size:1rem;font-weight:700;margin:0 0 16px">&#127942; Most Active Users (30d)</h3>
+      {% if top_users %}
+      {% set max_ev = top_users[0][1] if top_users else 1 %}
+      {% for user, events in top_users %}
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:0.83rem;margin-bottom:3px">
+          <span>
+            <strong>{{ user.name }}</strong>
+            <span class="plan-badge plan-{{ user.plan_css }}" style="font-size:0.7rem;margin-left:4px">{{ user.plan_label }}</span>
+          </span>
+          <span style="color:var(--muted)">{{ events }} events</span>
+        </div>
+        <div style="background:var(--surface);border-radius:99px;height:6px;overflow:hidden">
+          <div style="height:100%;width:{{ ((events / (max_ev or 1)) * 100) | int }}%;background:#f59e0b;border-radius:99px"></div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="font-size:0.83rem;color:var(--muted)">No activity recorded yet.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <p style="text-align:center;font-size:0.75rem;color:var(--muted)">
+    Report generated {{ now.strftime('%d %b %Y %H:%M UTC') }} &nbsp;·&nbsp;
+    <a href="/admin/logs" style="color:var(--muted)">View full logs</a>
+  </p>
+
+</div>
+{% endblock %}

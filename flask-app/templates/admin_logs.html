@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}Activity Logs — Admin{% endblock %}
+{% block body %}
+<div class="container">
+
+  <div class="section-header" style="padding-top:8px">
+    <h2 style="font-size:1.3rem;font-weight:700">&#128196; Activity &amp; Access Logs</h2>
+    <div style="display:flex;gap:8px">
+      <a href="/admin" class="btn btn-secondary btn-sm">&#8592; Admin</a>
+      <a href="/admin/reports" class="btn btn-secondary btn-sm">&#128202; Reports</a>
+    </div>
+  </div>
+
+  <!-- Tab switch -->
+  <div style="display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content">
+    <a href="/admin/logs?type=activity&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}"
+       class="btn btn-sm {% if log_type == 'activity' %}btn-primary{% else %}btn-secondary{% endif %}"
+       style="border-radius:0;border:none">&#9881; Activity Log</a>
+    <a href="/admin/logs?type=access&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}"
+       class="btn btn-sm {% if log_type == 'access' %}btn-primary{% else %}btn-secondary{% endif %}"
+       style="border-radius:0;border:none;border-left:1px solid var(--border)">&#128274; Access Log</a>
+  </div>
+
+  <!-- Filters -->
+  <form method="GET" action="/admin/logs" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:flex-end">
+    <input type="hidden" name="type" value="{{ log_type }}">
+    <div>
+      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">User</label>
+      <select name="user_id" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
+        <option value="">All users</option>
+        {% for u in all_users %}
+        <option value="{{ u.id }}" {% if user_id == u.id|string %}selected{% endif %}>{{ u.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">Action</label>
+      <select name="action" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
+        <option value="">All actions</option>
+        {% if log_type == 'access' %}
+          <option value="login"  {% if action_f == 'login'  %}selected{% endif %}>Login</option>
+          <option value="logout" {% if action_f == 'logout' %}selected{% endif %}>Logout</option>
+        {% else %}
+          {% for a in ['catalog_created','catalog_published','catalog_deleted','images_uploaded','pdf_downloaded','plan_upgrade_submitted'] %}
+          <option value="{{ a }}" {% if action_f == a %}selected{% endif %}>{{ a | replace('_',' ') | title }}</option>
+          {% endfor %}
+        {% endif %}
+      </select>
+    </div>
+    <div>
+      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">From</label>
+      <input type="date" name="date_from" value="{{ date_from }}"
+             style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
+    </div>
+    <div>
+      <label style="font-size:0.78rem;color:var(--muted);display:block;margin-bottom:4px">To</label>
+      <input type="date" name="date_to" value="{{ date_to }}"
+             style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:0.85rem">
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    <a href="/admin/logs?type={{ log_type }}" class="btn btn-secondary btn-sm">Clear</a>
+  </form>
+
+  <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">
+    Showing {{ logs|length }} of {{ total }} records
+    (page {{ page }} / {{ total_pages }})
+  </p>
+
+  <!-- Log table -->
+  {% if logs %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        {% if log_type == 'access' %}
+        <tr><th>When</th><th>User</th><th>Action</th><th>IP Address</th><th>Browser / Device</th></tr>
+        {% else %}
+        <tr><th>When</th><th>User</th><th>Plan</th><th>Action</th><th>Detail</th></tr>
+        {% endif %}
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td style="white-space:nowrap;font-size:0.82rem;color:var(--muted)">
+            {{ log.created_at.strftime('%d %b %Y %H:%M') }}
+          </td>
+          <td>
+            <strong style="font-size:0.88rem">{{ log.user.name }}</strong><br>
+            <span style="font-size:0.75rem;color:var(--muted)">{{ log.user.email }}</span>
+          </td>
+          {% if log_type == 'access' %}
+          <td>
+            {% if log.action == 'login' %}
+              <span class="plan-badge" style="background:#16a34a;color:#fff">&#8594; Login</span>
+            {% else %}
+              <span class="plan-badge" style="background:#64748b;color:#fff">&#8592; Logout</span>
+            {% endif %}
+          </td>
+          <td style="font-size:0.82rem;font-family:monospace">{{ log.ip_address or '—' }}</td>
+          <td style="font-size:0.78rem;color:var(--muted);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+              title="{{ log.user_agent or '' }}">{{ log.user_agent or '—' }}</td>
+          {% else %}
+          <td><span class="plan-badge plan-{{ log.user.plan_css }}">{{ log.user.plan_label }}</span></td>
+          <td>
+            {% set action_icons = {
+              'catalog_created':        '&#128194;',
+              'catalog_published':      '&#9989;',
+              'catalog_deleted':        '&#128465;',
+              'images_uploaded':        '&#128247;',
+              'pdf_downloaded':         '&#128196;',
+              'plan_upgrade_submitted': '&#11088;'
+            } %}
+            <span style="font-size:0.85rem">
+              {{ action_icons.get(log.action, '&#9679;') | safe }}
+              {{ log.action | replace('_',' ') | title }}
+            </span>
+          </td>
+          <td style="font-size:0.83rem;color:var(--muted)">{{ log.detail or '—' }}</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if total_pages > 1 %}
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap">
+    {% if page > 1 %}
+    <a href="/admin/logs?type={{ log_type }}&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}&page={{ page - 1 }}"
+       class="btn btn-secondary btn-sm">&#8592; Prev</a>
+    {% endif %}
+    <span style="padding:6px 12px;font-size:0.85rem;color:var(--muted)">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a href="/admin/logs?type={{ log_type }}&user_id={{ user_id }}&action={{ action_f }}&date_from={{ date_from }}&date_to={{ date_to }}&page={{ page + 1 }}"
+       class="btn btn-secondary btn-sm">Next &#8594;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state" style="padding:40px">
+    <p>No log entries match your filters.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

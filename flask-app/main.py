@@ -258,6 +258,27 @@ class AgencyRequest(db.Model):
     submitted_at       = db.Column(db.DateTime,    default=datetime.utcnow)
 
 
+class AccessLog(db.Model):
+    """Records every login and logout with IP and browser info."""
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    action     = db.Column(db.String(20))           # 'login' | 'logout'
+    ip_address = db.Column(db.String(45),  nullable=True)
+    user_agent = db.Column(db.String(400), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user       = db.relationship('User', backref=db.backref('access_logs', lazy=True))
+
+
+class ActivityLog(db.Model):
+    """Records key in-app actions per user."""
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    action     = db.Column(db.String(50))           # catalog_created, pdf_downloaded, etc.
+    detail     = db.Column(db.String(500), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user       = db.relationship('User', backref=db.backref('activity_logs', lazy=True))
+
+
 # ── Email ─────────────────────────────────────────────────────────────────────
 
 def send_email(to, subject, body):
@@ -273,6 +294,28 @@ def send_email(to, subject, body):
 def admin_email():
     admin = User.query.filter_by(is_admin=True).first()
     return admin.email if admin else None
+
+def log_access(user_id, action):
+    """Record a login or logout event."""
+    try:
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr or '')
+        if ip and ',' in ip:
+            ip = ip.split(',')[0].strip()
+        ua = (request.user_agent.string or '')[:400]
+        db.session.add(AccessLog(user_id=user_id, action=action,
+                                 ip_address=ip[:45], user_agent=ua))
+        db.session.commit()
+    except Exception:
+        pass
+
+def log_activity(user_id, action, detail=None):
+    """Record an in-app action."""
+    try:
+        db.session.add(ActivityLog(user_id=user_id, action=action,
+                                   detail=(detail or '')[:500]))
+        db.session.commit()
+    except Exception:
+        pass
 
 
 # ── Image helpers ─────────────────────────────────────────────────────────────
@@ -369,12 +412,15 @@ def login():
             flash('Your account has been suspended. Please contact the admin for assistance.', 'error')
             return render_template('login.html')
         session['user_id'] = user.id
+        log_access(user.id, 'login')
         flash(f'Welcome back, {user.name}!', 'success')
         return redirect(url_for('index'))
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
+    if 'user_id' in session:
+        log_access(session['user_id'], 'logout')
     session.clear()
     return redirect(url_for('login'))
 
@@ -403,6 +449,7 @@ def new_catalog():
     catalog = Catalog(user_id=user.id, name='My Catalog')
     db.session.add(catalog)
     db.session.commit()
+    log_activity(user.id, 'catalog_created', catalog.name)
     return redirect(url_for('workspace', catalog_id=catalog.id))
 
 
@@ -435,6 +482,9 @@ def upload(catalog_id):
             filename = f'{uuid.uuid4().hex}{ext}'
             f.save(os.path.join(catalog.upload_dir, filename))
             uploaded.append(filename)
+    if uploaded:
+        log_activity(user.id, 'images_uploaded',
+                     f'{len(uploaded)} image(s) to "{catalog.name}"')
     return jsonify({'files': uploaded})
 
 @app.route('/workspace/<int:catalog_id>/process', methods=['POST'])
@@ -484,6 +534,7 @@ def process(catalog_id):
     catalog.name = name
     catalog.set_pages(processed)
     db.session.commit()
+    log_activity(user.id, 'catalog_published', f'{name} ({len(processed)} pages)')
     return jsonify({'processed': [p['file'] for p in processed], 'count': len(processed),
                     'capped': capped, 'cap': image_cap, 'errors': errors})
 
@@ -918,6 +969,7 @@ def download_catalog(catalog_id):
     if is_grassroots or user.is_hustler:
         catalog.pdf_downloads = downloads_so_far + 1
         db.session.commit()
+    log_activity(user.id, 'pdf_downloaded', catalog.name)
     safe_name = ''.join(c for c in catalog.name if c.isalnum() or c in ' _-')[:40].strip()
     return send_file(buf, mimetype='application/pdf',
                      as_attachment=True, download_name=f'{safe_name or "catalog"}.pdf')
@@ -935,6 +987,7 @@ def delete_catalog(catalog_id):
     shutil.rmtree(catalog.processed_dir, ignore_errors=True)
     db.session.delete(catalog)
     db.session.commit()
+    log_activity(user.id, 'catalog_deleted', name)
     flash(f'"{name}" deleted.', 'success')
     return redirect(url_for('index'))
 
@@ -1195,6 +1248,8 @@ def pricing_upgrade():
             f'Receipt uploaded: {"Yes" if receipt_filename else "No"}\n'
             f'Review in the admin panel.')
 
+    tier_name = 'Kina Hustler' if tier == 'hustler' else 'SME Growth'
+    log_activity(user.id, 'plan_upgrade_submitted', tier_name)
     flash('Upgrade request submitted! We\'ll review your receipt and activate your plan shortly.', 'success')
     return redirect(url_for('pricing'))
 
@@ -1419,6 +1474,146 @@ def grant_pro(user_id):
     return redirect(url_for('admin'))
 
 
+# ── Admin — Logs ───────────────────────────────────────────────────────────────
+
+@app.route('/admin/logs')
+@admin_required
+def admin_logs():
+    page      = int(request.args.get('page', 1))
+    per_page  = 40
+    log_type  = request.args.get('type', 'activity')   # 'activity' | 'access'
+    user_id   = request.args.get('user_id', '', type=str)
+    action_f  = request.args.get('action', '')
+    date_from = request.args.get('date_from', '')
+    date_to   = request.args.get('date_to', '')
+
+    all_users = User.query.order_by(User.name).all()
+
+    if log_type == 'access':
+        q = AccessLog.query
+        if user_id:
+            q = q.filter(AccessLog.user_id == int(user_id))
+        if action_f:
+            q = q.filter(AccessLog.action == action_f)
+        if date_from:
+            try: q = q.filter(AccessLog.created_at >= datetime.strptime(date_from, '%Y-%m-%d'))
+            except ValueError: pass
+        if date_to:
+            try: q = q.filter(AccessLog.created_at <= datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1))
+            except ValueError: pass
+        logs      = q.order_by(AccessLog.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
+        total     = q.count()
+    else:
+        q = ActivityLog.query
+        if user_id:
+            q = q.filter(ActivityLog.user_id == int(user_id))
+        if action_f:
+            q = q.filter(ActivityLog.action == action_f)
+        if date_from:
+            try: q = q.filter(ActivityLog.created_at >= datetime.strptime(date_from, '%Y-%m-%d'))
+            except ValueError: pass
+        if date_to:
+            try: q = q.filter(ActivityLog.created_at <= datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1))
+            except ValueError: pass
+        logs      = q.order_by(ActivityLog.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
+        total     = q.count()
+
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    return render_template('admin_logs.html',
+                           logs=logs, log_type=log_type, page=page,
+                           total=total, total_pages=total_pages,
+                           all_users=all_users, user_id=user_id,
+                           action_f=action_f, date_from=date_from, date_to=date_to)
+
+
+# ── Admin — Reports ────────────────────────────────────────────────────────────
+
+@app.route('/admin/reports')
+@admin_required
+def admin_reports():
+    now   = datetime.utcnow()
+    day30 = now - timedelta(days=30)
+    day7  = now - timedelta(days=7)
+
+    # ── Summary cards
+    total_users    = User.query.count()
+    active_30d     = db.session.query(AccessLog.user_id).filter(
+                         AccessLog.action == 'login',
+                         AccessLog.created_at >= day30).distinct().count()
+    suspended_ct   = User.query.filter_by(is_suspended=True).count()
+    new_users_30d  = User.query.filter(User.created_at >= day30).count()
+    total_catalogs = Catalog.query.count()
+    total_pdfs     = db.session.query(db.func.sum(Catalog.pdf_downloads)).scalar() or 0
+
+    # ── Plan distribution
+    plan_dist = {}
+    for u in User.query.all():
+        label = u.plan_label
+        plan_dist[label] = plan_dist.get(label, 0) + 1
+
+    # ── New signups per week (last 8 weeks)
+    signup_weeks = []
+    for i in range(7, -1, -1):
+        week_start = now - timedelta(days=(i+1)*7)
+        week_end   = now - timedelta(days=i*7)
+        count = User.query.filter(User.created_at >= week_start,
+                                  User.created_at < week_end).count()
+        label = week_start.strftime('%d %b')
+        signup_weeks.append({'label': label, 'count': count})
+
+    # ── Activity breakdown (last 30 days)
+    activity_labels = {
+        'catalog_created':        'Catalogs Created',
+        'catalog_published':      'Catalogs Published',
+        'images_uploaded':        'Image Uploads',
+        'pdf_downloaded':         'PDFs Downloaded',
+        'catalog_deleted':        'Catalogs Deleted',
+        'plan_upgrade_submitted': 'Plan Upgrades Submitted',
+    }
+    activity_counts = {}
+    for key, label in activity_labels.items():
+        activity_counts[label] = ActivityLog.query.filter(
+            ActivityLog.action == key,
+            ActivityLog.created_at >= day30).count()
+
+    # ── Login activity (last 30 days by day)
+    login_days = []
+    for i in range(29, -1, -1):
+        d = now - timedelta(days=i)
+        d_start = d.replace(hour=0, minute=0, second=0, microsecond=0)
+        d_end   = d_start + timedelta(days=1)
+        count = AccessLog.query.filter(AccessLog.action == 'login',
+                                       AccessLog.created_at >= d_start,
+                                       AccessLog.created_at < d_end).count()
+        login_days.append({'label': d.strftime('%d %b'), 'count': count})
+
+    # ── Top 10 most active users (by total activity events)
+    from sqlalchemy import func as sqlfunc
+    top_users = db.session.query(
+        User, sqlfunc.count(ActivityLog.id).label('events')
+    ).join(ActivityLog, ActivityLog.user_id == User.id)\
+     .filter(ActivityLog.created_at >= day30)\
+     .group_by(User.id).order_by(sqlfunc.count(ActivityLog.id).desc()).limit(10).all()
+
+    # ── Revenue pipeline
+    pending_subs   = SubscriptionRequest.query.filter_by(status='pending').all()
+    approved_subs  = SubscriptionRequest.query.filter_by(status='approved').filter(
+                         SubscriptionRequest.processed_at >= day30).all()
+    pending_rev    = sum(s.amount for s in pending_subs)
+    approved_rev   = sum(s.amount for s in approved_subs)
+    pending_legacy = PaymentRequest.query.filter_by(status='pending').all()
+    pending_rev   += sum(p.amount for p in pending_legacy)
+
+    return render_template('admin_reports.html',
+        now=now, total_users=total_users, active_30d=active_30d,
+        suspended_ct=suspended_ct, new_users_30d=new_users_30d,
+        total_catalogs=total_catalogs, total_pdfs=total_pdfs,
+        plan_dist=plan_dist, signup_weeks=signup_weeks,
+        activity_counts=activity_counts, login_days=login_days,
+        top_users=top_users, pending_rev=pending_rev, approved_rev=approved_rev,
+        pending_subs=pending_subs, approved_subs=approved_subs)
+
+
 # ── Context processor ─────────────────────────────────────────────────────────
 
 @app.context_processor
@@ -1452,7 +1647,8 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN pdf_layout VARCHAR(20) DEFAULT "classic"',
                 'ALTER TABLE user ADD COLUMN is_suspended BOOLEAN DEFAULT 0',
                 'ALTER TABLE user ADD COLUMN suspended_at DATETIME',
-                # New tier tables created by db.create_all() above
+                # access_log and activity_log tables are new — created by db.create_all()
+
             ]:
                 try:
                     conn.execute(text(stmt))
