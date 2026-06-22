@@ -27,12 +27,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///catalogkit.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ── Mail config (silently skipped if not set) ─────────────────────────────────
-app.config['MAIL_SERVER']         = os.environ.get('MAIL_SERVER', '')
+_mail_user = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_SERVER']         = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT']           = int(os.environ.get('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS']        = os.environ.get('MAIL_USE_TLS', 'true').lower() == 'true'
-app.config['MAIL_USERNAME']       = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_USERNAME']       = _mail_user
 app.config['MAIL_PASSWORD']       = os.environ.get('MAIL_PASSWORD', '')
-app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_FROM', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_FROM', _mail_user)
 
 db   = SQLAlchemy(app)
 mail = Mail(app)
@@ -258,7 +259,7 @@ class AgencyRequest(db.Model):
 # ── Email ─────────────────────────────────────────────────────────────────────
 
 def send_email(to, subject, body):
-    if not app.config.get('MAIL_SERVER') or not app.config.get('MAIL_USERNAME'):
+    if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
         return False
     try:
         mail.send(Message(subject, recipients=[to], body=body))
