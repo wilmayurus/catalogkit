@@ -93,6 +93,8 @@ class User(db.Model):
     plan_expires  = db.Column(db.DateTime, nullable=True)
     plan_start    = db.Column(db.DateTime, nullable=True)
     is_admin      = db.Column(db.Boolean, default=False)
+    is_suspended  = db.Column(db.Boolean, default=False)
+    suspended_at  = db.Column(db.DateTime, nullable=True)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
     catalogs      = db.relationship('Catalog', backref='user', lazy=True, cascade='all, delete-orphan')
     payments      = db.relationship('PaymentRequest', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -362,6 +364,9 @@ def login():
         user     = User.query.filter_by(email=email).first()
         if not user or not check_password_hash(user.password_hash, password):
             flash('Invalid email or password.', 'error')
+            return render_template('login.html')
+        if user.is_suspended:
+            flash('Your account has been suspended. Please contact the admin for assistance.', 'error')
             return render_template('login.html')
         session['user_id'] = user.id
         flash(f'Welcome back, {user.name}!', 'success')
@@ -1352,6 +1357,41 @@ def update_agency_status(ar_id):
         db.session.commit()
     return redirect(url_for('admin'))
 
+@app.route('/admin/user/<int:user_id>/suspend', methods=['POST'])
+@admin_required
+def suspend_user(user_id):
+    user = db.session.get(User, user_id)
+    if user and not user.is_admin:
+        user.is_suspended = True
+        user.suspended_at = datetime.utcnow()
+        db.session.commit()
+        # Log them out immediately if active
+        flash(f'{user.name}\'s account has been suspended.', 'success')
+        send_email(user.email,
+            'CatalogKit — Your account has been suspended',
+            f'Hi {user.name},\n\nYour CatalogKit account has been suspended. '
+            f'Please contact us if you believe this is a mistake.\n\n'
+            f'Contact: {PAYMENT_INFO["contact"]}'
+        )
+    return redirect(url_for('admin'))
+
+@app.route('/admin/user/<int:user_id>/unsuspend', methods=['POST'])
+@admin_required
+def unsuspend_user(user_id):
+    user = db.session.get(User, user_id)
+    if user:
+        user.is_suspended = False
+        user.suspended_at = None
+        db.session.commit()
+        flash(f'{user.name}\'s account has been reinstated.', 'success')
+        send_email(user.email,
+            'CatalogKit — Your account has been reinstated',
+            f'Hi {user.name},\n\nGood news! Your CatalogKit account has been reinstated. '
+            f'You can now log in and continue using CatalogKit.\n\n'
+            f'Log in at: https://catalogkit.replit.app'
+        )
+    return redirect(url_for('admin'))
+
 @app.route('/admin/user/<int:user_id>/revoke', methods=['POST'])
 @admin_required
 def revoke_pro(user_id):
@@ -1410,6 +1450,8 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN logo_filename VARCHAR(500)',
                 'ALTER TABLE user ADD COLUMN brand_color VARCHAR(7)',
                 'ALTER TABLE user ADD COLUMN pdf_layout VARCHAR(20) DEFAULT "classic"',
+                'ALTER TABLE user ADD COLUMN is_suspended BOOLEAN DEFAULT 0',
+                'ALTER TABLE user ADD COLUMN suspended_at DATETIME',
                 # New tier tables created by db.create_all() above
             ]:
                 try:

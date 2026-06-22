@@ -142,41 +142,68 @@
   {% endif %}
 
   <!-- All Users -->
-  <h3 class="sub-heading" style="margin-top:40px">All Users</h3>
+  <h3 class="sub-heading" style="margin-top:40px">
+    &#128100; All Users
+    <span class="badge">{{ all_users | length }}</span>
+  </h3>
   <div class="admin-table-wrap">
     <table class="admin-table">
       <thead>
-        <tr><th>Name</th><th>Email</th><th>Plan</th><th>Expires</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
+        <tr><th>Name</th><th>Email</th><th>Status</th><th>Plan</th><th>Expires</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
       </thead>
       <tbody>
         {% for u in all_users %}
-        <tr>
+        <tr {% if u.is_suspended %}style="opacity:0.6"{% endif %}>
           <td>
             <strong>{{ u.name }}</strong>
             {% if u.is_admin %}<span style="color:var(--warning);font-size:0.75rem"> admin</span>{% endif %}
           </td>
-          <td>{{ u.email }}</td>
+          <td style="font-size:0.85rem">{{ u.email }}</td>
+          <td>
+            {% if u.is_suspended %}
+              <span class="plan-badge" style="background:#dc2626;color:#fff">Suspended</span>
+            {% elif u.is_admin %}
+              <span class="plan-badge plan-admin">Active</span>
+            {% else %}
+              <span class="plan-badge" style="background:#16a34a;color:#fff">Active</span>
+            {% endif %}
+          </td>
           <td><span class="plan-badge plan-{{ u.plan_css }}">{{ u.plan_label }}</span></td>
-          <td>{{ u.plan_expires.strftime('%d %b %Y') if u.plan_expires else '—' }}</td>
+          <td style="white-space:nowrap">{{ u.plan_expires.strftime('%d %b %Y') if u.plan_expires else '—' }}</td>
           <td>{{ u.catalog_count }}</td>
           <td style="white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
           <td style="white-space:nowrap">
             {% if not u.is_admin %}
-              {% if u.is_pro or u.is_basic %}
-                <form method="POST" action="/admin/user/{{ u.id }}/revoke" style="display:inline">
-                  <button type="submit" class="btn btn-danger btn-sm"
-                          onclick="return confirm('Revert {{ u.name }} to Free?')">Revoke</button>
-                </form>
-              {% else %}
-                <form method="POST" action="/admin/user/{{ u.id }}/grant" style="display:inline; gap:4px">
-                  <select name="plan" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:0.8rem">
-                    <option value="basic">Basic</option>
-                    <option value="pro">Pro</option>
-                  </select>
-                  <input type="hidden" name="months" value="1">
-                  <button type="submit" class="btn btn-secondary btn-sm">Grant 1mo</button>
-                </form>
-              {% endif %}
+              <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+                <!-- Plan controls -->
+                {% if u.is_pro or u.is_basic or u.is_hustler or u.is_growth %}
+                  <form method="POST" action="/admin/user/{{ u.id }}/revoke" style="display:inline">
+                    <button type="submit" class="btn btn-secondary btn-sm"
+                            onclick="return confirm('Revert {{ u.name }} to Free plan?')">Revoke Plan</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="/admin/user/{{ u.id }}/grant" style="display:inline-flex;gap:4px;align-items:center">
+                    <select name="plan" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:0.8rem">
+                      <option value="hustler">Kina Hustler</option>
+                      <option value="growth">SME Growth</option>
+                    </select>
+                    <input type="hidden" name="months" value="1">
+                    <button type="submit" class="btn btn-secondary btn-sm">Grant</button>
+                  </form>
+                {% endif %}
+                <!-- Suspend / Unsuspend -->
+                {% if u.is_suspended %}
+                  <form method="POST" action="/admin/user/{{ u.id }}/unsuspend" style="display:inline">
+                    <button type="submit" class="btn btn-success btn-sm"
+                            onclick="return confirm('Reinstate {{ u.name }}\'s account?')">&#10003; Reinstate</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="/admin/user/{{ u.id }}/suspend" style="display:inline">
+                    <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Suspend {{ u.name }}\'s account? They will not be able to log in.')">&#9888; Suspend</button>
+                  </form>
+                {% endif %}
+              </div>
             {% else %}—{% endif %}
           </td>
         </tr>
