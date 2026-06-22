@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Find My Login Email — CatalogKit{% endblock %}
+{% block body %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">&#9670;</div>
+    <h1 class="auth-title">Find my login email</h1>
+
+    {% if found_email %}
+
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:2.5rem;margin-bottom:12px">&#10003;</div>
+        <p style="font-size:0.95rem;color:var(--muted);margin-bottom:8px">We found an account linked to that number. Your login email is:</p>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;font-size:1.05rem;font-weight:700;color:var(--accent);letter-spacing:0.5px;margin-bottom:8px;word-break:break-all">
+          {{ found_email }}
+        </div>
+        <p style="font-size:0.8rem;color:var(--muted)">Some characters are hidden for privacy. Use this email to sign in or reset your password.</p>
+      </div>
+
+      <a href="/forgot-password" class="btn btn-primary btn-block" style="margin-bottom:10px">Reset My Password</a>
+      <a href="/login" class="btn btn-ghost btn-block">&#8592; Back to Sign In</a>
+
+    {% elif not_found %}
+
+      <div class="alert alert-error" style="margin-bottom:20px">
+        <strong>No account found</strong> with that phone or WhatsApp number.
+      </div>
+      <p style="font-size:0.875rem;color:var(--muted);margin-bottom:20px;text-align:center">
+        Make sure you enter the same number you used when you set up your profile.
+        {% if admin_whatsapp %}
+        If you're still stuck, message us on
+        <a href="https://wa.me/{{ admin_whatsapp | replace('+','') | replace(' ','') }}" target="_blank" style="color:var(--accent)">WhatsApp</a>
+        and we'll look it up for you.
+        {% endif %}
+      </p>
+      <form method="POST" action="/forgot-email" class="auth-form">
+        <div class="field">
+          <label for="phone">WhatsApp / Phone number</label>
+          <input type="tel" id="phone" name="phone" placeholder="e.g. +675 7123 4567"
+                 required autocomplete="tel">
+          <p style="font-size:0.78rem;color:var(--muted);margin-top:4px">Enter the number saved in your CatalogKit profile.</p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Try Again</button>
+      </form>
+      <a href="/login" class="btn btn-ghost btn-block" style="margin-top:10px">&#8592; Back to Sign In</a>
+
+    {% else %}
+
+      <p class="auth-sub">Enter the WhatsApp or phone number saved in your CatalogKit profile and we'll find the email you registered with.</p>
+
+      <form method="POST" action="/forgot-email" class="auth-form">
+        <div class="field">
+          <label for="phone">WhatsApp / Phone number</label>
+          <input type="tel" id="phone" name="phone" placeholder="e.g. +675 7123 4567"
+                 required autocomplete="tel">
+          <p style="font-size:0.78rem;color:var(--muted);margin-top:4px">Enter the number saved in your CatalogKit profile.</p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Find My Email</button>
+      </form>
+
+      <p class="auth-switch">
+        Know your email? <a href="/forgot-password">Reset password instead</a>
+      </p>
+      <p class="auth-switch" style="margin-top:8px">
+        <a href="/login">&#8592; Back to Sign In</a>
+      </p>
+
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

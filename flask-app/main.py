@@ -952,10 +952,10 @@ def dashboard():
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
+    admin_whatsapp = PAYMENT_INFO.get('contact', '')
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         user  = User.query.filter_by(email=email).first()
-        # Always show success to avoid user enumeration
         if user:
             token = secrets.token_urlsafe(32)
             user.reset_token     = token
@@ -970,10 +970,47 @@ def forgot_password():
                 f'If you did not request this, you can ignore this email.'
             )
             return render_template('forgot_password.html',
-                                   sent=sent, reset_url=(None if sent else reset_url),
-                                   mail_configured=sent)
-        return render_template('forgot_password.html', sent=True, reset_url=None, mail_configured=True)
-    return render_template('forgot_password.html', sent=False, reset_url=None, mail_configured=None)
+                                   sent=sent,
+                                   reset_url=(None if sent else reset_url),
+                                   mail_configured=sent,
+                                   admin_whatsapp=admin_whatsapp)
+        return render_template('forgot_password.html', sent=True, reset_url=None,
+                               mail_configured=True, admin_whatsapp=admin_whatsapp)
+    return render_template('forgot_password.html', sent=False, reset_url=None,
+                           mail_configured=None, admin_whatsapp=admin_whatsapp)
+
+
+@app.route('/forgot-email', methods=['GET', 'POST'])
+def forgot_email():
+    """Let users look up which email they registered with using their phone/WhatsApp."""
+    admin_whatsapp = PAYMENT_INFO.get('contact', '')
+    found_email = None
+    not_found   = False
+    if request.method == 'POST':
+        phone_raw = request.form.get('phone', '').strip()
+        # Normalise: strip non-digits for comparison
+        digits = re.sub(r'[^\d]', '', phone_raw)
+        user = None
+        # Try exact matches on whatsapp or phone columns
+        for candidate in User.query.all():
+            for field in [candidate.whatsapp, candidate.phone]:
+                if field and re.sub(r'[^\d]', '', field) == digits:
+                    user = candidate
+                    break
+            if user:
+                break
+        if user:
+            # Partially mask the email for privacy: j***@gmail.com
+            parts  = user.email.split('@')
+            local  = parts[0]
+            masked = local[0] + '***' + (local[-1] if len(local) > 1 else '') + '@' + parts[1]
+            found_email = masked
+        else:
+            not_found = True
+    return render_template('forgot_email.html',
+                           found_email=found_email,
+                           not_found=not_found,
+                           admin_whatsapp=admin_whatsapp)
 
 
 @app.route('/reset-password/<token>', methods=['GET', 'POST'])
