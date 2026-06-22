@@ -135,10 +135,7 @@ class User(db.Model):
 
     @property
     def max_images(self):
-        if self.is_admin or self.is_pro or self.is_growth: return None
-        if self.is_hustler: return HUSTLER_MAX_IMAGES
-        if self.is_basic:   return BASIC_MAX_IMAGES
-        return GRASSROOTS_MAX_IMAGES
+        return None
 
     @property
     def catalogs_this_period(self):
@@ -157,9 +154,7 @@ class User(db.Model):
 
     @property
     def can_create_catalog(self):
-        if self.is_admin or self.is_pro or self.is_growth or self.is_hustler: return True
-        if self.is_basic: return self.catalogs_this_period < BASIC_MONTHLY_LIMIT
-        return self.catalog_count < FREE_CATALOG_LIMIT
+        return True
 
     @property
     def catalog_count(self):
@@ -432,20 +427,12 @@ def logout():
 def index():
     user     = current_user()
     catalogs = Catalog.query.filter_by(user_id=user.id).order_by(Catalog.updated_at.desc()).all()
-    return render_template('index.html', user=user, catalogs=catalogs,
-                           free_max_images=FREE_MAX_IMAGES,
-                           basic_max_images=BASIC_MAX_IMAGES,
-                           basic_monthly_limit=BASIC_MONTHLY_LIMIT,
-                           basic_price=BASIC_PRICE_PGK,
-                           pro_price=PRO_PRICE_PGK)
+    return render_template('index.html', user=user, catalogs=catalogs)
 
 @app.route('/catalog/new', methods=['POST'])
 @login_required
 def new_catalog():
     user = current_user()
-    if not user.can_create_catalog:
-        flash('You have reached your catalog limit. Upgrade to create more.', 'error')
-        return redirect(url_for('index'))
     catalog = Catalog(user_id=user.id, name='My Catalog')
     db.session.add(catalog)
     db.session.commit()
@@ -646,18 +633,7 @@ def _paste_logo_centered(img, logo, cx, y):
     return y + logo.height
 
 def _apply_watermark(img, user):
-    """Stamp 'Made with CatalogKit' on the cover for Grassroots (free) users."""
-    is_free = not (user.is_admin or user.is_hustler or user.is_growth or
-                   user.is_basic or user.is_pro)
-    if not is_free:
-        return img
-    d = ImageDraw.Draw(img)
-    txt = 'Made with CatalogKit'
-    fnt = _font(_FONT_REG, 13)
-    W = img.width
-    # semi-transparent dark bar at very bottom
-    d.rectangle([0, img.height - 24, W, img.height], fill=(10, 10, 20))
-    _centered_text(d, txt, W // 2, img.height - 19, fnt, (140, 140, 160))
+    """Watermarks disabled — app is free to use."""
     return img
 
 def _gradient_stripe(draw, y0, y1, width):
@@ -954,21 +930,7 @@ def download_catalog(catalog_id):
     if not catalog.get_pages():
         flash('No images in this catalog yet.', 'error')
         return redirect(url_for('workspace', catalog_id=catalog_id))
-    # Enforce per-plan PDF download limits
-    is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or
-                         user.is_hustler or user.is_basic)
-    downloads_so_far = catalog.pdf_downloads or 0
-    if is_grassroots and downloads_so_far >= FREE_PDF_DOWNLOADS:
-        flash('You have used your free PDF download for this catalog. Upgrade to download again.', 'error')
-        return redirect(url_for('workspace', catalog_id=catalog_id))
-    if user.is_hustler and downloads_so_far >= HUSTLER_PDF_DOWNLOADS:
-        flash('You have used all 5 PDF downloads for this catalog. Upgrade to SME Growth for unlimited downloads.', 'error')
-        return redirect(url_for('workspace', catalog_id=catalog_id))
     buf = generate_catalog_pdf(catalog, user)
-    # Increment counter for limited plans
-    if is_grassroots or user.is_hustler:
-        catalog.pdf_downloads = downloads_so_far + 1
-        db.session.commit()
     log_activity(user.id, 'pdf_downloaded', catalog.name)
     safe_name = ''.join(c for c in catalog.name if c.isalnum() or c in ' _-')[:40].strip()
     return send_file(buf, mimetype='application/pdf',
@@ -999,12 +961,7 @@ def delete_catalog(catalog_id):
 def dashboard():
     user    = current_user()
     pending = PaymentRequest.query.filter_by(user_id=user.id, status='pending').first()
-    return render_template('dashboard.html', user=user, pending=pending,
-                           free_max_images=FREE_MAX_IMAGES,
-                           basic_max_images=BASIC_MAX_IMAGES,
-                           basic_price=BASIC_PRICE_PGK,
-                           pro_price=PRO_PRICE_PGK,
-                           basic_monthly_limit=BASIC_MONTHLY_LIMIT)
+    return render_template('dashboard.html', user=user, catalogs=user.catalogs)
 
 
 # ── Forgot / Reset Password ───────────────────────────────────────────────────
@@ -1139,119 +1096,20 @@ def profile():
     return render_template('profile.html', user=user)
 
 
-# ── Upgrade ───────────────────────────────────────────────────────────────────
+# ── Upgrade (disabled — app is free) ──────────────────────────────────────────
 
 @app.route('/upgrade')
-@login_required
+@app.route('/upgrade/submit', methods=['GET', 'POST'])
 def upgrade():
-    user    = current_user()
-    pending = PaymentRequest.query.filter_by(user_id=user.id, status='pending').first()
-    return render_template('upgrade.html', user=user,
-                           payment_info=PAYMENT_INFO,
-                           basic_price=BASIC_PRICE_PGK,
-                           pro_price=PRO_PRICE_PGK,
-                           basic_max_images=BASIC_MAX_IMAGES,
-                           basic_monthly_limit=BASIC_MONTHLY_LIMIT,
-                           pending=pending)
-
-@app.route('/upgrade/submit', methods=['POST'])
-@login_required
-def submit_payment():
-    user = current_user()
-    if user.has_pending_payment():
-        flash('You already have a payment pending approval.', 'error')
-        return redirect(url_for('upgrade'))
-    requested_plan = request.form.get('plan', 'pro')
-    if requested_plan not in ('basic', 'pro'):
-        requested_plan = 'pro'
-    months    = max(1, int(request.form.get('months', 1)))
-    method    = request.form.get('method', '').strip()
-    reference = request.form.get('reference', '').strip()
-    notes     = request.form.get('notes', '').strip()
-    if not method or not reference:
-        flash('Payment method and reference are required.', 'error')
-        return redirect(url_for('upgrade'))
-    price = BASIC_PRICE_PGK if requested_plan == 'basic' else PRO_PRICE_PGK
-    pr = PaymentRequest(
-        user_id=user.id, requested_plan=requested_plan,
-        amount=price * months, months=months,
-        payment_method=method, reference=reference, notes=notes,
-    )
-    db.session.add(pr)
-    db.session.commit()
-
-    # Notify admin
-    ae = admin_email()
-    if ae:
-        send_email(ae,
-            f'New CatalogKit payment — {user.name} ({requested_plan.capitalize()})',
-            f'{user.name} ({user.email}) submitted a {requested_plan.capitalize()} plan payment.\n'
-            f'Amount: K{price * months} for {months} month(s)\n'
-            f'Method: {method}\nReference: {reference}\n'
-            f'Notes: {notes or "(none)"}\n\nReview in the admin panel.'
-        )
-
-    flash('Payment submitted! We will review and activate your plan shortly.', 'success')
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('index'))
 
 
-# ── Pricing page ──────────────────────────────────────────────────────────────
+# ── Pricing (disabled — app is free) ──────────────────────────────────────────
 
 @app.route('/pricing')
-@login_required
+@app.route('/pricing/upgrade', methods=['GET', 'POST'])
 def pricing():
-    user    = current_user()
-    pending = SubscriptionRequest.query.filter_by(user_id=user.id, status='pending').first()
-    return render_template('pricing.html', user=user, pending=pending,
-                           hustler_price=HUSTLER_PRICE_PGK,
-                           growth_price=GROWTH_PRICE_PGK,
-                           hustler_max=HUSTLER_MAX_IMAGES,
-                           payment_info=PAYMENT_INFO)
-
-@app.route('/pricing/upgrade', methods=['POST'])
-@login_required
-def pricing_upgrade():
-    user = current_user()
-    tier = request.form.get('tier', '')
-    if tier not in ('hustler', 'growth'):
-        flash('Invalid tier selected.', 'error')
-        return redirect(url_for('pricing'))
-
-    existing = SubscriptionRequest.query.filter_by(user_id=user.id, status='pending').first()
-    if existing:
-        flash('You already have a pending upgrade request.', 'error')
-        return redirect(url_for('pricing'))
-
-    receipt_filename = None
-    receipt_file = request.files.get('receipt')
-    if receipt_file and receipt_file.filename:
-        ext = os.path.splitext(receipt_file.filename)[1].lower()
-        if ext not in {'.jpg', '.jpeg', '.png', '.webp', '.pdf'}:
-            flash('Receipt must be a JPG, PNG, WebP, or PDF file.', 'error')
-            return redirect(url_for('pricing'))
-        fname = f"{uuid.uuid4().hex}{ext}"
-        receipt_file.save(os.path.join(RECEIPTS_DIR, fname))
-        receipt_filename = fname
-
-    amount = HUSTLER_PRICE_PGK if tier == 'hustler' else GROWTH_PRICE_PGK
-    sr = SubscriptionRequest(user_id=user.id, requested_tier=tier,
-                             amount=amount, receipt_filename=receipt_filename)
-    db.session.add(sr)
-    db.session.commit()
-
-    ae = admin_email()
-    if ae:
-        tier_label = 'Kina Hustler' if tier == 'hustler' else 'SME Growth'
-        send_email(ae,
-            f'CatalogKit — Tier upgrade request: {user.name} → {tier_label}',
-            f'{user.name} ({user.email}) has requested an upgrade to {tier_label} (K{amount}/mo).\n'
-            f'Receipt uploaded: {"Yes" if receipt_filename else "No"}\n'
-            f'Review in the admin panel.')
-
-    tier_name = 'Kina Hustler' if tier == 'hustler' else 'SME Growth'
-    log_activity(user.id, 'plan_upgrade_submitted', tier_name)
-    flash('Upgrade request submitted! We\'ll review your receipt and activate your plan shortly.', 'success')
-    return redirect(url_for('pricing'))
+    return redirect(url_for('index'))
 
 
 # ── Done-For-You / Agency setup ───────────────────────────────────────────────

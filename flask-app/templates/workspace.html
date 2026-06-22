@@ -17,17 +17,6 @@
     </div>
   </div>
 
-  {# ── Plan cap notice ── #}
-  {% if max_images %}
-  <div class="plan-info-bar" style="margin-bottom:18px">
-    {% if user.is_hustler %}
-      <span>&#128293; <strong>Kina Hustler</strong> &nbsp;·&nbsp; Up to {{ max_images }} images per catalog</span>
-    {% else %}
-      <span>&#127807; <strong>Grassroots</strong> &nbsp;·&nbsp; Up to {{ max_images }} images per catalog</span>
-    {% endif %}
-    <a href="/pricing" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade for more &#8594;</a>
-  </div>
-  {% endif %}
 
   {# ── Upload zone ── #}
   <div class="upload-zone" id="upload-zone">
@@ -112,19 +101,7 @@
       <a href="/catalog/{{ catalog.id }}" class="btn btn-success" target="_blank">&#128218; Open Flipbook</a>
       <button class="btn btn-secondary" onclick="copyLink()">&#128279; Copy Link + Message</button>
       <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">&#43; Add More Images</button>
-      {% set is_grassroots = not (user.is_admin or user.is_pro or user.is_growth or user.is_hustler or user.is_basic) %}
-      {% set pdf_used = catalog.pdf_downloads or 0 %}
-      {% if is_grassroots and pdf_used >= 1 %}
-        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="1 PDF download used — upgrade to download more">&#128190; PDF used (1/1) &mdash; <a href="/pricing" style="color:inherit;text-decoration:underline">upgrade</a></span>
-      {% elif user.is_hustler and pdf_used >= 5 %}
-        <span class="btn btn-secondary" style="opacity:0.45;cursor:not-allowed" title="5/5 downloads used — upgrade to SME Growth">&#128190; PDF limit reached (5/5)</span>
-      {% elif user.is_hustler %}
-        <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF ({{ pdf_used }}/5)</a>
-      {% elif is_grassroots %}
-        <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF (0/1 free)</a>
-      {% else %}
-        <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF</a>
-      {% endif %}
+      <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF</a>
     </div>
   </div>
 
@@ -238,14 +215,7 @@ async function processImages(msg = 'Building catalog…') {
     setTimeout(() => setProgress(0), 500);
 
     let metaLine = `${data.count} page${data.count !== 1 ? 's' : ''} · 800×1000px · ready to share`;
-    if (data.capped) {
-      metaLine += ` · first ${data.cap} images used`;
-      setStatus('info',
-        `&#9432; ${data.cap}-image limit applied. ` +
-        `<a href="/upgrade" style="color:inherit;font-weight:700;text-decoration:underline">Upgrade for more &#8594;</a>`);
-    } else {
-      clearStatus();
-    }
+    clearStatus();
 
     readyMeta.textContent = metaLine;
     readyCard.classList.remove('hidden');

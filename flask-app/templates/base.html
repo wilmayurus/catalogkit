@@ -14,14 +14,12 @@
   <div class="nav-links">
     {% if current_user %}
       <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Catalogs</a>
-      <a href="/pricing" {% if request.endpoint == 'pricing' %}class="active"{% endif %}>Pricing</a>
       <a href="/assisted-setup" {% if request.endpoint == 'assisted_setup' %}class="active"{% endif %}>Done For You</a>
       <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>Profile</a>
       {% if current_user.is_admin %}
         <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
       {% endif %}
       <div class="nav-user">
-        <span class="plan-badge plan-{{ current_user.plan_css }}">{{ current_user.plan_label }}</span>
         <a href="/logout" class="btn btn-ghost btn-sm">Sign out</a>
       </div>
     {% else %}

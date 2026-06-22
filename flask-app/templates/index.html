@@ -3,47 +3,13 @@
 {% block body %}
 <div class="container">
 
-  {# ── Plan info bar ── #}
-  {% if current_user.is_basic %}
-  <div class="plan-info-bar">
-    <span>&#11088; <strong>Basic</strong> &nbsp;·&nbsp;
-      {% if current_user.catalogs_remaining == 0 %}No catalogs left this month
-      {% else %}{{ current_user.catalogs_remaining }} catalog{{ 's' if current_user.catalogs_remaining != 1 }} left this month{% endif %}
-      &nbsp;·&nbsp; up to {{ basic_max_images }} images each</span>
-    <a href="/upgrade" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade to Pro &#8594;</a>
-  </div>
-  {% elif not current_user.is_pro and not current_user.is_admin %}
-  <div class="plan-info-bar">
-    <span>&#9675; <strong>Free</strong> &nbsp;·&nbsp; 1 catalog total &nbsp;·&nbsp; max {{ free_max_images }} images</span>
-    <a href="/upgrade" style="color:var(--accent);font-size:0.85rem;font-weight:600;text-decoration:none">Upgrade &#8594;</a>
-  </div>
-  {% endif %}
-
   {# ── Header ── #}
   <div class="section-header" style="margin-top:8px">
     <h2 style="font-size:1.3rem;font-weight:700">My Catalogs</h2>
-    {% if current_user.can_create_catalog %}
     <form method="POST" action="/catalog/new" style="margin:0">
       <button type="submit" class="btn btn-primary">+ New Catalog</button>
     </form>
-    {% else %}
-    <a href="/upgrade" class="btn btn-secondary">&#9733; Upgrade for more</a>
-    {% endif %}
   </div>
-
-  {# ── Limit warning ── #}
-  {% if not current_user.can_create_catalog %}
-  <div class="alert alert-warning" style="margin-bottom:20px">
-    {% if current_user.is_basic %}
-      <strong>&#9888; Monthly limit reached.</strong>
-      You've used your {{ basic_monthly_limit }} catalogs this month.
-      <a href="/upgrade" class="alert-link">Upgrade to Pro</a> for unlimited.
-    {% else %}
-      <strong>&#9888; Free catalog used.</strong>
-      <a href="/upgrade" class="alert-link">See upgrade options</a> to create more.
-    {% endif %}
-  </div>
-  {% endif %}
 
   {# ── Catalog grid ── #}
   {% if catalogs %}
@@ -87,11 +53,9 @@
     <div class="icon">&#128218;</div>
     <p style="font-size:1.1rem;font-weight:600;margin-bottom:8px">No catalogs yet</p>
     <p class="text-muted" style="margin-bottom:28px">Create your first catalog — upload product images and share the flipbook link.</p>
-    {% if current_user.can_create_catalog %}
     <form method="POST" action="/catalog/new" style="margin:0">
       <button type="submit" class="btn btn-primary btn-lg">+ Create First Catalog</button>
     </form>
-    {% endif %}
   </div>
   {% endif %}
 
