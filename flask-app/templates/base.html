@@ -16,7 +16,7 @@
   <div class="nav-links">
     {% if current_user %}
       <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Catalogs</a>
-      <a href="/assisted-setup" {% if request.endpoint == 'assisted_setup' %}class="active"{% endif %}>Done For You</a>
+      {% if not current_user.is_admin %}<a href="/assisted-setup" {% if request.endpoint == 'assisted_setup' %}class="active"{% endif %}>Done For You</a>{% endif %}
       <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>Profile</a>
       {% if current_user.is_admin %}
         <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
