@@ -40,7 +40,7 @@
             <option value="login"  {% if action_f == 'login'  %}selected{% endif %}>Login</option>
             <option value="logout" {% if action_f == 'logout' %}selected{% endif %}>Logout</option>
           {% else %}
-            {% for a in ['catalog_created','catalog_published','catalog_deleted','images_uploaded','pdf_downloaded','plan_upgrade_submitted'] %}
+            {% for a in ['catalog_created','catalog_published','catalog_deleted','images_uploaded','pdf_downloaded','catalog_renamed','profile_updated'] %}
             <option value="{{ a }}" {% if action_f == a %}selected{% endif %}>{{ a | replace('_',' ') | title }}</option>
             {% endfor %}
           {% endif %}
@@ -79,9 +79,9 @@
     <table class="admin-tbl">
       <thead>
         {% if log_type == 'access' %}
-        <tr><th>Timestamp</th><th>User</th><th>Plan</th><th>Action</th><th>IP Address</th><th>Browser / Device</th></tr>
+        <tr><th>Timestamp</th><th>User</th><th>Action</th><th>IP Address</th><th>Browser / Device</th></tr>
         {% else %}
-        <tr><th>Timestamp</th><th>User</th><th>Plan</th><th>Action</th><th>Detail</th></tr>
+        <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Detail</th></tr>
         {% endif %}
       </thead>
       <tbody>
@@ -97,7 +97,6 @@
               <span>{{ log.user.email }}</span>
             </div>
           </td>
-          <td><span class="plan-badge plan-{{ log.user.plan_css }}">{{ log.user.plan_label }}</span></td>
           {% if log_type == 'access' %}
           <td>
             {% if log.action == 'login' %}
@@ -112,20 +111,22 @@
           {% else %}
           <td>
             {% set icons = {
-              'catalog_created':        '📁',
-              'catalog_published':      '✅',
-              'catalog_deleted':        '🗑',
-              'images_uploaded':        '📷',
-              'pdf_downloaded':         '📄',
-              'plan_upgrade_submitted': '⭐'
+              'catalog_created':   '📁',
+              'catalog_published': '✅',
+              'catalog_deleted':   '🗑',
+              'catalog_renamed':   '✏️',
+              'images_uploaded':   '📷',
+              'pdf_downloaded':    '📄',
+              'profile_updated':   '👤'
             } %}
             {% set colors = {
-              'catalog_created':        'chip-blue',
-              'catalog_published':      'chip-green',
-              'catalog_deleted':        'chip-red',
-              'images_uploaded':        'chip-purple',
-              'pdf_downloaded':         'chip-yellow',
-              'plan_upgrade_submitted': 'chip-yellow'
+              'catalog_created':   'chip-blue',
+              'catalog_published': 'chip-green',
+              'catalog_deleted':   'chip-red',
+              'catalog_renamed':   'chip-gray',
+              'images_uploaded':   'chip-purple',
+              'pdf_downloaded':    'chip-yellow',
+              'profile_updated':   'chip-blue'
             } %}
             <span class="chip {{ colors.get(log.action, 'chip-gray') }}">
               {{ icons.get(log.action, '·') }} {{ log.action | replace('_',' ') | title }}

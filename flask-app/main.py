@@ -118,21 +118,11 @@ class User(db.Model):
 
     @property
     def plan_label(self):
-        if self.is_admin:   return 'Admin'
-        if self.is_growth:  return 'SME Growth'
-        if self.is_hustler: return 'Kina Hustler'
-        if self.is_pro:     return 'Pro'
-        if self.is_basic:   return 'Basic'
-        return 'Grassroots'
+        return 'Admin' if self.is_admin else 'Free'
 
     @property
     def plan_css(self):
-        if self.is_admin:   return 'admin'
-        if self.is_growth:  return 'growth'
-        if self.is_hustler: return 'hustler'
-        if self.is_pro:     return 'pro'
-        if self.is_basic:   return 'basic'
-        return 'free'
+        return 'admin' if self.is_admin else 'free'
 
     @property
     def max_images(self):
@@ -562,6 +552,7 @@ def rename_catalog(catalog_id):
         catalog.name       = name
         catalog.updated_at = datetime.utcnow()
         db.session.commit()
+        log_activity(user.id, 'catalog_renamed', name)
     return jsonify({'name': catalog.name})
 
 @app.route('/workspace/<int:catalog_id>/clear', methods=['POST'])
@@ -1096,6 +1087,7 @@ def profile():
         user.payment_methods      = json.dumps(pay)  if pay  else None
         user.bank_account_details = request.form.get('bank_account_details', '').strip() or None
         user.delivery_methods     = json.dumps(delv) if delv else None
+        log_activity(user.id, 'profile_updated', 'Profile information updated')
         # ── SME Growth branding ────────────────────────────────────────────────
         if user.is_growth or user.is_admin:
             color = request.form.get('brand_color', '').strip()
@@ -1178,120 +1170,12 @@ def assisted_setup():
 @app.route('/admin')
 @admin_required
 def admin():
-    pending          = PaymentRequest.query.filter_by(status='pending').order_by(PaymentRequest.submitted_at).all()
-    all_users        = User.query.order_by(User.created_at.desc()).all()
-    recent           = PaymentRequest.query.filter(PaymentRequest.status != 'pending') \
-                           .order_by(PaymentRequest.processed_at.desc()).limit(20).all()
-    sub_requests     = SubscriptionRequest.query.filter_by(status='pending') \
-                           .order_by(SubscriptionRequest.submitted_at).all()
-    agency_requests  = AgencyRequest.query.order_by(AgencyRequest.market_location, AgencyRequest.submitted_at).all()
-    pending_count    = len(sub_requests) + len(pending)
-    return render_template('admin.html', pending=pending, all_users=all_users,
-                           recent=recent, basic_price=BASIC_PRICE_PGK, pro_price=PRO_PRICE_PGK,
-                           sub_requests=sub_requests, agency_requests=agency_requests,
-                           pending_count=pending_count, now=datetime.utcnow(),
+    all_users       = User.query.order_by(User.created_at.desc()).all()
+    agency_requests = AgencyRequest.query.order_by(AgencyRequest.market_location, AgencyRequest.submitted_at).all()
+    return render_template('admin.html', all_users=all_users,
+                           agency_requests=agency_requests,
+                           pending_count=0, now=datetime.utcnow(),
                            admin_active='dashboard')
-
-@app.route('/admin/payment/<int:payment_id>/approve', methods=['POST'])
-@admin_required
-def approve_payment(payment_id):
-    pr = db.session.get(PaymentRequest, payment_id)
-    if not pr:
-        flash('Payment not found.', 'error')
-        return redirect(url_for('admin'))
-    pr.status       = 'approved'
-    pr.processed_at = datetime.utcnow()
-    user              = pr.user
-    months            = pr.months or 1
-    start             = max(datetime.utcnow(), user.plan_expires or datetime.utcnow())
-    user.plan         = pr.requested_plan or 'pro'
-    user.plan_start   = datetime.utcnow()
-    user.plan_expires = start + timedelta(days=30 * months)
-    db.session.commit()
-
-    plan_name = 'Basic' if user.plan == 'basic' else 'Pro'
-    expires   = user.plan_expires.strftime('%d %b %Y')
-    flash(f'Approved! {user.name} is now on {plan_name} until {expires}.', 'success')
-
-    send_email(user.email,
-        f'Your CatalogKit {plan_name} plan is now active!',
-        f'Hi {user.name},\n\nYour payment has been confirmed and your {plan_name} plan '
-        f'is now active until {expires}.\n\nLog in and start building your catalogs!\n\n'
-        f'Thank you for subscribing to CatalogKit.'
-    )
-    return redirect(url_for('admin'))
-
-@app.route('/admin/payment/<int:payment_id>/reject', methods=['POST'])
-@admin_required
-def reject_payment(payment_id):
-    pr = db.session.get(PaymentRequest, payment_id)
-    if not pr:
-        flash('Payment not found.', 'error')
-        return redirect(url_for('admin'))
-    pr.status       = 'rejected'
-    pr.processed_at = datetime.utcnow()
-    db.session.commit()
-    flash('Payment rejected.', 'success')
-
-    user = pr.user
-    send_email(user.email,
-        'CatalogKit — payment could not be verified',
-        f'Hi {user.name},\n\nWe could not verify your recent payment. '
-        f'Please contact us to sort this out.\n\n'
-        f'Contact: {PAYMENT_INFO["contact"]}\n\n'
-        f'Please include your payment reference when you get in touch.'
-    )
-    return redirect(url_for('admin'))
-
-@app.route('/admin/subscription/<int:sr_id>/approve', methods=['POST'])
-@admin_required
-def approve_subscription(sr_id):
-    sr = db.session.get(SubscriptionRequest, sr_id)
-    if not sr:
-        flash('Request not found.', 'error')
-        return redirect(url_for('admin'))
-    sr.status       = 'approved'
-    sr.processed_at = datetime.utcnow()
-    user              = sr.user
-    start             = max(datetime.utcnow(), user.plan_expires or datetime.utcnow())
-    user.plan         = sr.requested_tier
-    user.plan_start   = datetime.utcnow()
-    user.plan_expires = start + timedelta(days=30)
-    db.session.commit()
-    tier_label = sr.tier_label
-    flash(f'Approved! {user.name} is now on {tier_label}.', 'success')
-    send_email(user.email,
-        f'Your CatalogKit {tier_label} plan is now active!',
-        f'Hi {user.name},\n\nYour payment has been confirmed and your {tier_label} plan '
-        f'is now active until {user.plan_expires.strftime("%d %b %Y")}.\n\n'
-        f'Log in and start building your catalogs!\n\nThank you for subscribing to CatalogKit.')
-    return redirect(url_for('admin'))
-
-@app.route('/admin/subscription/<int:sr_id>/reject', methods=['POST'])
-@admin_required
-def reject_subscription(sr_id):
-    sr = db.session.get(SubscriptionRequest, sr_id)
-    if not sr:
-        flash('Request not found.', 'error')
-        return redirect(url_for('admin'))
-    sr.status       = 'rejected'
-    sr.processed_at = datetime.utcnow()
-    db.session.commit()
-    flash('Subscription request rejected.', 'success')
-    return redirect(url_for('admin'))
-
-@app.route('/admin/receipt/<int:sr_id>')
-@admin_required
-def view_receipt(sr_id):
-    sr = db.session.get(SubscriptionRequest, sr_id)
-    if not sr or not sr.receipt_filename:
-        flash('Receipt not found.', 'error')
-        return redirect(url_for('admin'))
-    path = os.path.join(RECEIPTS_DIR, sr.receipt_filename)
-    if not os.path.exists(path):
-        flash('Receipt file missing from server.', 'error')
-        return redirect(url_for('admin'))
-    return send_file(path)
 
 @app.route('/admin/agency/<int:ar_id>/status', methods=['POST'])
 @admin_required
@@ -1342,33 +1226,6 @@ def unsuspend_user(user_id):
         )
     return redirect(url_for('admin'))
 
-@app.route('/admin/user/<int:user_id>/revoke', methods=['POST'])
-@admin_required
-def revoke_pro(user_id):
-    user = db.session.get(User, user_id)
-    if user:
-        user.plan = 'free'; user.plan_expires = None; user.plan_start = None
-        db.session.commit()
-        flash(f'{user.name} reverted to Free plan.', 'success')
-    return redirect(url_for('admin'))
-
-@app.route('/admin/user/<int:user_id>/grant', methods=['POST'])
-@admin_required
-def grant_pro(user_id):
-    user   = db.session.get(User, user_id)
-    months = int(request.form.get('months', 1))
-    plan   = request.form.get('plan', 'pro')
-    if plan not in ('basic', 'pro'): plan = 'pro'
-    if user:
-        start             = max(datetime.utcnow(), user.plan_expires or datetime.utcnow())
-        user.plan         = plan
-        user.plan_start   = datetime.utcnow()
-        user.plan_expires = start + timedelta(days=30 * months)
-        db.session.commit()
-        flash(f'{user.name} granted {plan.capitalize()} for {months} month(s).', 'success')
-    return redirect(url_for('admin'))
-
-
 # ── Admin — Logs ───────────────────────────────────────────────────────────────
 
 @app.route('/admin/logs')
@@ -1414,8 +1271,7 @@ def admin_logs():
         total     = q.count()
 
     total_pages   = max(1, (total + per_page - 1) // per_page)
-    pending_count = SubscriptionRequest.query.filter_by(status='pending').count() + \
-                    PaymentRequest.query.filter_by(status='pending').count()
+    pending_count = 0
     return render_template('admin_logs.html',
                            logs=logs, log_type=log_type, page=page,
                            total=total, total_pages=total_pages,
@@ -1462,12 +1318,13 @@ def admin_reports():
 
     # ── Activity breakdown (last 30 days)
     activity_labels = {
-        'catalog_created':        'Catalogs Created',
-        'catalog_published':      'Catalogs Published',
-        'images_uploaded':        'Image Uploads',
-        'pdf_downloaded':         'PDFs Downloaded',
-        'catalog_deleted':        'Catalogs Deleted',
-        'plan_upgrade_submitted': 'Plan Upgrades Submitted',
+        'catalog_created':   'Catalogs Created',
+        'catalog_published': 'Catalogs Published',
+        'images_uploaded':   'Image Uploads',
+        'pdf_downloaded':    'PDFs Downloaded',
+        'catalog_deleted':   'Catalogs Deleted',
+        'catalog_renamed':   'Catalogs Renamed',
+        'profile_updated':   'Profile Updates',
     }
     activity_counts = {}
     for key, label in activity_labels.items():
@@ -1494,26 +1351,13 @@ def admin_reports():
      .filter(ActivityLog.created_at >= day30)\
      .group_by(User.id).order_by(sqlfunc.count(ActivityLog.id).desc()).limit(10).all()
 
-    # ── Revenue pipeline
-    pending_subs   = SubscriptionRequest.query.filter_by(status='pending').all()
-    approved_subs  = SubscriptionRequest.query.filter_by(status='approved').filter(
-                         SubscriptionRequest.processed_at >= day30).all()
-    pending_rev    = sum(s.amount for s in pending_subs)
-    approved_rev   = sum(s.amount for s in approved_subs)
-    pending_legacy = PaymentRequest.query.filter_by(status='pending').all()
-    pending_rev   += sum(p.amount for p in pending_legacy)
-
-    pending_count = SubscriptionRequest.query.filter_by(status='pending').count() + \
-                    PaymentRequest.query.filter_by(status='pending').count()
     return render_template('admin_reports.html',
         now=now, total_users=total_users, active_30d=active_30d,
         suspended_ct=suspended_ct, new_users_30d=new_users_30d,
         total_catalogs=total_catalogs, total_pdfs=total_pdfs,
-        plan_dist=plan_dist, signup_weeks=signup_weeks,
+        signup_weeks=signup_weeks,
         activity_counts=activity_counts, login_days=login_days,
-        top_users=top_users, pending_rev=pending_rev, approved_rev=approved_rev,
-        pending_subs=pending_subs, approved_subs=approved_subs,
-        pending_count=pending_count, admin_active='reports')
+        top_users=top_users, pending_count=0, admin_active='reports')
 
 
 # ── Context processor ─────────────────────────────────────────────────────────
