@@ -82,16 +82,48 @@
       <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the payment options your business accepts.</p>
 
       {% set saved_pay = (user.payment_methods or '[]') | fromjson %}
-      <div style="display:flex;flex-direction:column;gap:10px">
-        {% for method in ['BSP Mobile Banking', 'BSP Wantok Wallet (Phone Number / Cardless ATM)', 'CellMoni (Digicel Mobile Wallet)', 'Internet Banking', 'Cash on Delivery'] %}
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
-          <input type="checkbox" name="payment_methods" value="{{ method }}"
-                 {% if method in saved_pay %}checked{% endif %}
-                 style="width:16px;height:16px;accent-color:var(--accent)">
-          {{ method }}
-        </label>
-        {% endfor %}
+
+      {% set payment_groups = [
+        ('Internet Banking', [
+          'BSP Internet Banking / Business Online (Bank South Pacific)',
+          'Kina Personal Online / Corporate Online (Kina Bank)',
+          'Westpac Corporate Online / Internet Banking (Westpac PNG)',
+          'TISA Internet Banking (Tisa Bank)',
+          'NBCL Online Banking (National Banking Corporation)',
+          'CBP Internet Banking (Credit Bank PNG)',
+        ]),
+        ('Mobile Banking', [
+          'BSP Mobile Banking App & USSD (*131#) (Bank South Pacific)',
+          'Kina Mobile Banking App (Kina Bank)',
+          'TISA Bank App (Tisa Bank)',
+          'NBCL Mobile Banking App (National Banking Corporation)',
+          'CBP Mobile Banking App (Credit Bank PNG)',
+          'Westpac PNG Mobile Banking App & USSD (Westpac PNG)',
+          'ANZ goMoney PNG (ANZ Bank)',
+        ]),
+        ('Mobile E-Wallets & QR Networks', [
+          'Wantok Wallet (Bank South Pacific)',
+          'YumiPei Wallet (Tisa Bank)',
+          'Pei Beta Wallet / Kina Pei (Kina Bank)',
+          'SevisWallet / SevisPay (Independent / National Digital ID Network)',
+        ]),
+      ] %}
+
+      {% for group_name, methods in payment_groups %}
+      <div style="margin-bottom:16px">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">{{ group_name }}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          {% for method in methods %}
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.875rem">
+            <input type="checkbox" name="payment_methods" value="{{ method }}"
+                   {% if method in saved_pay %}checked{% endif %}
+                   style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+            {{ method }}
+          </label>
+          {% endfor %}
+        </div>
       </div>
+      {% endfor %}
 
       <div class="field" style="margin-top:18px">
         <label>Account Details <span class="text-muted" style="font-weight:400;font-size:0.8rem">(optional)</span></label>
