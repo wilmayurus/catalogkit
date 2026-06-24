@@ -5,13 +5,13 @@
   --surface: #1a1a22;
   --surface2: #22222e;
   --border: #2e2e3e;
-  --accent: #7c5cfc;
-  --accent-glow: rgba(124,92,252,0.25);
-  --accent2: #fc5c9c;
+  --accent: #C41230;
+  --accent-glow: rgba(196,18,48,0.25);
+  --accent2: #F5A800;
   --text: #e8e8f0;
-  --muted: #7878a0;
+  --muted: #8888a0;
   --success: #3ecf8e;
-  --warning: #f6c44e;
+  --warning: #F5A800;
   --danger: #fc5c5c;
   --radius: 14px;
   --radius-sm: 8px;
@@ -44,14 +44,14 @@ nav {
 }
 
 .nav-brand {
-  font-weight: 700;
-  font-size: 1.1rem;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  opacity: 0.95;
+  transition: opacity 0.2s;
 }
+
+.nav-brand:hover { opacity: 1; }
 
 .nav-links { display: flex; gap: 8px; }
 
@@ -302,7 +302,7 @@ nav {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #9c5cfc);
+  background: linear-gradient(135deg, var(--accent), #e02040);
   color: #fff;
   box-shadow: 0 4px 20px var(--accent-glow);
 }
