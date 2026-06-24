@@ -135,30 +135,28 @@
             <td>
               <div class="action-group" style="flex-wrap:wrap;gap:6px">
                 <a href="/admin/logs?type=activity&user_id={{ u.id }}" class="btn btn-secondary btn-sm">📋 Activity</a>
-                {% if me.is_admin and u.id != me.id %}
-                  {# ── Role selector ── #}
-                  <form method="POST" action="/admin/user/{{ u.id }}/set-role" style="display:flex;gap:4px;align-items:center">
-                    <select name="role" class="filter-select" style="padding:5px 8px;font-size:0.8rem">
-                      <option value="user"      {% if not u.is_admin and not u.is_moderator %}selected{% endif %}>User</option>
-                      <option value="moderator" {% if u.is_moderator %}selected{% endif %}>Moderator</option>
-                      <option value="admin"     {% if u.is_admin %}selected{% endif %}>Admin</option>
-                    </select>
-                    <button class="btn btn-secondary btn-sm" title="Save role">✓</button>
-                  </form>
-                  {# ── Suspend / Reinstate ── #}
-                  {% if not u.is_admin %}
+                {% if me.is_admin %}
+                  <a href="/admin/user/{{ u.id }}/edit" class="btn btn-secondary btn-sm">✏ Edit</a>
+                  {% if u.id != me.id and not u.is_admin %}
                     {% if u.is_suspended %}
                       <form method="POST" action="/admin/user/{{ u.id }}/unsuspend">
                         <button class="btn btn-success btn-sm" onclick="return confirm('Reinstate {{ u.name }}?')">✓ Reinstate</button>
                       </form>
                     {% else %}
                       <form method="POST" action="/admin/user/{{ u.id }}/suspend">
-                        <button class="btn btn-danger btn-sm" onclick="return confirm('Suspend {{ u.name }}? They cannot log in until reinstated.')">⊘ Suspend</button>
+                        <button class="btn btn-danger btn-sm" onclick="return confirm('Suspend {{ u.name }}?')">⊘ Suspend</button>
                       </form>
                     {% endif %}
+                    <form method="POST" action="/admin/user/{{ u.id }}/delete"
+                          onsubmit="return confirm('Permanently delete {{ u.name }} and all their catalogs? This cannot be undone.')">
+                      <button class="btn btn-danger btn-sm">🗑</button>
+                    </form>
                   {% endif %}
-                {% elif u.id == me.id %}
-                  <span style="color:var(--muted);font-size:0.75rem">(you)</span>
+                {% else %}
+                  {# Moderator: activity log only #}
+                  {% if u.id == me.id %}
+                    <span style="color:var(--muted);font-size:0.75rem">(you)</span>
+                  {% endif %}
                 {% endif %}
               </div>
             </td>

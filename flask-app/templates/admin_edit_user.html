@@ -1,0 +1,153 @@
+{% extends 'admin_base.html' %}
+{% block admin_title %}Edit User{% endblock %}
+{% block page_title %}Edit User{% endblock %}
+{% block page_crumb %}{{ u.name }} — {{ u.email }}{% endblock %}
+
+{% block topbar_right %}
+  <a href="/admin#users" class="btn btn-secondary btn-sm">← Back to Users</a>
+{% endblock %}
+
+{% block admin_body %}
+
+<div style="max-width:680px">
+
+  <!-- User info header -->
+  <div style="display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px">
+    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;color:#fff;flex-shrink:0">
+      {{ u.name[0].upper() }}
+    </div>
+    <div>
+      <div style="font-weight:700;font-size:1rem">{{ u.name }}</div>
+      <div style="font-size:0.82rem;color:var(--muted)">{{ u.email }} · Joined {{ u.created_at.strftime('%d %b %Y') }} · {{ u.catalog_count }} catalog{% if u.catalog_count != 1 %}s{% endif %}</div>
+    </div>
+    <div style="margin-left:auto">
+      {% if u.is_admin %}
+        <span class="chip chip-yellow">Admin</span>
+      {% elif u.is_moderator %}
+        <span class="chip chip-blue">Moderator</span>
+      {% elif u.is_suspended %}
+        <span class="chip chip-red">Suspended</span>
+      {% else %}
+        <span class="chip chip-green">User</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="POST" action="/admin/user/{{ u.id }}/edit">
+
+    <!-- Account details -->
+    <div class="admin-section" style="margin-bottom:20px">
+      <div class="admin-section-head">
+        <div class="admin-section-title">👤 Account Details</div>
+      </div>
+      <div class="admin-section-body" style="padding:20px 24px;display:flex;flex-direction:column;gap:16px">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" name="name" value="{{ u.name }}" required
+                   style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+          </div>
+          <div class="field">
+            <label>Email Address</label>
+            <input type="email" name="email" value="{{ u.email }}" required
+                   style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="field">
+            <label>Business Name</label>
+            <input type="text" name="business_name" value="{{ u.business_name or '' }}"
+                   style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+          </div>
+          <div class="field">
+            <label>Contact Person</label>
+            <input type="text" name="contact_person" value="{{ u.contact_person or '' }}"
+                   style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+          <div class="field">
+            <label>Location</label>
+            <input type="text" name="location" value="{{ u.location or '' }}"
+                   style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+          </div>
+          <div class="field">
+            <label>WhatsApp</label>
+            <input type="text" name="whatsapp" value="{{ u.whatsapp or '' }}"
+                   style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+          </div>
+          <div class="field">
+            <label>Phone</label>
+            <input type="text" name="phone" value="{{ u.phone or '' }}"
+                   style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Access level -->
+    {% if u.id != me.id %}
+    <div class="admin-section" style="margin-bottom:20px">
+      <div class="admin-section-head">
+        <div class="admin-section-title">🔑 Access Level</div>
+      </div>
+      <div class="admin-section-body" style="padding:20px 24px;display:flex;flex-direction:column;gap:10px">
+        {% for val, label, desc in [
+          ('user',      'User',      'Standard account — can create catalogs and use all features.'),
+          ('moderator', 'Moderator', 'Can view the admin panel (users, logs, reports) but cannot suspend or delete accounts.'),
+          ('admin',     'Admin',     'Full admin access — can manage all users, roles, and data.')
+        ] %}
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--surface);border:1px solid {% if (u.is_admin and val=='admin') or (u.is_moderator and val=='moderator') or (not u.is_admin and not u.is_moderator and val=='user') %}var(--accent){% else %}var(--border){% endif %};border-radius:10px;padding:12px 14px">
+          <input type="radio" name="access_level" value="{{ val }}"
+                 {% if (u.is_admin and val=='admin') or (u.is_moderator and val=='moderator') or (not u.is_admin and not u.is_moderator and val=='user') %}checked{% endif %}
+                 style="margin-top:3px;accent-color:var(--accent)">
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;color:var(--text)">{{ label }}</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">{{ desc }}</div>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Reset password -->
+    <div class="admin-section" style="margin-bottom:24px">
+      <div class="admin-section-head">
+        <div class="admin-section-title">🔒 Reset Password</div>
+      </div>
+      <div class="admin-section-body" style="padding:20px 24px">
+        <div class="field">
+          <label>New Password <span class="text-muted" style="font-weight:400;font-size:0.8rem">(leave blank to keep current)</span></label>
+          <input type="password" name="new_password" placeholder="Enter a new password…"
+                 style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px">
+      <button type="submit" class="btn btn-primary" style="flex:1;padding:13px;font-weight:700">💾 Save Changes</button>
+      <a href="/admin#users" class="btn btn-secondary" style="padding:13px 20px">Cancel</a>
+    </div>
+
+  </form>
+
+  <!-- Danger zone -->
+  {% if u.id != me.id and not u.is_admin %}
+  <div style="margin-top:32px;background:rgba(252,92,92,0.05);border:1px solid rgba(252,92,92,0.2);border-radius:var(--radius);padding:20px 24px">
+    <div style="font-weight:700;color:var(--danger);margin-bottom:6px">⚠ Danger Zone</div>
+    <p style="font-size:0.85rem;color:var(--muted);margin:0 0 16px">Permanently deletes this user and all their catalogs. This cannot be undone.</p>
+    <form method="POST" action="/admin/user/{{ u.id }}/delete"
+          onsubmit="return confirm('Delete {{ u.name }}? This will permanently remove their account and all {{ u.catalog_count }} catalog(s). This cannot be undone.')">
+      <button type="submit" class="btn btn-danger">🗑 Delete {{ u.name }}'s Account</button>
+    </form>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

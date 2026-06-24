@@ -1142,6 +1142,65 @@ def set_user_role(user_id):
     flash(f'{target.name}\'s role updated to {role.title()}.', 'success')
     return redirect(url_for('admin'))
 
+@app.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@full_admin_required
+def admin_edit_user(user_id):
+    me     = db.session.get(User, session['user_id'])
+    target = db.session.get(User, user_id)
+    if not target:
+        flash('User not found.', 'error')
+        return redirect(url_for('admin'))
+    if request.method == 'POST':
+        new_email = request.form.get('email', '').strip().lower()
+        # Email uniqueness check (skip if unchanged)
+        if new_email != target.email:
+            existing = User.query.filter_by(email=new_email).first()
+            if existing:
+                flash('That email is already in use by another account.', 'error')
+                return render_template('admin_edit_user.html', u=target, me=me,
+                                       admin_active='users', now=datetime.utcnow(), pending_count=0)
+        target.name           = request.form.get('name', target.name).strip()
+        target.email          = new_email or target.email
+        target.business_name  = request.form.get('business_name', '').strip() or None
+        target.contact_person = request.form.get('contact_person', '').strip() or None
+        target.location       = request.form.get('location', '').strip() or None
+        target.whatsapp       = request.form.get('whatsapp', '').strip() or None
+        target.phone          = request.form.get('phone', '').strip() or None
+        new_password = request.form.get('new_password', '').strip()
+        if new_password:
+            target.password_hash = generate_password_hash(new_password)
+        # Access level (only if editing someone other than yourself)
+        if target.id != me.id:
+            level = request.form.get('access_level', 'user')
+            target.is_admin     = (level == 'admin')
+            target.is_moderator = (level == 'moderator')
+        db.session.commit()
+        log_activity(target.id, 'profile_edited_by_admin', f'Profile edited by admin {me.email}')
+        flash(f'{target.name}\'s profile has been updated.', 'success')
+        return redirect(url_for('admin'))
+    return render_template('admin_edit_user.html', u=target, me=me,
+                           admin_active='users', now=datetime.utcnow(), pending_count=0)
+
+@app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
+@full_admin_required
+def admin_delete_user(user_id):
+    me     = db.session.get(User, session['user_id'])
+    target = db.session.get(User, user_id)
+    if not target:
+        flash('User not found.', 'error')
+        return redirect(url_for('admin'))
+    if target.id == me.id:
+        flash('You cannot delete your own account.', 'error')
+        return redirect(url_for('admin'))
+    if target.is_admin:
+        flash('Cannot delete another admin account.', 'error')
+        return redirect(url_for('admin'))
+    name = target.name
+    db.session.delete(target)
+    db.session.commit()
+    flash(f'{name}\'s account and all their catalogs have been permanently deleted.', 'success')
+    return redirect(url_for('admin'))
+
 # ── Admin — Logs ───────────────────────────────────────────────────────────────
 
 @app.route('/admin/logs')
