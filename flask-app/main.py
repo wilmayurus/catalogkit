@@ -1082,6 +1082,7 @@ def reset_password(token):
 def profile():
     user = current_user()
     if request.method == 'POST':
+        was_incomplete = not user.profile_complete
         user.business_name  = request.form.get('business_name', '').strip() or None
         user.contact_person = request.form.get('contact_person', '').strip() or None
         user.location       = request.form.get('location', '').strip() or None
@@ -1115,6 +1116,13 @@ def profile():
                 else:
                     flash('Logo must be JPG, PNG, or WebP.', 'error')
         db.session.commit()
+        # First-time profile completion → go straight to a new catalog
+        if was_incomplete and user.profile_complete:
+            catalog = Catalog(user_id=user.id, name='My Catalog')
+            db.session.add(catalog)
+            db.session.commit()
+            log_activity(user.id, 'catalog_created', catalog.name)
+            return redirect(url_for('workspace', catalog_id=catalog.id))
         flash('Profile updated!', 'success')
         return redirect(url_for('profile'))
     return render_template('profile.html', user=user)
