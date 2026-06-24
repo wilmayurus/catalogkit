@@ -38,33 +38,11 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_FROM', _mail_user)
 db   = SQLAlchemy(app)
 mail = Mail(app)
 
-# ── Plan constants ────────────────────────────────────────────────────────────
+# ── Constants ─────────────────────────────────────────────────────────────────
 TARGET_WIDTH  = 800
 TARGET_HEIGHT = 1000
-ALLOWED_EXTENSIONS    = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
-FREE_CATALOG_LIMIT    = 2
-FREE_MAX_IMAGES       = 5
-GRASSROOTS_MAX_IMAGES = 10
-FREE_PDF_DOWNLOADS    = 1   # downloads allowed per catalog on Grassroots plan
-HUSTLER_PDF_DOWNLOADS = 5   # downloads allowed per catalog on Kina Hustler plan
-BASIC_MAX_IMAGES      = 20
-BASIC_PRICE_PGK       = 5
-BASIC_MONTHLY_LIMIT   = 2
-PRO_PRICE_PGK         = 20
-HUSTLER_PRICE_PGK     = 15
-HUSTLER_MAX_IMAGES    = 30
-GROWTH_PRICE_PGK      = 50
+ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 
-PAYMENT_INFO = {
-    'cell_moni':        os.environ.get('CELL_MONI_NUMBER',  '7XX XXX XXX'),
-    'bank':             os.environ.get('BANK_ACCOUNT',      'BSP — Account: 1000XXXXXX — Name: Your Business Name'),
-    'contact':          os.environ.get('ADMIN_CONTACT',     'admin@youremail.com'),
-    'kina_bank_name':   os.environ.get('KINA_BANK_NAME',    'CatalogKit PNG'),
-    'kina_bank_account':os.environ.get('KINA_BANK_ACCOUNT', '1000 0000 0000'),
-}
-
-RECEIPTS_DIR = os.path.join('static', 'receipts')
-os.makedirs(RECEIPTS_DIR, exist_ok=True)
 LOGOS_DIR = os.path.join('static', 'logos')
 os.makedirs(LOGOS_DIR, exist_ok=True)
 
@@ -98,23 +76,6 @@ class User(db.Model):
     suspended_at  = db.Column(db.DateTime, nullable=True)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
     catalogs      = db.relationship('Catalog', backref='user', lazy=True, cascade='all, delete-orphan')
-    payments      = db.relationship('PaymentRequest', backref='user', lazy=True, cascade='all, delete-orphan')
-
-    @property
-    def is_basic(self):
-        return self.plan == 'basic' and bool(self.plan_expires) and self.plan_expires > datetime.utcnow()
-
-    @property
-    def is_pro(self):
-        return self.plan == 'pro' and bool(self.plan_expires) and self.plan_expires > datetime.utcnow()
-
-    @property
-    def is_hustler(self):
-        return self.plan == 'hustler' and bool(self.plan_expires) and self.plan_expires > datetime.utcnow()
-
-    @property
-    def is_growth(self):
-        return self.plan == 'growth' and bool(self.plan_expires) and self.plan_expires > datetime.utcnow()
 
     @property
     def plan_label(self):
@@ -125,34 +86,12 @@ class User(db.Model):
         return 'admin' if self.is_admin else 'free'
 
     @property
-    def max_images(self):
-        return None
-
-    @property
-    def catalogs_this_period(self):
-        if not self.plan_start:
-            return Catalog.query.filter_by(user_id=self.id).count()
-        return Catalog.query.filter(
-            Catalog.user_id == self.id,
-            Catalog.created_at >= self.plan_start
-        ).count()
-
-    @property
-    def catalogs_remaining(self):
-        if self.is_admin or self.is_pro: return None
-        if self.is_basic: return max(0, BASIC_MONTHLY_LIMIT - self.catalogs_this_period)
-        return None
-
-    @property
     def can_create_catalog(self):
         return True
 
     @property
     def catalog_count(self):
         return Catalog.query.filter_by(user_id=self.id).count()
-
-    def has_pending_payment(self):
-        return any(p.status == 'pending' for p in self.payments)
 
     @property
     def profile_complete(self):
@@ -200,41 +139,6 @@ class Catalog(db.Model):
         path = os.path.join('static', 'processed', str(self.user_id), str(self.id))
         os.makedirs(path, exist_ok=True)
         return path
-
-
-class PaymentRequest(db.Model):
-    id             = db.Column(db.Integer, primary_key=True)
-    user_id        = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    requested_plan = db.Column(db.String(20), default='pro')
-    amount         = db.Column(db.Float, default=20.0)
-    payment_method = db.Column(db.String(100))
-    reference      = db.Column(db.String(500))
-    notes          = db.Column(db.Text)
-    status         = db.Column(db.String(20), default='pending')
-    months         = db.Column(db.Integer, default=1)
-    submitted_at   = db.Column(db.DateTime, default=datetime.utcnow)
-    processed_at   = db.Column(db.DateTime, nullable=True)
-
-
-class SubscriptionRequest(db.Model):
-    """Receipt-upload based subscription upgrade requests (new tier system)."""
-    id               = db.Column(db.Integer, primary_key=True)
-    user_id          = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    requested_tier   = db.Column(db.String(20))   # 'hustler' | 'growth'
-    amount           = db.Column(db.Float)
-    receipt_filename = db.Column(db.String(500), nullable=True)
-    status           = db.Column(db.String(20), default='pending')  # pending|approved|rejected
-    submitted_at     = db.Column(db.DateTime, default=datetime.utcnow)
-    processed_at     = db.Column(db.DateTime, nullable=True)
-    user             = db.relationship('User', backref=db.backref('subscription_requests', lazy=True))
-
-    @property
-    def tier_label(self):
-        return 'Kina Hustler' if self.requested_tier == 'hustler' else 'SME Growth'
-
-    @property
-    def tier_css(self):
-        return 'hustler' if self.requested_tier == 'hustler' else 'growth'
 
 
 class AgencyRequest(db.Model):
@@ -362,7 +266,7 @@ def get_catalog_or_404(catalog_id, user):
 _PROFILE_EXEMPT = {
     'profile', 'logout', 'login', 'register',
     'forgot_password', 'forgot_email', 'reset_password',
-    'static', 'assisted_setup', 'pricing', 'upgrade',
+    'static', 'assisted_setup',
 }
 
 @app.before_request
@@ -465,10 +369,7 @@ def workspace(catalog_id):
     if not catalog:
         flash('Catalog not found.', 'error')
         return redirect(url_for('index'))
-    return render_template('workspace.html', user=user, catalog=catalog,
-                           max_images=user.max_images,
-                           free_max_images=FREE_MAX_IMAGES,
-                           basic_max_images=BASIC_MAX_IMAGES)
+    return render_template('workspace.html', user=user, catalog=catalog)
 
 @app.route('/workspace/<int:catalog_id>/upload', methods=['POST'])
 @login_required
@@ -502,11 +403,6 @@ def process(catalog_id):
     name      = data.get('name', '').strip() or catalog.name
     prices    = data.get('prices', {})   # {orig_filename: "K25"}
     names     = data.get('names',  {})   # {orig_filename: "Red Dress"}
-    image_cap = user.max_images
-    capped    = False
-    if image_cap and len(order) > image_cap:
-        order, capped = order[:image_cap], True
-
     proc_dir = catalog.processed_dir
     for old in os.listdir(proc_dir):
         os.remove(os.path.join(proc_dir, old))
@@ -538,7 +434,7 @@ def process(catalog_id):
     db.session.commit()
     log_activity(user.id, 'catalog_published', f'{name} ({len(processed)} pages)')
     return jsonify({'processed': [p['file'] for p in processed], 'count': len(processed),
-                    'capped': capped, 'cap': image_cap, 'errors': errors})
+                    'errors': errors})
 
 @app.route('/workspace/<int:catalog_id>/rename', methods=['POST'])
 @login_required
@@ -618,8 +514,8 @@ def _hex_to_rgb(hex_color, fallback=(108, 99, 255)):
         return fallback
 
 def _accent_rgb(user):
-    """Brand colour for SME Growth/Admin, default purple otherwise."""
-    if (user.is_growth or user.is_admin) and user.brand_color:
+    """Brand colour from user profile, default purple otherwise."""
+    if user.brand_color:
         return _hex_to_rgb(user.brand_color)
     return (108, 99, 255)
 
@@ -686,7 +582,7 @@ def _wrapped_text(draw, text, cx, y, font, fill, max_width):
 def _make_cover(catalog, user):
     W, H     = 800, 1000
     accent   = _accent_rgb(user)
-    can_brand = user.is_growth or user.is_admin
+    can_brand = True
     layout   = (user.pdf_layout or 'classic') if can_brand else 'classic'
 
     # ── Layout: Modern ────────────────────────────────────────────────────────
@@ -1122,22 +1018,6 @@ def profile():
     return render_template('profile.html', user=user)
 
 
-# ── Upgrade (disabled — app is free) ──────────────────────────────────────────
-
-@app.route('/upgrade')
-@app.route('/upgrade/submit', methods=['GET', 'POST'])
-def upgrade():
-    return redirect(url_for('index'))
-
-
-# ── Pricing (disabled — app is free) ──────────────────────────────────────────
-
-@app.route('/pricing')
-@app.route('/pricing/upgrade', methods=['GET', 'POST'])
-def pricing():
-    return redirect(url_for('index'))
-
-
 # ── Done-For-You / Agency setup ───────────────────────────────────────────────
 
 @app.route('/assisted-setup', methods=['GET', 'POST'])
@@ -1299,12 +1179,6 @@ def admin_reports():
     new_users_30d  = User.query.filter(User.created_at >= day30).count()
     total_catalogs = Catalog.query.count()
     total_pdfs     = db.session.query(db.func.sum(Catalog.pdf_downloads)).scalar() or 0
-
-    # ── Plan distribution
-    plan_dist = {}
-    for u in User.query.all():
-        label = u.plan_label
-        plan_dist[label] = plan_dist.get(label, 0) + 1
 
     # ── New signups per week (last 8 weeks)
     signup_weeks = []

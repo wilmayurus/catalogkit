@@ -821,22 +821,6 @@ nav {
 /* ── NAV USER ── */
 .nav-user { display: flex; align-items: center; gap: 8px; }
 
-.plan-badge {
-  padding: 3px 10px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.plan-free     { background: var(--surface2); color: var(--muted); }
-.plan-pro      { background: linear-gradient(135deg,#7c5cfc,#fc5c9c); color:#fff; }
-.plan-admin    { background: rgba(246,196,78,0.15); color: var(--warning); border:1px solid rgba(246,196,78,0.3); }
-.plan-hustler  { background: linear-gradient(135deg,#7c5cfc,#5c9cfc); color:#fff; }
-.plan-growth   { background: linear-gradient(135deg,#f6a01a,#f6c44e); color:#0f0f13; }
-.plan-basic    { background: rgba(124,92,252,0.15); color:var(--accent); border:1px solid rgba(124,92,252,0.3); }
-
 /* ── FLASH MESSAGES ── */
 .flash-wrap { padding: 0 20px; max-width: 960px; margin: 12px auto 0; }
 
@@ -863,88 +847,6 @@ nav {
 .alert-warning { background: rgba(246,196,78,0.1); border:1px solid rgba(246,196,78,0.3); color: var(--warning); }
 .alert-info { background: rgba(124,92,252,0.1); border:1px solid rgba(124,92,252,0.3); color: #b09cfc; }
 .alert-link { color: inherit; font-weight: 700; }
-
-/* ── PLAN CARD ── */
-.plan-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-top: 24px;
-}
-
-.plan-card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing:0.08em; color: var(--muted); margin-bottom: 4px; }
-
-.plan-card-name {
-  font-size: 1.6rem;
-  font-weight: 800;
-}
-.plan-card-name.free { color: var(--muted); }
-.plan-card-name.pro { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.plan-card-name.admin { color: var(--warning); }
-.plan-card-meta { font-size: 0.875rem; color: var(--muted); margin-top:4px; }
-
-.pending-badge {
-  background: rgba(246,196,78,0.1);
-  border: 1px solid rgba(246,196,78,0.3);
-  color: var(--warning);
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-/* ── PLAN COMPARE ── */
-.compare-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.compare-col {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  position: relative;
-}
-
-.compare-pro {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 8px 32px var(--accent-glow);
-}
-
-.compare-col-badge {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-  padding: 3px 14px;
-  border-radius: 100px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.compare-col-head { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; }
-
-.compare-list { list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.875rem; }
-.compare-list .dim { color: var(--muted); }
-
-.compare-price {
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin-top: 20px;
-}
-.compare-price span { font-size: 1rem; color: var(--muted); font-weight: 400; }
 
 /* ── CATALOG LIST ── */
 .catalog-list { display: flex; flex-direction: column; gap: 10px; }
@@ -973,51 +875,6 @@ nav {
   font-size: 0.9rem;
 }
 .info-row span { color: var(--muted); }
-
-/* ── UPGRADE PAGE ── */
-.upgrade-step {
-  display: flex;
-  gap: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 16px;
-}
-
-.upgrade-step-num {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, var(--accent), #9c5cfc);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.upgrade-step-body { flex: 1; }
-.upgrade-step-body h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
-
-.payment-methods { display: flex; flex-direction: column; gap: 12px; }
-
-.payment-method {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-}
-
-.payment-method-icon { font-size: 1.4rem; flex-shrink: 0; }
-.payment-method-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
-.payment-method-detail { font-size: 0.85rem; color: var(--muted); }
 
 /* ── ADMIN TABLE ── */
 .sub-heading {
@@ -1080,9 +937,6 @@ nav {
 /* ── RESPONSIVE ── */
 @media (max-width: 500px) {
   .auth-card { padding: 28px 20px; }
-  .plan-card { flex-direction: column; align-items: flex-start; }
-  .compare-grid { grid-template-columns: 1fr; }
-  .upgrade-step { flex-direction: column; }
   .nav-user .btn-ghost { display: none; }
 }
 
@@ -1133,143 +987,6 @@ nav {
   .catalog-ready-card { flex-direction: column; align-items: flex-start; }
   .catalog-ready-actions { width: 100%; }
   .catalog-ready-actions .btn { flex: 1; justify-content: center; }
-}
-
-/* ── UPGRADE PLAN CARDS ── */
-.upgrade-plan-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
-.upgrade-plan-card {
-  background: var(--surface);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  position: relative;
-  user-select: none;
-}
-
-.upgrade-plan-card:hover { border-color: var(--accent); }
-
-.upgrade-plan-card-featured {
-  border-color: rgba(124,92,252,0.4);
-}
-
-.upgrade-plan-card-selected {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 1px var(--accent), 0 4px 20px var(--accent-glow);
-  background: rgba(124,92,252,0.06);
-}
-
-.upgrade-plan-check {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  flex-shrink: 0;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.upgrade-plan-check.checked {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.upgrade-plan-check.checked::after {
-  content: '✓';
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
-}
-
-.upgrade-plan-badge {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff;
-  padding: 2px 12px;
-  border-radius: 100px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.upgrade-plan-body { flex: 1; min-width: 0; }
-
-.upgrade-plan-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  margin-bottom: 2px;
-}
-
-.upgrade-plan-desc {
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-.upgrade-plan-price {
-  font-size: 1.2rem;
-  font-weight: 800;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.upgrade-plan-price span {
-  font-size: 0.8rem;
-  font-weight: 400;
-  color: var(--muted);
-}
-
-/* ── 3-COL COMPARE GRID ── */
-.compare-grid-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.compare-active {
-  border-color: rgba(124,92,252,0.35);
-  background: rgba(124,92,252,0.04);
-}
-
-/* ── PLAN BADGE: BASIC ── */
-.plan-basic {
-  background: linear-gradient(135deg, #f6c44e, #fc8c3c);
-  color: #fff;
-}
-
-/* ── PLAN INFO BANNER ── */
-.plan-info-bar {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.plan-info-bar strong { color: var(--text); }
-
-@media (max-width: 540px) {
-  .upgrade-plan-cards { grid-template-columns: 1fr; }
-  .compare-grid-3 { grid-template-columns: 1fr; }
 }
 
 /* ── CATALOG CARDS GRID ── */

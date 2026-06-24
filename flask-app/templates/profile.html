@@ -179,11 +179,10 @@
       {% endfor %}
     </div>
 
-    {% if user.is_growth or user.is_admin %}
-    <div class="field-group" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border:2px solid #f6c44e;border-radius:14px;padding:24px;margin-bottom:20px">
+    <div class="field-group" style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-        <span style="font-size:1.1rem">&#9733;</span>
-        <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f6c44e;margin:0">SME Growth — Custom Branding</h3>
+        <span style="font-size:1.1rem">🎨</span>
+        <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text);margin:0">Custom Branding</h3>
       </div>
       <p class="text-muted" style="font-size:0.8rem;margin:0 0 20px">Your logo, brand colour, and layout appear on every PDF you generate.</p>
 
@@ -233,7 +232,6 @@
         </div>
       </div>
     </div>
-    {% endif %}
 
     <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;border-radius:12px">
       Save Profile
