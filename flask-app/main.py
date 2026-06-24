@@ -72,6 +72,7 @@ class User(db.Model):
     plan_expires  = db.Column(db.DateTime, nullable=True)
     plan_start    = db.Column(db.DateTime, nullable=True)
     is_admin      = db.Column(db.Boolean, default=False)
+    is_moderator  = db.Column(db.Boolean, default=False)
     is_suspended  = db.Column(db.Boolean, default=False)
     suspended_at  = db.Column(db.DateTime, nullable=True)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
@@ -79,11 +80,15 @@ class User(db.Model):
 
     @property
     def plan_label(self):
-        return 'Admin' if self.is_admin else 'Free'
+        if self.is_admin: return 'Admin'
+        if self.is_moderator: return 'Moderator'
+        return 'User'
 
     @property
     def plan_css(self):
-        return 'admin' if self.is_admin else 'free'
+        if self.is_admin: return 'admin'
+        if self.is_moderator: return 'moderator'
+        return 'free'
 
     @property
     def can_create_catalog(self):
@@ -238,14 +243,28 @@ def login_required(f):
     return decorated
 
 def admin_required(f):
+    """Allows both admins and moderators."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        user = db.session.get(User, session['user_id'])
+        if not user or (not user.is_admin and not user.is_moderator):
+            flash('Admin access required.', 'error')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated
+
+def full_admin_required(f):
+    """Admins only — moderators cannot perform this action."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('login'))
         user = db.session.get(User, session['user_id'])
         if not user or not user.is_admin:
-            flash('Admin access required.', 'error')
-            return redirect(url_for('index'))
+            flash('Only admins can perform this action.', 'error')
+            return redirect(url_for('admin'))
         return f(*args, **kwargs)
     return decorated
 
@@ -1052,10 +1071,11 @@ def assisted_setup():
 def admin():
     all_users       = User.query.order_by(User.created_at.desc()).all()
     agency_requests = AgencyRequest.query.order_by(AgencyRequest.market_location, AgencyRequest.submitted_at).all()
+    me = db.session.get(User, session['user_id'])
     return render_template('admin.html', all_users=all_users,
                            agency_requests=agency_requests,
                            pending_count=0, now=datetime.utcnow(),
-                           admin_active='dashboard')
+                           me=me, admin_active='dashboard')
 
 @app.route('/admin/agency/<int:ar_id>/status', methods=['POST'])
 @admin_required
@@ -1072,7 +1092,7 @@ def update_agency_status(ar_id):
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/<int:user_id>/suspend', methods=['POST'])
-@admin_required
+@full_admin_required
 def suspend_user(user_id):
     user = db.session.get(User, user_id)
     if user and not user.is_admin:
@@ -1090,7 +1110,7 @@ def suspend_user(user_id):
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/<int:user_id>/unsuspend', methods=['POST'])
-@admin_required
+@full_admin_required
 def unsuspend_user(user_id):
     user = db.session.get(User, user_id)
     if user:
@@ -1104,6 +1124,22 @@ def unsuspend_user(user_id):
             f'You can now log in and continue using CatalogKit.\n\n'
             f'Log in at: https://catalogkit.replit.app'
         )
+    return redirect(url_for('admin'))
+
+@app.route('/admin/user/<int:user_id>/set-role', methods=['POST'])
+@full_admin_required
+def set_user_role(user_id):
+    me = db.session.get(User, session['user_id'])
+    target = db.session.get(User, user_id)
+    if not target or target.id == me.id:
+        flash('Cannot change your own role.', 'error')
+        return redirect(url_for('admin'))
+    role = request.form.get('role', 'user')
+    target.is_admin     = (role == 'admin')
+    target.is_moderator = (role == 'moderator')
+    db.session.commit()
+    log_activity(target.id, 'role_changed', f'Role set to {role} by admin {me.email}')
+    flash(f'{target.name}\'s role updated to {role.title()}.', 'success')
     return redirect(url_for('admin'))
 
 # ── Admin — Logs ───────────────────────────────────────────────────────────────
@@ -1267,6 +1303,7 @@ if __name__ == '__main__':
                 'ALTER TABLE user ADD COLUMN pdf_layout VARCHAR(20) DEFAULT "classic"',
                 'ALTER TABLE user ADD COLUMN is_suspended BOOLEAN DEFAULT 0',
                 'ALTER TABLE user ADD COLUMN suspended_at DATETIME',
+                'ALTER TABLE user ADD COLUMN is_moderator BOOLEAN DEFAULT 0',
                 # access_log and activity_log tables are new — created by db.create_all()
 
             ]:

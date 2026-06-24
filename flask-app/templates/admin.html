@@ -115,7 +115,7 @@
           <tr class="{% if u.is_suspended %}row-suspended{% endif %}">
             <td>
               <div class="user-cell">
-                <strong>{{ u.name }}{% if u.is_admin %} <span style="color:var(--warning);font-size:0.7rem">(admin)</span>{% endif %}</strong>
+                <strong>{{ u.name }}</strong>
                 <span>{{ u.email }}</span>
               </div>
             </td>
@@ -124,29 +124,43 @@
                 <span class="chip chip-red"><span class="status-dot" style="background:#fc5c5c"></span> Suspended</span>
               {% elif u.is_admin %}
                 <span class="chip chip-yellow"><span class="status-dot" style="background:#f6c44e"></span> Admin</span>
+              {% elif u.is_moderator %}
+                <span class="chip chip-blue"><span class="status-dot" style="background:#60a5fa"></span> Moderator</span>
               {% else %}
-                <span class="chip chip-green"><span class="status-dot" style="background:#3ecf8e"></span> Active</span>
+                <span class="chip chip-green"><span class="status-dot" style="background:#3ecf8e"></span> User</span>
               {% endif %}
             </td>
             <td style="text-align:center">{{ u.catalog_count }}</td>
             <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
             <td>
-              {% if not u.is_admin %}
-              <div class="action-group">
+              <div class="action-group" style="flex-wrap:wrap;gap:6px">
                 <a href="/admin/logs?type=activity&user_id={{ u.id }}" class="btn btn-secondary btn-sm">📋 Activity</a>
-                {% if u.is_suspended %}
-                  <form method="POST" action="/admin/user/{{ u.id }}/unsuspend">
-                    <button class="btn btn-success btn-sm" onclick="return confirm('Reinstate {{ u.name }}?')">✓ Reinstate</button>
+                {% if me.is_admin and u.id != me.id %}
+                  {# ── Role selector ── #}
+                  <form method="POST" action="/admin/user/{{ u.id }}/set-role" style="display:flex;gap:4px;align-items:center">
+                    <select name="role" class="filter-select" style="padding:5px 8px;font-size:0.8rem">
+                      <option value="user"      {% if not u.is_admin and not u.is_moderator %}selected{% endif %}>User</option>
+                      <option value="moderator" {% if u.is_moderator %}selected{% endif %}>Moderator</option>
+                      <option value="admin"     {% if u.is_admin %}selected{% endif %}>Admin</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" title="Save role">✓</button>
                   </form>
-                {% else %}
-                  <form method="POST" action="/admin/user/{{ u.id }}/suspend">
-                    <button class="btn btn-danger btn-sm" onclick="return confirm('Suspend {{ u.name }}? They cannot log in until reinstated.')">⊘ Suspend</button>
-                  </form>
+                  {# ── Suspend / Reinstate ── #}
+                  {% if not u.is_admin %}
+                    {% if u.is_suspended %}
+                      <form method="POST" action="/admin/user/{{ u.id }}/unsuspend">
+                        <button class="btn btn-success btn-sm" onclick="return confirm('Reinstate {{ u.name }}?')">✓ Reinstate</button>
+                      </form>
+                    {% else %}
+                      <form method="POST" action="/admin/user/{{ u.id }}/suspend">
+                        <button class="btn btn-danger btn-sm" onclick="return confirm('Suspend {{ u.name }}? They cannot log in until reinstated.')">⊘ Suspend</button>
+                      </form>
+                    {% endif %}
+                  {% endif %}
+                {% elif u.id == me.id %}
+                  <span style="color:var(--muted);font-size:0.75rem">(you)</span>
                 {% endif %}
               </div>
-              {% else %}
-              <span style="color:var(--muted);font-size:0.8rem">—</span>
-              {% endif %}
             </td>
           </tr>
           {% endfor %}
