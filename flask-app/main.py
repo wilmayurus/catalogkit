@@ -82,8 +82,9 @@ class User(db.Model):
     whatsapp      = db.Column(db.String(50),  nullable=True)
     phone         = db.Column(db.String(50),  nullable=True)
     facebook_url     = db.Column(db.String(500), nullable=True)
-    payment_methods  = db.Column(db.Text, nullable=True)
-    delivery_methods = db.Column(db.Text, nullable=True)
+    payment_methods      = db.Column(db.Text, nullable=True)
+    bank_account_details = db.Column(db.Text, nullable=True)
+    delivery_methods     = db.Column(db.Text, nullable=True)
     reset_token      = db.Column(db.String(100), nullable=True)
     reset_token_exp  = db.Column(db.DateTime, nullable=True)
     logo_filename = db.Column(db.String(500), nullable=True)
@@ -1092,8 +1093,9 @@ def profile():
         user.facebook_url   = request.form.get('facebook_url', '').strip() or None
         pay  = request.form.getlist('payment_methods')
         delv = request.form.getlist('delivery_methods')
-        user.payment_methods  = json.dumps(pay)  if pay  else None
-        user.delivery_methods = json.dumps(delv) if delv else None
+        user.payment_methods      = json.dumps(pay)  if pay  else None
+        user.bank_account_details = request.form.get('bank_account_details', '').strip() or None
+        user.delivery_methods     = json.dumps(delv) if delv else None
         # ── SME Growth branding ────────────────────────────────────────────────
         if user.is_growth or user.is_admin:
             color = request.form.get('brand_color', '').strip()
