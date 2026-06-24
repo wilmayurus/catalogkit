@@ -88,8 +88,8 @@
         {% for log in logs %}
         <tr>
           <td style="white-space:nowrap">
-            <div style="font-size:0.83rem">{{ log.created_at.strftime('%d %b %Y') }}</div>
-            <div style="font-size:0.75rem;color:var(--muted)">{{ log.created_at.strftime('%H:%M:%S') }}</div>
+            <div style="font-size:0.83rem;font-weight:600;color:var(--text)">{{ log.created_at.strftime('%d %b %Y') }}</div>
+            <div style="font-size:0.78rem;color:var(--accent);font-family:monospace;margin-top:2px">{{ log.created_at.strftime('%I:%M %p') }}</div>
           </td>
           <td>
             <div class="user-cell">
