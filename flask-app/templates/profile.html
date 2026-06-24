@@ -139,16 +139,40 @@
       <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the delivery methods you offer.</p>
 
       {% set saved_delv = (user.delivery_methods or '[]') | fromjson %}
-      <div style="display:flex;flex-direction:column;gap:10px">
-        {% for method in ['Local Courier / Drop-off (Same Town/City)', 'PMV Freight (Highlands Highway & Ground Routes)', 'TNT / FedEx (Premium Tracked Air Freight)', 'EMS (Post PNG Express Mail)', 'Air Niugini / PNG Air Cargo (Airport-to-Airport)', 'Post PNG Standard Parcel (Affordable Counter-to-Counter)', 'DHL / UPS (International Worldwide Shipping)'] %}
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.9rem">
-          <input type="checkbox" name="delivery_methods" value="{{ method }}"
-                 {% if method in saved_delv %}checked{% endif %}
-                 style="width:16px;height:16px;accent-color:var(--accent)">
-          {{ method }}
-        </label>
-        {% endfor %}
+
+      {% set delivery_groups = [
+        ('Local City Delivery (On-Demand / Last-Mile)', [
+          'In-House Merchant Delivery (Seller\'s own fleet/vehicles)',
+          'On-Demand Couriers (Local independent dispatch riders, e.g., Red Dot Services, Dial-A-Delivery)',
+        ]),
+        ('Domestic Inter-Province & Air Freight (National)', [
+          'EMS / Post PNG (Express Mail Service via the national postal network)',
+          'TNT Air Cargo / PNG Air Freight (FedEx ground/air operators)',
+          'DHL Express PNG',
+          'UPS / Express Freight Management (EFM)',
+        ]),
+        ('Local Pick-Up Points (Click & Collect)', [
+          'Store Pick-Up (Direct collection from the seller\'s warehouse, shopfront, or office)',
+          'Post Office / Agent Collection (Holding items at a designated Post PNG branch for customer pickup)',
+          'Depot Pick-Up (Collection from third-party logistics provider hubs at local airports/wharves)',
+        ]),
+      ] %}
+
+      {% for group_name, methods in delivery_groups %}
+      <div style="margin-bottom:16px">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">{{ group_name }}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          {% for method in methods %}
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.875rem">
+            <input type="checkbox" name="delivery_methods" value="{{ method }}"
+                   {% if method in saved_delv %}checked{% endif %}
+                   style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+            {{ method }}
+          </label>
+          {% endfor %}
+        </div>
       </div>
+      {% endfor %}
     </div>
 
     {% if user.is_growth or user.is_admin %}
