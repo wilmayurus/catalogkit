@@ -1104,8 +1104,7 @@ def suspend_user(user_id):
         send_email(user.email,
             'CatalogKit — Your account has been suspended',
             f'Hi {user.name},\n\nYour CatalogKit account has been suspended. '
-            f'Please contact us if you believe this is a mistake.\n\n'
-            f'Contact: {PAYMENT_INFO["contact"]}'
+            f'Please contact us if you believe this is a mistake.'
         )
     return redirect(url_for('admin'))
 
