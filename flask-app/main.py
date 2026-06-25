@@ -1196,6 +1196,9 @@ def admin_delete_user(user_id):
         flash('Cannot delete another admin account.', 'error')
         return redirect(url_for('admin'))
     name = target.name
+    # Delete logs first to avoid NOT NULL constraint on user_id
+    AccessLog.query.filter_by(user_id=target.id).delete()
+    ActivityLog.query.filter_by(user_id=target.id).delete()
     db.session.delete(target)
     db.session.commit()
     flash(f'{name}\'s account and all their catalogs have been permanently deleted.', 'success')
