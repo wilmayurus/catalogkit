@@ -1390,40 +1390,9 @@ def inject_globals():
     return dict(current_user=current_user())
 
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        # Safe migrations for existing DBs
-        with db.engine.connect() as conn:
-            for stmt in [
-                'ALTER TABLE catalog ADD COLUMN pages TEXT',
-                'ALTER TABLE catalog ADD COLUMN updated_at DATETIME',
-                'ALTER TABLE user ADD COLUMN plan_start DATETIME',
-                'ALTER TABLE payment_request ADD COLUMN requested_plan VARCHAR(20) DEFAULT "pro"',
-                'ALTER TABLE user ADD COLUMN business_name VARCHAR(255)',
-                'ALTER TABLE user ADD COLUMN contact_person VARCHAR(255)',
-                'ALTER TABLE user ADD COLUMN location VARCHAR(255)',
-                'ALTER TABLE user ADD COLUMN whatsapp VARCHAR(50)',
-                'ALTER TABLE user ADD COLUMN phone VARCHAR(50)',
-                'ALTER TABLE user ADD COLUMN facebook_url VARCHAR(500)',
-                'ALTER TABLE user ADD COLUMN payment_methods TEXT',
-                'ALTER TABLE user ADD COLUMN delivery_methods TEXT',
-                'ALTER TABLE user ADD COLUMN reset_token VARCHAR(100)',
-                'ALTER TABLE user ADD COLUMN reset_token_exp DATETIME',
-                'ALTER TABLE catalog ADD COLUMN pdf_downloads INTEGER DEFAULT 0',
-                'ALTER TABLE user ADD COLUMN logo_filename VARCHAR(500)',
-                'ALTER TABLE user ADD COLUMN brand_color VARCHAR(7)',
-                'ALTER TABLE user ADD COLUMN pdf_layout VARCHAR(20) DEFAULT "classic"',
-                'ALTER TABLE user ADD COLUMN is_suspended BOOLEAN DEFAULT 0',
-                'ALTER TABLE user ADD COLUMN suspended_at DATETIME',
-                'ALTER TABLE user ADD COLUMN is_moderator BOOLEAN DEFAULT 0',
-                # access_log and activity_log tables are new — created by db.create_all()
+with app.app_context():
+    db.create_all()
 
-            ]:
-                try:
-                    conn.execute(text(stmt))
-                    conn.commit()
-                except Exception:
-                    pass
+if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port, debug=False)
