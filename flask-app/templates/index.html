@@ -19,7 +19,7 @@
       <div class="catalog-card-preview">
         {% set pages = cat.get_pages() %}
         {% if pages %}
-          <img src="/static/processed/{{ current_user.id }}/{{ cat.id }}/{{ pages[0] }}"
+          <img src="{{ storage_url('catalog-images', 'processed/' ~ current_user.id|string ~ '/' ~ cat.id|string ~ '/' ~ pages[0]) }}"
                alt="Preview" loading="lazy">
           <span class="catalog-card-count">{{ cat.page_count }}pg</span>
         {% else %}

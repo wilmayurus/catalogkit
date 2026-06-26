@@ -192,7 +192,7 @@
         <label style="color:var(--text)">Business Logo <span class="text-muted" style="font-weight:400;font-size:0.8rem">(PNG or JPG recommended)</span></label>
         {% if user.logo_filename %}
         <div style="margin-bottom:10px;display:flex;align-items:center;gap:12px">
-          <img src="/static/logos/{{ user.logo_filename }}" alt="Current logo"
+          <img src="{{ storage_url('logos', user.id|string ~ '/' ~ user.logo_filename) }}" alt="Current logo"
                style="max-height:60px;max-width:200px;background:#fff;border-radius:6px;padding:6px;border:1px solid var(--border)">
           <span style="font-size:0.8rem;color:var(--muted)">Current logo — upload a new file to replace it</span>
         </div>

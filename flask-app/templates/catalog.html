@@ -267,7 +267,7 @@
             <span class="page-header-cat">{{ catalog.name }}</span>
           </div>
           <div class="page-item-name">{{ item.item_name or 'Item ' ~ loop.index }}</div>
-          <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}"
+          <img src="{{ storage_url('catalog-images', 'processed/' ~ user.id|string ~ '/' ~ catalog.id|string ~ '/' ~ item.file) }}"
                alt="Page {{ loop.index }}" loading="lazy">
           <div class="page-price-center">{{ item.price or 'K 0.00' }}</div>
           <div class="page-footer-bar">

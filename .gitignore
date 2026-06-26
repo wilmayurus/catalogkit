@@ -47,3 +47,15 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Python
+*.pyc
+__pycache__/
+*.db
+.env
+
+# Flask local uploads (stored in Supabase in production)
+flask-app/instance/
+flask-app/static/logos/
+flask-app/static/uploads/
+flask-app/static/processed/

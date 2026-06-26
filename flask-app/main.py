@@ -23,7 +23,10 @@ def no_cache(response):
         response.headers['Expires'] = '0'
     return response
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///catalogkit.db'
+_db_url = os.environ.get('DATABASE_URL', 'sqlite:///catalogkit.db')
+if _db_url.startswith('postgres://'):
+    _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # ── Mail config (silently skipped if not set) ─────────────────────────────────
@@ -38,13 +41,60 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_FROM', _mail_user)
 db   = SQLAlchemy(app)
 mail = Mail(app)
 
+# ── Supabase Storage ──────────────────────────────────────────────────────────
+_SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+_SUPABASE_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
+_supabase_client = None
+if _SUPABASE_URL and _SUPABASE_KEY:
+    from supabase import create_client
+    _supabase_client = create_client(_SUPABASE_URL, _SUPABASE_KEY)
+
+def _sbucket(name):
+    if not _supabase_client:
+        raise RuntimeError('Supabase not configured — set SUPABASE_URL and SUPABASE_ANON_KEY.')
+    return _supabase_client.storage.from_(name)
+
+def storage_upload(bucket, path, data, content_type='image/jpeg'):
+    _sbucket(bucket).upload(path, data, {'content-type': content_type, 'upsert': 'true'})
+
+def storage_download(bucket, path):
+    try:
+        return _sbucket(bucket).download(path)
+    except Exception:
+        return None
+
+def storage_public_url(bucket, path):
+    return _sbucket(bucket).get_public_url(path)
+
+def storage_delete(bucket, paths):
+    try:
+        _sbucket(bucket).remove(paths)
+    except Exception:
+        pass
+
+def storage_list_prefix(bucket, prefix):
+    try:
+        items = _sbucket(bucket).list(prefix)
+        return [f['name'] for f in (items or []) if isinstance(f, dict) and f.get('name')]
+    except Exception:
+        return []
+
+@app.template_global()
+def storage_url(bucket, path):
+    if not path:
+        return ''
+    try:
+        return storage_public_url(bucket, path)
+    except Exception:
+        return ''
+
 # ── Constants ─────────────────────────────────────────────────────────────────
 TARGET_WIDTH  = 800
 TARGET_HEIGHT = 1000
 ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 
-LOGOS_DIR = os.path.join('static', 'logos')
-os.makedirs(LOGOS_DIR, exist_ok=True)
+BUCKET_LOGOS  = 'logos'
+BUCKET_IMAGES = 'catalog-images'
 
 
 # ── Models ────────────────────────────────────────────────────────────────────
@@ -134,16 +184,12 @@ class Catalog(db.Model):
         self.updated_at = datetime.utcnow()
 
     @property
-    def upload_dir(self):
-        path = os.path.join('static', 'uploads', str(self.user_id), str(self.id))
-        os.makedirs(path, exist_ok=True)
-        return path
+    def upload_prefix(self):
+        return f'uploads/{self.user_id}/{self.id}'
 
     @property
-    def processed_dir(self):
-        path = os.path.join('static', 'processed', str(self.user_id), str(self.id))
-        os.makedirs(path, exist_ok=True)
-        return path
+    def processed_prefix(self):
+        return f'processed/{self.user_id}/{self.id}'
 
 
 class AgencyRequest(db.Model):
@@ -402,7 +448,8 @@ def upload(catalog_id):
         if f and f.filename and allowed_file(f.filename):
             ext      = os.path.splitext(f.filename)[1].lower()
             filename = f'{uuid.uuid4().hex}{ext}'
-            f.save(os.path.join(catalog.upload_dir, filename))
+            ct       = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
+            storage_upload(BUCKET_IMAGES, f'{catalog.upload_prefix}/{filename}', f.read(), ct)
             uploaded.append(filename)
     if uploaded:
         log_activity(user.id, 'images_uploaded',
@@ -420,25 +467,28 @@ def process(catalog_id):
     data      = request.get_json()
     order     = data.get('order', [])
     name      = data.get('name', '').strip() or catalog.name
-    prices    = data.get('prices', {})   # {orig_filename: "K25"}
-    names     = data.get('names',  {})   # {orig_filename: "Red Dress"}
-    proc_dir = catalog.processed_dir
-    for old in os.listdir(proc_dir):
-        os.remove(os.path.join(proc_dir, old))
+    prices    = data.get('prices', {})
+    names     = data.get('names',  {})
+
+    old_files = storage_list_prefix(BUCKET_IMAGES, catalog.processed_prefix)
+    if old_files:
+        storage_delete(BUCKET_IMAGES, [f'{catalog.processed_prefix}/{n}' for n in old_files])
 
     processed, errors = [], []
     for i, filename in enumerate(order):
-        src = os.path.join(catalog.upload_dir, filename)
-        if not os.path.exists(src):
-            # Fall back: user is re-editing an already-processed catalog
-            src = os.path.join(catalog.processed_dir, filename)
-        if not os.path.exists(src):
+        raw = storage_download(BUCKET_IMAGES, f'{catalog.upload_prefix}/{filename}')
+        if raw is None:
+            raw = storage_download(BUCKET_IMAGES, f'{catalog.processed_prefix}/{filename}')
+        if raw is None:
             errors.append(f'Missing: {filename}'); continue
         try:
-            img      = Image.open(src).convert('RGB')
+            img      = Image.open(io.BytesIO(raw)).convert('RGB')
             img      = fit_with_padding(img, TARGET_WIDTH, TARGET_HEIGHT)
             out_name = f'page_{i + 1:03d}.jpg'
-            img.save(os.path.join(proc_dir, out_name), 'JPEG', quality=72, optimize=True, progressive=True)
+            buf = io.BytesIO()
+            img.save(buf, 'JPEG', quality=72, optimize=True, progressive=True)
+            buf.seek(0)
+            storage_upload(BUCKET_IMAGES, f'{catalog.processed_prefix}/{out_name}', buf.read())
             processed.append({
                 'file':      out_name,
                 'src_file':  filename,
@@ -477,9 +527,10 @@ def clear(catalog_id):
     catalog = get_catalog_or_404(catalog_id, user)
     if not catalog:
         return jsonify({'error': 'Not found'}), 404
-    for folder in [catalog.upload_dir, catalog.processed_dir]:
-        for f in os.listdir(folder):
-            os.remove(os.path.join(folder, f))
+    for prefix in [catalog.upload_prefix, catalog.processed_prefix]:
+        files = storage_list_prefix(BUCKET_IMAGES, prefix)
+        if files:
+            storage_delete(BUCKET_IMAGES, [f'{prefix}/{n}' for n in files])
     catalog.set_pages([])
     db.session.commit()
     return jsonify({'ok': True})
@@ -545,11 +596,11 @@ def _brand_stripe(draw, y0, y1, width, rgb):
 def _load_logo(user, max_w, max_h):
     if not user.logo_filename:
         return None
-    path = os.path.join(LOGOS_DIR, user.logo_filename)
-    if not os.path.exists(path):
+    data = storage_download(BUCKET_LOGOS, f'{user.id}/{user.logo_filename}')
+    if data is None:
         return None
     try:
-        logo = Image.open(path).convert('RGBA')
+        logo = Image.open(io.BytesIO(data)).convert('RGBA')
         logo.thumbnail((max_w, max_h), Image.LANCZOS)
         return logo
     except Exception:
@@ -712,14 +763,14 @@ def _make_cover(catalog, user):
                            _font(_FONT_REG, 18), (200, 200, 220))
         return _apply_watermark(img, user)
 
-def _make_product_page(item, proc_dir, catalog, user):
+def _make_product_page(item, catalog, user):
     W, H  = 800, 1000
     fname = item['file'] if isinstance(item, dict) else item
     iname = (item.get('item_name') or '') if isinstance(item, dict) else ''
     price = (item.get('price') or '')    if isinstance(item, dict) else ''
-    path  = os.path.join(proc_dir, fname)
-    if os.path.exists(path):
-        pg = Image.open(path).convert('RGB').resize((W, H), Image.LANCZOS)
+    raw   = storage_download(BUCKET_IMAGES, f'{catalog.processed_prefix}/{fname}')
+    if raw:
+        pg = Image.open(io.BytesIO(raw)).convert('RGB').resize((W, H), Image.LANCZOS)
     else:
         pg = Image.new('RGB', (W, H), (255, 255, 255))
     draw = ImageDraw.Draw(pg)
@@ -840,10 +891,9 @@ def _make_back_cover(catalog, user):
 
 def generate_catalog_pdf(catalog, user):
     page_data = catalog.get_page_data()
-    proc_dir  = catalog.processed_dir
     pages     = [_make_cover(catalog, user)]
     for item in page_data:
-        pages.append(_make_product_page(item, proc_dir, catalog, user))
+        pages.append(_make_product_page(item, catalog, user))
     pages.append(_make_back_cover(catalog, user))
     buf = io.BytesIO()
     pages[0].save(buf, format='PDF', save_all=True, append_images=pages[1:], resolution=96)
@@ -876,8 +926,10 @@ def delete_catalog(catalog_id):
         flash('Catalog not found.', 'error')
         return redirect(url_for('index'))
     name = catalog.name
-    shutil.rmtree(catalog.upload_dir,    ignore_errors=True)
-    shutil.rmtree(catalog.processed_dir, ignore_errors=True)
+    for prefix in [catalog.upload_prefix, catalog.processed_prefix]:
+        files = storage_list_prefix(BUCKET_IMAGES, prefix)
+        if files:
+            storage_delete(BUCKET_IMAGES, [f'{prefix}/{n}' for n in files])
     db.session.delete(catalog)
     db.session.commit()
     log_activity(user.id, 'catalog_deleted', name)
@@ -1017,10 +1069,10 @@ def profile():
                 ext = os.path.splitext(logo_file.filename)[1].lower()
                 if ext in {'.jpg', '.jpeg', '.png', '.webp'}:
                     if user.logo_filename:
-                        old = os.path.join(LOGOS_DIR, user.logo_filename)
-                        if os.path.exists(old): os.remove(old)
+                        storage_delete(BUCKET_LOGOS, [f'{user.id}/{user.logo_filename}'])
                     fname = f"logo_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
-                    logo_file.save(os.path.join(LOGOS_DIR, fname))
+                    ct    = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
+                    storage_upload(BUCKET_LOGOS, f'{user.id}/{fname}', logo_file.read(), ct)
                     user.logo_filename = fname
                 else:
                     flash('Logo must be JPG, PNG, or WebP.', 'error')

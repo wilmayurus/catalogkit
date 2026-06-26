@@ -53,7 +53,7 @@
     {% for item in catalog.get_page_data() %}
     <div class="thumb-item" data-filename="{{ item.src_file or item.file }}">
       <div class="thumb-img-wrap">
-        <img src="/static/processed/{{ user.id }}/{{ catalog.id }}/{{ item.file }}" loading="lazy" alt="">
+        <img src="{{ storage_url('catalog-images', 'processed/' ~ user.id|string ~ '/' ~ catalog.id|string ~ '/' ~ item.file) }}" loading="lazy" alt="">
         <span class="thumb-num">{{ loop.index }}</span>
         <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
       </div>
@@ -140,9 +140,10 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
-const CATALOG_ID = {{ catalog.id }};
-const USER_ID    = {{ user.id }};
-const MAX_IMAGES = null;
+const CATALOG_ID  = {{ catalog.id }};
+const USER_ID     = {{ user.id }};
+const MAX_IMAGES  = null;
+const STORAGE_UPLOAD_BASE = "{{ storage_url('catalog-images', 'uploads/' ~ user.id|string ~ '/' ~ catalog.id|string ~ '/_') }}".replace(/\/_$/, '/');
 
 const grid         = document.getElementById('sort-grid');
 const fileInput    = document.getElementById('file-input');
@@ -268,7 +269,7 @@ function addThumb(filename, price = '', itemName = '') {
   item.dataset.filename = filename;
   item.innerHTML = `
     <div class="thumb-img-wrap">
-      <img src="/static/uploads/${USER_ID}/${CATALOG_ID}/${filename}" loading="lazy" alt="">
+      <img src="${STORAGE_UPLOAD_BASE}${filename}" loading="lazy" alt="">
       <span class="thumb-num">1</span>
       <button class="thumb-remove" onclick="removeThumb(this)" title="Remove">&#10005;</button>
     </div>

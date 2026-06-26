@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: catalogkit
+    env: python
+    buildCommand: pip install -r flask-app/requirements.txt
+    startCommand: cd flask-app && gunicorn -w 2 -b 0.0.0.0:$PORT main:app
+    envVars:
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
