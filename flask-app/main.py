@@ -1055,8 +1055,8 @@ def profile():
         user.bank_account_details = request.form.get('bank_account_details', '').strip() or None
         user.delivery_methods     = json.dumps(delv) if delv else None
         log_activity(user.id, 'profile_updated', 'Profile information updated')
-        # ── SME Growth branding ────────────────────────────────────────────────
-        if user.is_growth or user.is_admin:
+        # ── Branding (free for all users) ─────────────────────────────────────
+        if True:
             color = request.form.get('brand_color', '').strip()
             if color and color.startswith('#') and len(color) == 7:
                 user.brand_color = color

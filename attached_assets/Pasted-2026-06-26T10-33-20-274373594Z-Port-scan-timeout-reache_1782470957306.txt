@@ -1,0 +1,50 @@
+2026-06-26T10:33:20.274373594Z ==> Port scan timeout reached, no open ports detected. Bind your service to at least one port. If you don't need to receive traffic on any port, create a background worker instead.
+2026-06-26T10:33:20.646078633Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-06-26T10:38:39.101316019Z [2026-06-26 10:38:39 +0000] [58] [INFO] Handling signal: term
+2026-06-26T10:38:39.104509519Z [2026-06-26 10:38:39 +0000] [60] [INFO] Worker exiting (pid: 60)
+2026-06-26T10:38:39.104525759Z [2026-06-26 10:38:39 +0000] [61] [INFO] Worker exiting (pid: 61)
+2026-06-26T10:39:37.672877445Z ==> Deploying...
+2026-06-26T10:39:37.983341935Z ==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+2026-06-26T10:40:06.610922481Z [2026-06-26 10:40:06 +0000] [58] [INFO] Control socket listening at /opt/render/.gunicorn/gunicorn.ctl
+2026-06-26T10:40:06.658684263Z 127.0.0.1 - - [26/Jun/2026:10:40:06 +0000] "HEAD / HTTP/1.1" 302 0 "-" "Go-http-client/1.1"
+2026-06-26T10:40:08.53361771Z ==> Your service is live 🎉
+2026-06-26T10:40:08.757473316Z ==> 
+2026-06-26T10:40:08.761568862Z ==> ///////////////////////////////////////////////////////////
+2026-06-26T10:40:08.764429176Z ==> 
+2026-06-26T10:40:08.769690163Z ==> Available at your primary URL https://catalogkit.onrender.com
+2026-06-26T10:40:08.772881621Z ==> 
+2026-06-26T10:40:08.775819442Z ==> ///////////////////////////////////////////////////////////
+2026-06-26T10:40:08.980321143Z 127.0.0.1 - - [26/Jun/2026:10:40:08 +0000] "GET / HTTP/1.1" 302 199 "-" "Go-http-client/2.0"
+2026-06-26T10:40:09.243781214Z 127.0.0.1 - - [26/Jun/2026:10:40:09 +0000] "GET /login HTTP/1.1" 200 1782 "https://catalogkit.onrender.com" "Go-http-client/2.0"
+2026-06-26T10:44:42.965166371Z 127.0.0.1 - - [26/Jun/2026:10:44:42 +0000] "GET / HTTP/1.1" 302 199 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:44:43.139664836Z 127.0.0.1 - - [26/Jun/2026:10:44:43 +0000] "GET /login HTTP/1.1" 200 1782 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:44:43.338847119Z 127.0.0.1 - - [26/Jun/2026:10:44:43 +0000] "GET /static/img/catalogkit-logo.png HTTP/1.1" 200 0 "https://catalogkit.onrender.com/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:44:43.522429444Z 127.0.0.1 - - [26/Jun/2026:10:44:43 +0000] "GET /static/css/style.css HTTP/1.1" 200 0 "https://catalogkit.onrender.com/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:44:51.099240792Z 127.0.0.1 - - [26/Jun/2026:10:44:51 +0000] "GET /register HTTP/1.1" 200 1785 "https://catalogkit.onrender.com/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:44:51.302679723Z 127.0.0.1 - - [26/Jun/2026:10:44:51 +0000] "GET /static/css/style.css HTTP/1.1" 304 0 "https://catalogkit.onrender.com/register" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:44:51.310136319Z 127.0.0.1 - - [26/Jun/2026:10:44:51 +0000] "GET /static/img/catalogkit-logo.png HTTP/1.1" 304 0 "https://catalogkit.onrender.com/register" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:45:02.216133276Z 127.0.0.1 - - [26/Jun/2026:10:45:02 +0000] "POST /register HTTP/1.1" 302 203 "https://catalogkit.onrender.com/register" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:45:02.680799818Z 127.0.0.1 - - [26/Jun/2026:10:45:02 +0000] "GET /profile HTTP/1.1" 200 19944 "https://catalogkit.onrender.com/register" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:45:02.888138151Z 127.0.0.1 - - [26/Jun/2026:10:45:02 +0000] "GET /static/css/style.css HTTP/1.1" 304 0 "https://catalogkit.onrender.com/profile" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:45:02.902853129Z 127.0.0.1 - - [26/Jun/2026:10:45:02 +0000] "GET /static/img/catalogkit-logo.png HTTP/1.1" 304 0 "https://catalogkit.onrender.com/profile" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:45:13.318779868Z ==> Detected service running on port 10000
+2026-06-26T10:45:14.365752273Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-06-26T10:46:27.735197138Z 127.0.0.1 - - [26/Jun/2026:10:46:27 +0000] "GET /profile HTTP/1.1" 200 19639 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
+2026-06-26T10:47:48.41018727Z [2026-06-26 10:47:48,389] ERROR in app: Exception on /profile [POST]
+2026-06-26T10:47:48.41020747Z Traceback (most recent call last):
+2026-06-26T10:47:48.410214271Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/flask/app.py", line 1511, in wsgi_app
+2026-06-26T10:47:48.410221491Z     response = self.full_dispatch_request()
+2026-06-26T10:47:48.410226511Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/flask/app.py", line 919, in full_dispatch_request
+2026-06-26T10:47:48.410230831Z     rv = self.handle_user_exception(e)
+2026-06-26T10:47:48.410235171Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/flask/app.py", line 917, in full_dispatch_request
+2026-06-26T10:47:48.410240541Z     rv = self.dispatch_request()
+2026-06-26T10:47:48.410244761Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/flask/app.py", line 902, in dispatch_request
+2026-06-26T10:47:48.410247871Z     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+2026-06-26T10:47:48.410254531Z            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+2026-06-26T10:47:48.410259581Z   File "/opt/render/project/src/flask-app/main.py", line 288, in decorated
+2026-06-26T10:47:48.410264861Z     return f(*args, **kwargs)
+2026-06-26T10:47:48.410269812Z   File "/opt/render/project/src/flask-app/main.py", line 1059, in profile
+2026-06-26T10:47:48.410274582Z     if user.is_growth or user.is_admin:
+2026-06-26T10:47:48.410279632Z        ^^^^^^^^^^^^^^
+2026-06-26T10:47:48.410285332Z AttributeError: 'User' object has no attribute 'is_growth'
+2026-06-26T10:47:48.410967616Z 127.0.0.1 - - [26/Jun/2026:10:47:48 +0000] "POST /profile HTTP/1.1" 500 265 "https://catalogkit.onrender.com/profile" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0"
