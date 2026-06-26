@@ -1,0 +1,50 @@
+2026-06-26T10:18:47.957318418Z     raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+2026-06-26T10:18:47.957320798Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 144, in __init__
+2026-06-26T10:18:47.957323268Z     self._dbapi_connection = engine.raw_connection()
+2026-06-26T10:18:47.957325698Z                              ~~~~~~~~~~~~~~~~~~~~~^^
+2026-06-26T10:18:47.957328098Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/engine/base.py", line 3319, in raw_connection
+2026-06-26T10:18:47.957330488Z     return self.pool.connect()
+2026-06-26T10:18:47.957332928Z            ~~~~~~~~~~~~~~~~~^^
+2026-06-26T10:18:47.957335368Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 448, in connect
+2026-06-26T10:18:47.957337788Z     return _ConnectionFairy._checkout(self)
+2026-06-26T10:18:47.957340199Z            ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+2026-06-26T10:18:47.957342659Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 1272, in _checkout
+2026-06-26T10:18:47.957345119Z     fairy = _ConnectionRecord.checkout(pool)
+2026-06-26T10:18:47.957355449Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 712, in checkout
+2026-06-26T10:18:47.95735798Z     rec = pool._do_get()
+2026-06-26T10:18:47.957360729Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 178, in _do_get
+2026-06-26T10:18:47.95736318Z     with util.safe_reraise():
+2026-06-26T10:18:47.95736559Z          ~~~~~~~~~~~~~~~~~^^
+2026-06-26T10:18:47.95736803Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 122, in __exit__
+2026-06-26T10:18:47.95737044Z     raise exc_value.with_traceback(exc_tb)
+2026-06-26T10:18:47.95737285Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/impl.py", line 176, in _do_get
+2026-06-26T10:18:47.95737531Z     return self._create_connection()
+2026-06-26T10:18:47.957377741Z            ~~~~~~~~~~~~~~~~~~~~~~~^^
+2026-06-26T10:18:47.95738019Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 389, in _create_connection
+2026-06-26T10:18:47.957382581Z     return _ConnectionRecord(self)
+2026-06-26T10:18:47.957388381Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 674, in __init__
+2026-06-26T10:18:47.957390961Z     self.__connect()
+2026-06-26T10:18:47.957393421Z     ~~~~~~~~~~~~~~^^
+2026-06-26T10:18:47.957395881Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 900, in __connect
+2026-06-26T10:18:47.957398282Z     with util.safe_reraise():
+2026-06-26T10:18:47.957400651Z          ~~~~~~~~~~~~~~~~~^^
+2026-06-26T10:18:47.957403032Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/util/langhelpers.py", line 122, in __exit__
+2026-06-26T10:18:47.957405472Z     raise exc_value.with_traceback(exc_tb)
+2026-06-26T10:18:47.957407852Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/pool/base.py", line 896, in __connect
+2026-06-26T10:18:47.957410302Z     self.dbapi_connection = connection = pool._invoke_creator(self)
+2026-06-26T10:18:47.957416252Z                                          ~~~~~~~~~~~~~~~~~~~~^^^^^^
+2026-06-26T10:18:47.957418712Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/engine/create.py", line 667, in connect
+2026-06-26T10:18:47.957421163Z     return dialect.connect(*cargs_tup, **cparams)
+2026-06-26T10:18:47.957423613Z            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+2026-06-26T10:18:47.957426023Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/sqlalchemy/engine/default.py", line 630, in connect
+2026-06-26T10:18:47.957428453Z     return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+2026-06-26T10:18:47.957430853Z            ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+2026-06-26T10:18:47.957433223Z   File "/opt/render/project/src/.venv/lib/python3.14/site-packages/psycopg2/__init__.py", line 122, in connect
+2026-06-26T10:18:47.957435643Z     conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+2026-06-26T10:18:47.957438813Z sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "db.fvazzmhcdwoaxxfxdvva.supabase.co" (2406:da1c:61c:d600:6ff5:fcfb:5dcd:15d9), port 5432 failed: Network is unreachable
+2026-06-26T10:18:47.957441224Z 	Is the server running on that host and accepting TCP/IP connections?
+2026-06-26T10:18:47.957443544Z 
+2026-06-26T10:18:47.957446044Z (Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-06-26T10:18:54.760507535Z ==> Exited with status 1
+2026-06-26T10:18:54.762794703Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2026-06-26T10:19:00.127267377Z ==> Running 'cd flask-app && gunicorn -w 2 -b 0.0.0.0:$PORT main:app'
