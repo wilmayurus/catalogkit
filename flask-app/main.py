@@ -55,7 +55,7 @@ def _sbucket(name):
     return _supabase_client.storage.from_(name)
 
 def storage_upload(bucket, path, data, content_type='image/jpeg'):
-    _sbucket(bucket).upload(path, data, {'content-type': content_type, 'upsert': 'true'})
+    _sbucket(bucket).upload(path, data, {'content-type': content_type, 'x-upsert': 'true'})
 
 def storage_download(bucket, path):
     try:
@@ -97,7 +97,7 @@ BUCKET_LOGOS  = 'logos'
 BUCKET_IMAGES = 'catalog-images'
 
 PAYMENT_INFO = {
-    'contact': os.environ.get('ADMIN_WHATSAPP', ''),
+    'contact': os.environ.get('ADMIN_WHATSAPP', '+67573817000'),
 }
 
 
@@ -946,8 +946,7 @@ def delete_catalog(catalog_id):
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    user    = current_user()
-    pending = PaymentRequest.query.filter_by(user_id=user.id, status='pending').first()
+    user = current_user()
     return render_template('dashboard.html', user=user, catalogs=user.catalogs)
 
 
