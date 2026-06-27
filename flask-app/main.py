@@ -96,6 +96,10 @@ ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
 BUCKET_LOGOS  = 'logos'
 BUCKET_IMAGES = 'catalog-images'
 
+PAYMENT_INFO = {
+    'contact': os.environ.get('ADMIN_WHATSAPP', ''),
+}
+
 
 # ── Models ────────────────────────────────────────────────────────────────────
 
