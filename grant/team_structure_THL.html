@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Trey Holdings Limited — Organisational Structure</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fff;
+    color: #1a1a2e;
+    padding: 40px 30px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    border-bottom: 3px solid #c41230;
+    padding-bottom: 18px;
+    margin-bottom: 36px;
+  }
+  .header h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #1a1a2e;
+  }
+  .header p {
+    font-size: 0.82rem;
+    color: #555;
+    margin-top: 4px;
+  }
+  .header .badge {
+    display: inline-block;
+    margin-top: 8px;
+    background: #c41230;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── Chart layout ── */
+  .chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* ── Boxes ── */
+  .box {
+    border-radius: 10px;
+    padding: 10px 18px;
+    text-align: center;
+    min-width: 180px;
+    max-width: 220px;
+    position: relative;
+  }
+  .box .role {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 3px;
+  }
+  .box .name {
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+  .box .note {
+    font-size: 0.68rem;
+    margin-top: 2px;
+    opacity: 0.75;
+  }
+
+  /* colour variants */
+  .box-red    { background: #c41230; color: #fff; }
+  .box-dark   { background: #1a1a2e; color: #fff; }
+  .box-gold   { background: #f0a500; color: #1a1a2e; }
+  .box-teal   { background: #0d7377; color: #fff; }
+  .box-slate  { background: #4a5568; color: #fff; }
+  .box-purple { background: #553c9a; color: #fff; }
+
+  /* ── Connector lines ── */
+  .vline {
+    width: 2px;
+    background: #ccc;
+    height: 28px;
+    margin: 0 auto;
+  }
+  .hline-wrap {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
+  .hline {
+    position: absolute;
+    top: 0;
+    height: 2px;
+    background: #ccc;
+  }
+  .branch-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+  .branch-vline {
+    width: 2px;
+    background: #ccc;
+    height: 24px;
+    margin: 0 auto;
+  }
+
+  /* ── Rows ── */
+  .row {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── Sub-boxes (under a team head) ── */
+  .sub-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .sub-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    margin-top: 48px;
+    border-top: 1px solid #e2e2e2;
+    padding-top: 18px;
+    font-size: 0.75rem;
+    color: #555;
+    text-align: center;
+  }
+  .legend strong { color: #1a1a2e; }
+
+  /* ── Print ── */
+  @media print {
+    body { padding: 20px; }
+    .no-print { display: none; }
+  }
+
+  .print-btn {
+    display: block;
+    margin: 0 auto 30px;
+    padding: 10px 28px;
+    background: #c41230;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+  }
+  .print-btn:hover { background: #a0001f; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save / Print as PDF</button>
+
+<div class="header">
+  <h1>Trey Holdings Limited</h1>
+  <p>Boroko, National Capital District, Papua New Guinea &nbsp;|&nbsp; IPA Incorporated 2020</p>
+  <p style="margin-top:6px;font-size:0.8rem;color:#333;">Project: <strong>CatalogKit — Digital Catalog Platform for PNG Vendors</strong></p>
+  <span class="badge">Organisational Structure — June 2026</span>
+</div>
+
+<div class="chart">
+
+  <!-- LEVEL 1: Director -->
+  <div class="box box-red">
+    <div class="role">Director / Founder</div>
+    <div class="name">Mathew Tade</div>
+    <div class="note">Overall strategy &amp; operations</div>
+  </div>
+
+  <div class="vline"></div>
+
+  <!-- LEVEL 2: Four department heads -->
+  <!-- We draw a horizontal bar then drop lines to each head -->
+  <div style="position:relative; width:780px; height:2px; background:#ccc;"></div>
+
+  <div class="row" style="width:780px; margin-top:0;">
+
+    <!-- Tech -->
+    <div class="col">
+      <div class="branch-vline"></div>
+      <div class="box box-dark">
+        <div class="role">Application Development Lead</div>
+        <div class="name">Wilma Yurus</div>
+        <div class="note">Platform &amp; technical systems</div>
+      </div>
+      <div class="vline" style="height:20px"></div>
+      <div class="sub-group">
+        <div class="box box-slate" style="min-width:160px;max-width:180px;padding:8px 12px;">
+          <div class="role">Web Developer</div>
+          <div class="name">*(Name)*</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Field Ops -->
+    <div class="col">
+      <div class="branch-vline"></div>
+      <div class="box box-teal">
+        <div class="role">Field Operations Manager</div>
+        <div class="name">*(Name)*</div>
+        <div class="note">Done-For-You agent program</div>
+      </div>
+      <div class="vline" style="height:20px"></div>
+      <div class="sub-group">
+        <div class="sub-row">
+          <div class="box box-slate" style="min-width:130px;max-width:150px;padding:8px 10px;">
+            <div class="role">Field Agent</div>
+            <div class="name">*(Name)*</div>
+          </div>
+          <div class="box box-slate" style="min-width:130px;max-width:150px;padding:8px 10px;">
+            <div class="role">Field Agent</div>
+            <div class="name">*(Name)*</div>
+          </div>
+          <div class="box box-slate" style="min-width:130px;max-width:150px;padding:8px 10px;">
+            <div class="role">Field Agent</div>
+            <div class="name">*(Name)*</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outreach -->
+    <div class="col">
+      <div class="branch-vline"></div>
+      <div class="box box-gold">
+        <div class="role">Community Outreach Lead</div>
+        <div class="name">*(Name)*</div>
+        <div class="note">Markets &amp; vendor engagement</div>
+      </div>
+    </div>
+
+    <!-- Finance/Admin -->
+    <div class="col">
+      <div class="branch-vline"></div>
+      <div class="box box-purple">
+        <div class="role">Finance &amp; Administration</div>
+        <div class="name">*(Name)*</div>
+        <div class="note">Accounts, reporting &amp; compliance</div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /chart -->
+
+<!-- Team summary table -->
+<table style="margin: 48px auto 0; border-collapse:collapse; width:90%; font-size:0.8rem;">
+  <thead>
+    <tr style="background:#1a1a2e; color:#fff;">
+      <th style="padding:9px 14px; text-align:left; border-radius:8px 0 0 0;">Role</th>
+      <th style="padding:9px 14px; text-align:left;">Name</th>
+      <th style="padding:9px 14px; text-align:left;">Responsibility</th>
+      <th style="padding:9px 14px; text-align:left; border-radius:0 8px 0 0;">Employment Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="background:#f9f9f9;">
+      <td style="padding:8px 14px; font-weight:700;">Director / Founder</td>
+      <td style="padding:8px 14px;">Mathew Tade</td>
+      <td style="padding:8px 14px;">Overall strategy, partnerships, financial oversight</td>
+      <td style="padding:8px 14px;">Full-time</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 14px; font-weight:700;">Application Development Lead</td>
+      <td style="padding:8px 14px;">Wilma Yurus</td>
+      <td style="padding:8px 14px;">Platform architecture, development, and maintenance</td>
+      <td style="padding:8px 14px;">Full-time</td>
+    </tr>
+    <tr style="background:#f9f9f9;">
+      <td style="padding:8px 14px; font-weight:700;">Web Developer</td>
+      <td style="padding:8px 14px;">*(Name)*</td>
+      <td style="padding:8px 14px;">Front-end development, UI/UX support</td>
+      <td style="padding:8px 14px;">Part-time / Contract</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 14px; font-weight:700;">Field Operations Manager</td>
+      <td style="padding:8px 14px;">*(Name)*</td>
+      <td style="padding:8px 14px;">Manage agent program, field scheduling, reporting</td>
+      <td style="padding:8px 14px;">Full-time</td>
+    </tr>
+    <tr style="background:#f9f9f9;">
+      <td style="padding:8px 14px; font-weight:700;">Field Agent × 3</td>
+      <td style="padding:8px 14px;">*(Names)*</td>
+      <td style="padding:8px 14px;">Vendor visits, Done-For-You catalog setup at markets</td>
+      <td style="padding:8px 14px;">Casual / Contract</td>
+    </tr>
+    <tr>
+      <td style="padding:8px 14px; font-weight:700;">Community Outreach Lead</td>
+      <td style="padding:8px 14px;">*(Name)*</td>
+      <td style="padding:8px 14px;">Market outreach, vendor recruitment, community sessions</td>
+      <td style="padding:8px 14px;">Full-time</td>
+    </tr>
+    <tr style="background:#f9f9f9;">
+      <td style="padding:8px 14px; font-weight:700;">Finance &amp; Administration</td>
+      <td style="padding:8px 14px;">*(Name)*</td>
+      <td style="padding:8px 14px;">Accounts, grant acquittal, compliance, reporting</td>
+      <td style="padding:8px 14px;">Part-time</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr style="background:#f0a500;">
+      <td colspan="4" style="padding:8px 14px; font-weight:700; font-size:0.78rem;">
+        Total team: 10 members (2 full-time core + 1 part-time dev + 1 FT ops + 3 casual agents + 1 FT outreach + 1 PT finance)
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="legend">
+  <strong>Trey Holdings Limited</strong> &nbsp;|&nbsp; PO Box 1775, Boroko, NCD, Papua New Guinea &nbsp;|&nbsp;
+  📞 (+675) 710 48400 &nbsp;|&nbsp; treyholdings2020@gmail.com &nbsp;|&nbsp; www.catalogkit.org
+</div>
+
+</body>
+</html>
