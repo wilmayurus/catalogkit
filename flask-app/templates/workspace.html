@@ -184,14 +184,52 @@ zone.addEventListener('drop', e => {
 });
 fileInput.addEventListener('change', () => { handleFiles([...fileInput.files]); fileInput.value = ''; });
 
+// ── Image compression (browser-side, before upload) ──────────────────────────
+function compressImage(file, maxWidth = 1200, quality = 0.78) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale  = Math.min(1, maxWidth / img.naturalWidth);
+      const w      = Math.max(1, Math.round(img.naturalWidth  * scale));
+      const h      = Math.max(1, Math.round(img.naturalHeight * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(blob || file), 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+// ── Single-file upload with automatic retry ───────────────────────────────────
+async function uploadOne(blob, name, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const form = new FormData();
+      form.append('images', blob, name);
+      const res = await fetch(`/workspace/${CATALOG_ID}/upload`, { method: 'POST', body: form });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.files && data.files.length) return data.files[0];
+      }
+    } catch { /* network error — will retry */ }
+    if (attempt < retries) {
+      setStatus('info', `Retrying… (attempt ${attempt + 1} of ${retries})`);
+      await new Promise(r => setTimeout(r, 1200 * attempt));
+    }
+  }
+  return null;
+}
+
 // ── Upload → auto-process ─────────────────────────────────────────────────────
 async function handleFiles(files) {
-  const imgs = files.filter(f => f.type.startsWith('image/'));
+  const imgs = [...files].filter(f => f.type.startsWith('image/'));
   if (!imgs.length) return;
 
-  setStatus('info', `Uploading ${imgs.length} image${imgs.length !== 1 ? 's' : ''}…`);
-  setProgress(5);
-
+  // One skeleton per image added immediately so user sees progress
   const skeletons = imgs.map(() => {
     const el = document.createElement('div');
     el.className = 'thumb-skeleton';
@@ -199,21 +237,46 @@ async function handleFiles(files) {
     return el;
   });
 
-  const form = new FormData();
-  imgs.forEach(f => form.append('images', f));
+  const uploaded = [];
+  let failed = 0;
 
-  try {
-    const res  = await fetch(`/workspace/${CATALOG_ID}/upload`, { method: 'POST', body: form });
-    const data = await res.json();
-    skeletons.forEach(s => s.remove());
-    data.files.forEach(fn => addThumb(fn));
-    setProgress(40);
-    updateUI();
+  for (let i = 0; i < imgs.length; i++) {
+    const f = imgs[i];
+    setStatus('info', `Compressing &amp; uploading image ${i + 1} of ${imgs.length}…`);
+    setProgress(5 + Math.round((i / imgs.length) * 30));
+
+    try {
+      const blob     = await compressImage(f);
+      const safeName = f.name.replace(/\.[^.]+$/, '.jpg');
+      const fname    = await uploadOne(blob, safeName);
+
+      skeletons[i].remove();
+      if (fname) {
+        uploaded.push(fname);
+        addThumb(fname);
+      } else {
+        failed++;
+      }
+    } catch {
+      skeletons[i].remove();
+      failed++;
+    }
+  }
+
+  updateUI();
+  setProgress(40);
+
+  if (failed) {
+    setStatus('error',
+      `${failed} image${failed > 1 ? 's' : ''} could not be uploaded — weak signal. ` +
+      `${uploaded.length ? 'The rest are added below. ' : ''}` +
+      `Try adding the missing ones again.`);
+  }
+
+  if (uploaded.length) {
     await processImages('Building your catalog…');
-  } catch {
-    skeletons.forEach(s => s.remove());
-    setProgress(0);
-    setStatus('error', 'Upload failed — please try again.');
+  } else if (!failed) {
+    setStatus('error', 'No valid images found.');
   }
 }
 
