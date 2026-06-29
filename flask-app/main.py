@@ -29,6 +29,13 @@ if _db_url.startswith('postgres://'):
     _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,      # test connection before using it (kills stale connections)
+    'pool_recycle':  280,       # recycle connections every 4.5 min (Supabase closes idle after 5)
+    'pool_size':     5,
+    'max_overflow':  10,
+    'connect_args':  {'sslmode': 'require'} if _db_url.startswith('postgresql') else {},
+}
 
 # ── Mail config (silently skipped if not set) ─────────────────────────────────
 _mail_user = os.environ.get('MAIL_USERNAME', '')
