@@ -1,6 +1,6 @@
-# [Project name]
+# CatalogKit
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Free web app for PNG market vendors and SMEs to create digital product catalogs (flipbook viewer + PDF download) and share them on WhatsApp.
 
 ## Run & Operate
 
@@ -34,7 +34,9 @@ _Describe the high-level user-facing capabilities of this app once they exist._
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- **User:** Wilma Yurus — she built CatalogKit and works at Trey Holdings Limited (Boroko, NCD, PNG). The grant application is submitted under Trey Holdings Limited as the legal entity. Wilma is the developer and project lead.
+- Address her by first name: Wilma.
+- The app runs on Render (catalogkit.onrender.com / www.catalogkit.org) using Flask + Supabase. GitHub repo: wilmayurus/catalogkit. She pushes code via the Shell tab (`git push origin main`) — git push from bash times out.
 
 ## Gotchas
 
