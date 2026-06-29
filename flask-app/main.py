@@ -1,4 +1,5 @@
 import io, os, uuid, json, zipfile, shutil, re, secrets, textwrap
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import quote as url_quote
 from datetime import datetime, timedelta
 from functools import wraps
@@ -455,15 +456,29 @@ def upload(catalog_id):
     catalog = get_catalog_or_404(catalog_id, user)
     if not catalog:
         return jsonify({'error': 'Not found'}), 404
-    files, uploaded = request.files.getlist('images'), []
-    for f in files:
-        if f and f.filename and allowed_file(f.filename):
-            ext      = os.path.splitext(f.filename)[1].lower()
-            filename = f'{uuid.uuid4().hex}{ext}'
-            ct       = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
-            ok = storage_upload(BUCKET_IMAGES, f'{catalog.upload_prefix}/{filename}', f.read(), ct)
-            if ok:
-                uploaded.append(filename)
+    prefix = catalog.upload_prefix
+    tasks  = [(f, prefix) for f in request.files.getlist('images')
+              if f and f.filename and allowed_file(f.filename)]
+
+    def _upload_one(args):
+        f, pfx = args
+        try:
+            raw = f.read()
+            img = Image.open(io.BytesIO(raw)).convert('RGB')
+            img = fit_with_padding(img, TARGET_WIDTH, TARGET_HEIGHT)
+            buf = io.BytesIO()
+            img.save(buf, 'JPEG', quality=82, optimize=True)
+            buf.seek(0)
+            fname = f'{uuid.uuid4().hex}.jpg'
+            ok = storage_upload(BUCKET_IMAGES, f'{pfx}/{fname}', buf.read(), 'image/jpeg')
+            return fname if ok else None
+        except Exception as e:
+            app.logger.error('upload_one failed: %s', e)
+            return None
+
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        uploaded = [r for r in ex.map(_upload_one, tasks) if r]
+
     if uploaded:
         log_activity(user.id, 'images_uploaded',
                      f'{len(uploaded)} image(s) to "{catalog.name}"')
@@ -487,13 +502,16 @@ def process(catalog_id):
     if old_files:
         storage_delete(BUCKET_IMAGES, [f'{catalog.processed_prefix}/{n}' for n in old_files])
 
-    processed, errors = [], []
-    for i, filename in enumerate(order):
-        raw = storage_download(BUCKET_IMAGES, f'{catalog.upload_prefix}/{filename}')
+    up_pfx   = catalog.upload_prefix
+    proc_pfx = catalog.processed_prefix
+
+    def _process_one(args):
+        i, filename = args
+        raw = storage_download(BUCKET_IMAGES, f'{up_pfx}/{filename}')
         if raw is None:
-            raw = storage_download(BUCKET_IMAGES, f'{catalog.processed_prefix}/{filename}')
+            raw = storage_download(BUCKET_IMAGES, f'{proc_pfx}/{filename}')
         if raw is None:
-            errors.append(f'Missing: {filename}'); continue
+            return i, None, f'Missing: {filename}'
         try:
             img      = Image.open(io.BytesIO(raw)).convert('RGB')
             img      = fit_with_padding(img, TARGET_WIDTH, TARGET_HEIGHT)
@@ -501,15 +519,23 @@ def process(catalog_id):
             buf = io.BytesIO()
             img.save(buf, 'JPEG', quality=72, optimize=True, progressive=True)
             buf.seek(0)
-            storage_upload(BUCKET_IMAGES, f'{catalog.processed_prefix}/{out_name}', buf.read())
-            processed.append({
-                'file':      out_name,
-                'src_file':  filename,
-                'price':     prices.get(filename, ''),
-                'item_name': names.get(filename, ''),
-            })
+            ok = storage_upload(BUCKET_IMAGES, f'{proc_pfx}/{out_name}', buf.read())
+            if ok:
+                return i, {
+                    'file':      out_name,
+                    'src_file':  filename,
+                    'price':     prices.get(filename, ''),
+                    'item_name': names.get(filename, ''),
+                }, None
+            return i, None, f'Upload failed: {filename}'
         except Exception as e:
-            errors.append(str(e))
+            return i, None, str(e)
+
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        results = sorted(ex.map(_process_one, enumerate(order)), key=lambda r: r[0])
+
+    processed = [r[1] for r in results if r[1] is not None]
+    errors    = [r[2] for r in results if r[2] is not None]
 
     catalog.name = name
     catalog.set_pages(processed)
