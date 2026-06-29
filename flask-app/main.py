@@ -55,7 +55,12 @@ def _sbucket(name):
     return _supabase_client.storage.from_(name)
 
 def storage_upload(bucket, path, data, content_type='image/jpeg'):
-    _sbucket(bucket).upload(path, data, {'content-type': content_type, 'x-upsert': 'true'})
+    try:
+        _sbucket(bucket).upload(path, data, {'content-type': content_type, 'x-upsert': 'true'})
+        return True
+    except Exception as e:
+        app.logger.error('storage_upload failed: %s', e)
+        return False
 
 def storage_download(bucket, path):
     try:
@@ -64,7 +69,10 @@ def storage_download(bucket, path):
         return None
 
 def storage_public_url(bucket, path):
-    return _sbucket(bucket).get_public_url(path)
+    try:
+        return _sbucket(bucket).get_public_url(path)
+    except Exception:
+        return ''
 
 def storage_delete(bucket, paths):
     try:
@@ -453,8 +461,9 @@ def upload(catalog_id):
             ext      = os.path.splitext(f.filename)[1].lower()
             filename = f'{uuid.uuid4().hex}{ext}'
             ct       = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
-            storage_upload(BUCKET_IMAGES, f'{catalog.upload_prefix}/{filename}', f.read(), ct)
-            uploaded.append(filename)
+            ok = storage_upload(BUCKET_IMAGES, f'{catalog.upload_prefix}/{filename}', f.read(), ct)
+            if ok:
+                uploaded.append(filename)
     if uploaded:
         log_activity(user.id, 'images_uploaded',
                      f'{len(uploaded)} image(s) to "{catalog.name}"')
@@ -1075,8 +1084,11 @@ def profile():
                         storage_delete(BUCKET_LOGOS, [f'{user.id}/{user.logo_filename}'])
                     fname = f"logo_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
                     ct    = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
-                    storage_upload(BUCKET_LOGOS, f'{user.id}/{fname}', logo_file.read(), ct)
-                    user.logo_filename = fname
+                    ok = storage_upload(BUCKET_LOGOS, f'{user.id}/{fname}', logo_file.read(), ct)
+                    if ok:
+                        user.logo_filename = fname
+                    else:
+                        flash('Logo upload failed — please try again.', 'error')
                 else:
                     flash('Logo must be JPG, PNG, or WebP.', 'error')
         db.session.commit()
