@@ -206,8 +206,8 @@ function compressImage(file, maxWidth = 1100, quality = 0.72) {
 
 // ── Single-file upload with retry + timeout + progressive compression ─────────
 async function uploadOne(blob, name, retries = 6) {
-  const TIMEOUT_MS   = 35000;  // 35 s per attempt — enough for slow PNG data
-  const BACKOFF      = [2000, 4000, 8000, 15000, 25000]; // exponential waits
+  const TIMEOUT_MS = 35000;  // 35 s per attempt — enough for slow PNG data
+  const BACKOFF    = [2000, 4000, 8000, 15000, 25000]; // exponential waits
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     const ctrl = new AbortController();
@@ -215,29 +215,37 @@ async function uploadOne(blob, name, retries = 6) {
     try {
       // On later attempts compress harder so the file is smaller
       let uploadBlob = blob;
-      if (attempt >= 3) uploadBlob = await compressImage(new File([blob], name), 800, 0.60);
-      if (attempt >= 5) uploadBlob = await compressImage(new File([blob], name), 600, 0.50);
+      if (attempt >= 3) uploadBlob = await compressImage(new File([blob], name, {type:'image/jpeg'}), 800, 0.60);
+      if (attempt >= 5) uploadBlob = await compressImage(new File([blob], name, {type:'image/jpeg'}), 600, 0.50);
 
       const form = new FormData();
       form.append('images', uploadBlob, name);
       const res = await fetch(`/workspace/${CATALOG_ID}/upload`,
                               { method: 'POST', body: form, signal: ctrl.signal });
       clearTimeout(timer);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.files && data.files.length) return data.files[0];
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.files && data.files.length) {
+        return { file: data.files[0] };
       }
+      if (!res.ok) {
+        // Server error — return the real message, don't retry endlessly
+        const msg = data.error || `Server error ${res.status}`;
+        return { serverError: msg };
+      }
+      // res.ok but no files — unusual, retry once more
     } catch (e) {
       clearTimeout(timer);
-      // AbortError = timed out; other = network drop — both trigger retry
+      // AbortError = timed out; network drop — retry
     }
     if (attempt < retries) {
       const wait = BACKOFF[Math.min(attempt - 1, BACKOFF.length - 1)];
-      setStatus('info', `Weak signal — retrying image (attempt ${attempt + 1} of ${retries}) in ${wait / 1000}s…`);
+      setStatus('info', `Slow connection — retrying (attempt ${attempt + 1} of ${retries})…`);
       await new Promise(r => setTimeout(r, wait));
     }
   }
-  return null;
+  return null; // all retries exhausted — genuine network failure
 }
 
 // ── Upload → auto-process ─────────────────────────────────────────────────────
@@ -269,14 +277,17 @@ async function handleFiles(files) {
     try {
       const blob     = await compressImage(f);
       const safeName = f.name.replace(/\.[^.]+$/, '.jpg');
-      const fname    = await uploadOne(blob, safeName);
+      const result   = await uploadOne(blob, safeName);
 
       skeletons[i].remove();
-      if (fname) {
-        uploaded.push(fname);
-        addThumb(fname);
+      if (result && result.file) {
+        uploaded.push(result.file);
+        addThumb(result.file);
+      } else if (result && result.serverError) {
+        // Real server error — stop retrying, show the actual message
+        setStatus('error', `Upload error: ${result.serverError}`);
+        failedFiles.push(f);
       } else {
-        skeletons[i].remove();
         failedFiles.push(f);
       }
     } catch {

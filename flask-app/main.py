@@ -29,13 +29,14 @@ if _db_url.startswith('postgres://'):
     _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    'pool_pre_ping': True,      # test connection before using it (kills stale connections)
-    'pool_recycle':  280,       # recycle connections every 4.5 min (Supabase closes idle after 5)
-    'pool_size':     5,
-    'max_overflow':  10,
-    'connect_args':  {'sslmode': 'require'} if _db_url.startswith('postgresql') else {},
+_engine_opts = {
+    'pool_pre_ping': True,   # discard stale connections before use
+    'pool_recycle':  280,    # refresh before Supabase closes idle at 5 min
 }
+# Only add sslmode if using PostgreSQL and the URL doesn't already set it
+if _db_url.startswith('postgresql') and 'sslmode' not in _db_url:
+    _engine_opts['connect_args'] = {'sslmode': 'require'}
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = _engine_opts
 
 # ── Mail config (silently skipped if not set) ─────────────────────────────────
 _mail_user = os.environ.get('MAIL_USERNAME', '')
@@ -468,6 +469,11 @@ def upload(catalog_id):
     tasks  = [(f, prefix) for f in request.files.getlist('images')
               if f and f.filename and allowed_file(f.filename)]
 
+    if not tasks:
+        return jsonify({'error': 'No valid image files received. Accepted: jpg, jpeg, png, webp, gif.'}), 400
+
+    errors = []
+
     def _upload_one(args):
         f, pfx = args
         try:
@@ -479,18 +485,28 @@ def upload(catalog_id):
             buf.seek(0)
             fname = f'{uuid.uuid4().hex}.jpg'
             ok = storage_upload(BUCKET_IMAGES, f'{pfx}/{fname}', buf.read(), 'image/jpeg')
-            return fname if ok else None
+            if ok:
+                return fname, None
+            return None, 'Storage upload failed — check Supabase credentials and bucket.'
         except Exception as e:
             app.logger.error('upload_one failed: %s', e)
-            return None
+            return None, str(e)
 
-    with ThreadPoolExecutor(max_workers=6) as ex:
-        uploaded = [r for r in ex.map(_upload_one, tasks) if r]
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        results = list(ex.map(_upload_one, tasks))
+
+    uploaded = [fname for fname, err in results if fname]
+    errors   = [err   for fname, err in results if err]
+
+    if errors and not uploaded:
+        # All failed — return a real error so the client shows the right message
+        app.logger.error('All uploads failed. First error: %s', errors[0])
+        return jsonify({'error': f'Image upload failed: {errors[0]}', 'files': []}), 500
 
     if uploaded:
         log_activity(user.id, 'images_uploaded',
                      f'{len(uploaded)} image(s) to "{catalog.name}"')
-    return jsonify({'files': uploaded})
+    return jsonify({'files': uploaded, 'failed': len(errors)})
 
 @app.route('/workspace/<int:catalog_id>/process', methods=['POST'])
 @login_required
