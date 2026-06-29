@@ -58,3 +58,6 @@ externalPort = 8081
 MAIL_SERVER = "smtp.gmail.com"
 MAIL_PORT = "587"
 MAIL_USE_TLS = "true"
+
+[nix]
+channel = "stable-25_05"

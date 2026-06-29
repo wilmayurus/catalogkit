@@ -1,5 +1,22 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "NiEUAxzVsqQnwRLawNrj1"
+uri = "file://public/images/png-market-bg.png"
+type = "image"
+title = "PNG market scene background"
+
+[[generated]]
+id = "JDd16emzctYszzW5RcTO0"
+uri = "file://public/images/smartphone-catalog.png"
+type = "image"
+title = "Smartphone showing catalog"
+
+[[generated]]
+id = "u-zrl4i1j_HGWGY_ItAUQ"
+uri = "file://public/images/warm-texture-glow.png"
+type = "image"
+title = "Abstract warm texture glow"
 
 [[outputs]]
 id = "Y1oXJOwFVw8acuWvXjfBC"
