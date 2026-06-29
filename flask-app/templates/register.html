@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}Sign Up — CatalogKit{% endblock %}
+{% block title %}Sign Up Free — CatalogKit{% endblock %}
 {% block body %}
 <div class="auth-wrap">
   <div class="auth-card">
-    <div class="auth-logo">&#9670;</div>
-    <h1 class="auth-title">Create your account</h1>
-    <p class="auth-sub">Free forever · no limits</p>
+
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:1.8rem;margin-bottom:8px">📲</div>
+      <h1 class="auth-title" style="margin-bottom:4px">Create your free catalog</h1>
+      <p class="auth-sub" style="margin-bottom:0">Free forever &nbsp;·&nbsp; No credit card &nbsp;·&nbsp; Works on any phone</p>
+    </div>
 
     <form method="POST" action="/register" class="auth-form">
       <div class="field">
         <label for="name">Your name</label>
-        <input type="text" id="name" name="name" placeholder="Jane Smith" required autocomplete="name">
+        <input type="text" id="name" name="name" placeholder="e.g. Rose Kove" required autocomplete="name">
       </div>
       <div class="field">
         <label for="email">Email address</label>
@@ -20,12 +23,28 @@
         <label for="password">Password <span class="field-hint">min. 6 characters</span></label>
         <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="new-password" minlength="6">
       </div>
-      <button type="submit" class="btn btn-primary btn-block">Create account</button>
+      <button type="submit" class="btn btn-primary btn-block" style="font-size:0.98rem;padding:13px;font-weight:700">
+        Create my free account →
+      </button>
     </form>
 
-    <p class="auth-switch">
-      Already have an account? <a href="/login">Sign in</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }}" style="margin-top:12px">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <p class="auth-switch" style="margin-top:20px">
+      Already have an account? <a href="/login">Sign in here</a>
     </p>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);text-align:center">
+      <p style="font-size:0.78rem;color:var(--muted);margin-bottom:8px">Not sure how to get started?</p>
+      <a href="/assisted-setup" style="font-size:0.82rem;color:var(--accent);text-decoration:none;font-weight:600">
+        👩‍💼 Book a Done-For-You setup visit (K50 cash on site) →
+      </a>
+    </div>
+
   </div>
 </div>
 {% endblock %}
