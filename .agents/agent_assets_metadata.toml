@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Y1oXJOwFVw8acuWvXjfBC"
+uri = "file://grant/NCDC_Grant_Application_CatalogKit_THL.md"
+type = "text"
+title = "NCDC Grant Application — Trey Holdings / CatalogKit"
