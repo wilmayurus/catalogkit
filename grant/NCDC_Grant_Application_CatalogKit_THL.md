@@ -23,8 +23,8 @@
 
 **Date Established:** 2018  
 **Year Incorporated:** 2020  
-**IPA REG#:** *(enter your IPA certificate number)*  
-**TIN#:** *(enter your TIN number)*
+**IPA REG#:** 1 - 126724  
+**TIN#:** 501571704
 
 **Type of Organization:** ☑ Others — Limited Company (ICT & Digital Services)
 
