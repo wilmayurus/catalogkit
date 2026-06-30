@@ -32,7 +32,7 @@
 
 **Contact Person:** Mr. Mathew Tade  
 **Contact Number:** (+675) 71371373 / 81645880  
-**Email:** treyholdings2020@gmail.com
+**Email:** info@catalogkit.org
 
 **Total Budget (PGK):**
 
