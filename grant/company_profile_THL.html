@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Profile — Trey Holdings Limited</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f7f7f9;
+    color: #1a1a2e;
+    padding: 32px 40px;
+    max-width: 860px;
+    margin: 0 auto;
+    line-height: 1.75;
+    font-size: 0.93rem;
+  }
+
+  /* Cover */
+  .cover {
+    background: linear-gradient(135deg, #1a1a2e 0%, #c41230 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 40px 44px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 220px; height: 220px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .cover-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 12px;
+  }
+  .cover h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+  .cover .sub {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 24px;
+  }
+  .cover-contact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 40px;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-contact span { display: flex; gap: 8px; align-items: flex-start; }
+  .cover-contact strong { color: #fff; min-width: 80px; flex-shrink: 0; }
+
+  /* Section heading */
+  .section-heading {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c41230;
+    border-bottom: 2px solid #f0e0e3;
+    padding-bottom: 6px;
+    margin: 28px 0 16px;
+  }
+
+  /* Content blocks */
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .card p { margin-bottom: 10px; color: #444; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* Person cards */
+  .person-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .person-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-top: 4px solid #c41230;
+  }
+  .person-card.navy { border-top-color: #1a1a2e; }
+  .person-name {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #1a1a2e;
+    margin-bottom: 2px;
+  }
+  .person-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #c41230;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .person-card.navy .person-title { color: #1a1a2e; }
+  .person-desc {
+    font-size: 0.85rem;
+    color: #555;
+    line-height: 1.65;
+  }
+
+  /* Registration table */
+  .reg-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+  .reg-table tr:nth-child(even) { background: #f9f3f4; }
+  .reg-table td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0e0e3;
+    font-size: 0.88rem;
+    vertical-align: top;
+  }
+  .reg-table tr:last-child td { border-bottom: none; }
+  .reg-table td:first-child {
+    font-weight: 700;
+    color: #1a1a2e;
+    width: 42%;
+    white-space: nowrap;
+  }
+  .reg-table td:last-child { color: #444; }
+
+  /* Activities list */
+  .activities {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+  .activity-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0e0e3;
+    font-size: 0.88rem;
+    color: #444;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    background: #c41230;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+  .activity-item strong { color: #1a1a2e; }
+
+  /* Values */
+  .values-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .value-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-left: 4px solid #c41230;
+  }
+  .value-title {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #1a1a2e;
+    margin-bottom: 6px;
+  }
+  .value-desc {
+    font-size: 0.82rem;
+    color: #666;
+    line-height: 1.6;
+  }
+
+  /* References */
+  .ref-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .ref-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .ref-name {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+  }
+  .ref-org {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .ref-email {
+    font-size: 0.78rem;
+    color: #c41230;
+    word-break: break-all;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #aaa;
+    padding-top: 20px;
+    border-top: 1px solid #e8e8f0;
+    line-height: 1.9;
+    margin-top: 28px;
+  }
+  .footer strong { color: #1a1a2e; }
+
+  /* Print */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { padding: 12px 20px; background: #fff; }
+    .no-print { display: none !important; }
+    .person-card, .card, .reg-table, .activities, .value-card, .ref-card { break-inside: avoid; }
+    .person-grid, .values-grid, .ref-grid { break-inside: avoid; }
+  }
+
+  .print-btn {
+    display: block;
+    margin: 0 auto 28px;
+    padding: 10px 28px;
+    background: #c41230;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    font-family: 'Inter', sans-serif;
+  }
+  .print-btn:hover { background: #a0001f; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save / Print as PDF</button>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="cover-label">Corporate Company Profile — 2026</div>
+  <h1>TREY HOLDINGS LIMITED</h1>
+  <div class="sub">ICT Solutions · Custom Software Development · Digital Platforms · Technical Services</div>
+  <div class="cover-contact">
+    <span><strong>Physical:</strong> Section 52, Lot 137, Kennedy Estate, Port Moresby, NCD, Papua New Guinea</span>
+    <span><strong>Postal:</strong> PO Box 6620, Kennedy Estate, NCD, Papua New Guinea</span>
+    <span><strong>Phone:</strong> (+675) 71371373 / 81645880</span>
+    <span><strong>Email:</strong> info@catalogkit.org</span>
+    <span><strong>IPA REG#:</strong> 1 - 126724</span>
+    <span><strong>TIN#:</strong> 501571704</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="section-heading">About Us</div>
+<div class="card">
+  <p>Trey Holdings Limited was established in 2018 and formally incorporated in 2020 by esteemed IT professionals in Port Moresby, Papua New Guinea. Our primary objective is to deliver superior Information and Communications Technology (ICT) products, custom software applications, and tech-driven business enablement services to corporate entities, public organizations, and community enterprises.</p>
+  <p>Our core technical expertise spans the entire spectrum of modern networks and digital architecture — encompassing the design, supply, installation, and configuration of wireless networks, LAN switches, WAN/VPN routing infrastructure, advanced IT security firewalls, structured cabling, and robust power protection systems (UPS).</p>
+  <p>In line with our commitment to digital transformation and local empowerment, Trey Holdings Limited has successfully expanded into custom platform development. This includes <strong>CatalogKit</strong> (www.catalogkit.org), our specialised mobile-first digital product catalog infrastructure built specifically to bridge the digital divide for PNG market vendors, informal traders, and micro-MSMEs. Alongside our primary ICT operations, we provide a reliable suite of auxiliary corporate services including architectural design and tender submissions, GPS vehicle tracking installations, office stationery supply, and comprehensive audio-visual event management solutions.</p>
+</div>
+
+<!-- VISION & MISSION -->
+<div class="section-heading">Corporate Vision &amp; Mission</div>
+<div class="person-grid">
+  <div class="person-card">
+    <div class="person-name">Our Vision</div>
+    <div class="person-desc" style="margin-top:8px;">To be Papua New Guinea's leading provider of innovative, comprehensive, and digitally inclusive solutions across ICT, software application development, and technical project management — fostering sustainable economic growth and community empowerment.</div>
+  </div>
+  <div class="person-card navy">
+    <div class="person-name">Our Mission Statement</div>
+    <div class="person-desc" style="margin-top:8px;">To deliver exceptional, scalable, and secure technical systems across ICT infrastructure, digital commerce applications, architectural design, and special project fields — supplying high-quality products and field services that enhance operational capability and create tangible long-term value for commercial clients and grassroots community stakeholders alike.</div>
+  </div>
+</div>
+
+<!-- CORPORATE STRUCTURE -->
+<div class="section-heading">Corporate Structure &amp; Governance</div>
+<div class="card" style="margin-bottom:14px; font-size:0.88rem; color:#555;">
+  Trey Holdings Limited maintains strict compliance with the rules and regulatory requirements of the Independent State of Papua New Guinea. The corporate leadership structure guarantees project accountability, financial oversight, and robust operational execution.
+</div>
+<div class="person-grid">
+  <div class="person-card">
+    <div class="person-name">Mr. Mathew Tade</div>
+    <div class="person-title">Managing Director &amp; Shareholder</div>
+    <div class="person-desc">Oversees corporate strategy, regulatory compliance, and general business operations. Formally appointed as individual business owner and director since incorporation in June 2020.</div>
+  </div>
+  <div class="person-card navy">
+    <div class="person-name">Ms. Wilma Yurus</div>
+    <div class="person-title">Application Development Lead &amp; Project Contact</div>
+    <div class="person-desc">Directs the platform engineering unit, product deployment pipelines, and community outreach frameworks including the CatalogKit initiative and field agent training operations.</div>
+  </div>
+</div>
+
+<!-- STATUTORY REGISTRATIONS -->
+<div class="section-heading">General Information &amp; Statutory Registrations</div>
+<table class="reg-table">
+  <tr><td>Registered Entity Name</td><td>TREY HOLDINGS LIMITED</td></tr>
+  <tr><td>IPA Registration Number</td><td>1 - 126724 (Incorporated under the Companies Act 1997)</td></tr>
+  <tr><td>Tax Identification Number</td><td>501571704 (Internal Revenue Commission)</td></tr>
+  <tr><td>Year Established</td><td>2018</td></tr>
+  <tr><td>Year Incorporated</td><td>17 June 2020 (Re-registered 13 December 2024)</td></tr>
+  <tr><td>Core Focus Sectors</td><td>ICT Solutions, Custom Software Development, Office Supplies, Technical Procurement</td></tr>
+  <tr><td>Staff Complement</td><td>10 Full-time Professionals</td></tr>
+  <tr><td>In-house Languages</td><td>English, Pidgin (Tok Pisin)</td></tr>
+</table>
+
+<!-- CORE BUSINESS ACTIVITIES -->
+<div class="section-heading">Summary of Core Business Activities</div>
+<div class="activities">
+  <div class="activity-item">
+    <div class="activity-dot"></div>
+    <div><strong>Software &amp; Custom Application Development:</strong> Digital platform architectures, mobile-first web systems, and custom tools tailored for local PNG infrastructure restrictions (e.g., optimisation for slow 3G data connection).</div>
+  </div>
+  <div class="activity-item">
+    <div class="activity-dot"></div>
+    <div><strong>Enterprise ICT Infrastructure:</strong> Corporate network designs, LAN/WAN setup, routing protocols, corporate data firewalls, security configurations, and structured building cabling.</div>
+  </div>
+  <div class="activity-item">
+    <div class="activity-dot"></div>
+    <div><strong>Technical Hardware Procurement &amp; Support:</strong> Commercial supply, preventative maintenance, and repair of laptops, corporate servers, software operating licenses, business printers, and heavy-duty UPS back-ups.</div>
+  </div>
+  <div class="activity-item">
+    <div class="activity-dot"></div>
+    <div><strong>Architectural &amp; Engineering Submissions:</strong> Comprehensive preparation of architectural design blueprints, layout schemas, and technical documentation packages for formal corporate and state project tenders.</div>
+  </div>
+  <div class="activity-item">
+    <div class="activity-dot"></div>
+    <div><strong>GPS Fleet Tracking Systems:</strong> Supply, technical terminal installation, and real-time monitoring dashboard configuration for asset security and enterprise vehicle management.</div>
+  </div>
+  <div class="activity-item">
+    <div class="activity-dot"></div>
+    <div><strong>Event Management &amp; Technical Production:</strong> Full structural setup, logistical management, and professional audio/visual/lighting systems supply for corporate and public events.</div>
+  </div>
+  <div class="activity-item">
+    <div class="activity-dot"></div>
+    <div><strong>Office Procurement Logistics:</strong> High-volume commercial supply of corporate office stationery, administrative paper goods, custom printing services, and business materials.</div>
+  </div>
+</div>
+
+<!-- CORPORATE VALUES -->
+<div class="section-heading">Corporate Values</div>
+<div class="values-grid">
+  <div class="value-card">
+    <div class="value-title">Quality Service &amp; Technical Excellence</div>
+    <div class="value-desc">Committing to data integrity, system reliability, and standard compliance across all hardware and software deployments.</div>
+  </div>
+  <div class="value-card">
+    <div class="value-title">Inclusivity &amp; Community Enablement</div>
+    <div class="value-desc">Designing technical solutions that explicitly include and benefit informal sectors and emerging micro-entrepreneurs.</div>
+  </div>
+  <div class="value-card">
+    <div class="value-title">Professionalism &amp; Accountability</div>
+    <div class="value-desc">Maintaining open communication channels, robust project updates, and transparent financial reporting systems.</div>
+  </div>
+  <div class="value-card">
+    <div class="value-title">Flexibility &amp; Adaptability</div>
+    <div class="value-desc">Modifying deployment configurations to thrive within challenging infrastructural, geographical, and connectivity landscapes.</div>
+  </div>
+</div>
+
+<!-- CORPORATE REFERENCES -->
+<div class="section-heading">Corporate References</div>
+<div class="card" style="margin-bottom:14px; font-size:0.85rem; color:#555;">
+  Contact numbers for corporate referees are securely maintained and can be provided promptly upon formal request.
+</div>
+<div class="ref-grid">
+  <div class="ref-card">
+    <div class="ref-name">Alcinda Trawen</div>
+    <div class="ref-org">Deputy Manager Research &amp; International Relations<br>United Nations World Tourism Organisation Regional Support Office for Asia and Pacific</div>
+    <div class="ref-email">atrawen@unwto-ap.org</div>
+  </div>
+  <div class="ref-card">
+    <div class="ref-name">Michael S. Wagambie</div>
+    <div class="ref-org">Principal Lawyer and Director<br>MS Wagambie Lawyers</div>
+    <div class="ref-email">mswagambie@gmail.com</div>
+  </div>
+  <div class="ref-card">
+    <div class="ref-name">Thomas Yurus</div>
+    <div class="ref-org">IT Manager<br>PNG Fire Service</div>
+    <div class="ref-email">tyurus@pngfire.gov.pg</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>Trey Holdings Limited</strong> — Company Profile 2026. Formally Prepared for Project Submission Frameworks.<br>
+  PO Box 6620, Kennedy Estate, NCD, Papua New Guinea &nbsp;·&nbsp; (+675) 71371373 / 81645880 &nbsp;·&nbsp; info@catalogkit.org<br>
+  IPA REG# 1 - 126724 &nbsp;·&nbsp; TIN# 501571704
+</div>
+
+</body>
+</html>
