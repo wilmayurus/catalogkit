@@ -28,7 +28,7 @@
 
 **Type of Organization:** ☑ Others — Limited Company (ICT & Digital Services)
 
-**Physical Address:** PO Box 6620, Boroko, NCD, Papua New Guinea
+**Physical Address:** PO Box 6620, Kennedy Estate, NCD, Papua New Guinea
 
 **Contact Person:** Mr. Mathew Tade  
 **Contact Number:** (+675) 71371373 / 81645880  
