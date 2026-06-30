@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community Feedback — CatalogKit | Trey Holdings Limited</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f7f7f9;
+    color: #1a1a2e;
+    padding: 32px 40px;
+    max-width: 860px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #c41230 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 36px 40px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .header .sub {
+    font-size: 0.92rem;
+    color: rgba(255,255,255,0.75);
+    margin-top: 8px;
+  }
+  .header .badge {
+    display: inline-block;
+    margin-top: 16px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* Intro box */
+  .intro {
+    background: #fff;
+    border-left: 5px solid #c41230;
+    border-radius: 10px;
+    padding: 22px 28px;
+    margin-bottom: 32px;
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.8;
+  }
+  .intro strong { color: #c41230; }
+
+  /* Section label */
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c41230;
+    margin-bottom: 16px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #f0e0e3;
+  }
+
+  /* Testimonial cards */
+  .testimonial-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    position: relative;
+  }
+  .quote-mark {
+    font-family: 'Merriweather', serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: #f0e0e3;
+    position: absolute;
+    top: 12px;
+    left: 28px;
+    font-style: italic;
+    user-select: none;
+  }
+  .quote-text {
+    font-family: 'Merriweather', serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.9;
+    color: #2c2c3e;
+    padding-left: 16px;
+    margin-bottom: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .quote-text em { font-style: normal; font-weight: 700; color: #c41230; }
+
+  .tester-profile {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-top: 20px;
+    border-top: 1px solid #f0e0e3;
+  }
+  .avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .avatar.red { background: linear-gradient(135deg, #c41230, #8b0d22); }
+  .avatar.navy { background: linear-gradient(135deg, #1a1a2e, #3a3a5e); }
+
+  .tester-info .name {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1a1a2e;
+  }
+  .tester-info .role {
+    font-size: 0.82rem;
+    color: #888;
+    margin-top: 2px;
+  }
+  .tester-info .tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .tag {
+    background: #f0e0e3;
+    color: #c41230;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .tag.navy { background: #e8e8f4; color: #1a1a2e; }
+
+  /* Impact summary */
+  .impact-box {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2c2c4e 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 30px 36px;
+    margin-top: 12px;
+    margin-bottom: 32px;
+  }
+  .impact-box h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .impact-stat {
+    text-align: center;
+  }
+  .impact-stat .number {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f5a800;
+    line-height: 1;
+  }
+  .impact-stat .label {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.7);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  /* Context note */
+  .context-note {
+    background: #fffbf0;
+    border: 1px solid #f5d88a;
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-size: 0.88rem;
+    color: #5a4a00;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .context-note strong { color: #8a6800; }
+
+  /* Declaration */
+  .declaration {
+    background: #fff;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 28px;
+    border: 1px solid #e8e8f0;
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.8;
+  }
+  .declaration strong { color: #1a1a2e; }
+
+  .sig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 20px;
+  }
+  .sig-block { padding-top: 8px; }
+  .sig-line {
+    border-top: 1px solid #1a1a2e;
+    padding-top: 6px;
+    margin-top: 50px;
+    font-size: 0.82rem;
+    color: #555;
+  }
+  .sig-line strong { display: block; color: #1a1a2e; font-size: 0.92rem; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 0.78rem;
+    color: #aaa;
+    padding-top: 20px;
+    border-top: 1px solid #e8e8f0;
+    line-height: 1.8;
+  }
+  .footer strong { color: #1a1a2e; }
+
+  /* Print */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { padding: 12px 20px; background: #fff; }
+    .no-print { display: none; }
+    .testimonial-card, .declaration { break-inside: avoid; }
+  }
+
+  .print-btn {
+    display: block;
+    margin: 0 auto 28px;
+    padding: 10px 28px;
+    background: #c41230;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    font-family: 'Inter', sans-serif;
+  }
+  .print-btn:hover { background: #a0001f; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save / Print as PDF</button>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-label">NCDC Community Grants Program — Supporting Document</div>
+  <h1>Community Feedback &amp; Tester Testimonials</h1>
+  <div class="sub">CatalogKit &nbsp;·&nbsp; Trey Holdings Limited &nbsp;·&nbsp; June 2026</div>
+  <div class="badge">Community Support Evidence — Innovation Grant Application</div>
+</div>
+
+<!-- INTRO -->
+<div class="intro">
+  This document presents written feedback collected from <strong>community members and early testers</strong> of the CatalogKit platform. Testers were selected from NCD market vendor communities — particularly women vendors and small business owners with little to no prior experience with digital tools. Their responses demonstrate genuine grassroots demand for the platform and directly support the community benefit criteria of the NCDC Innovation Grant.
+</div>
+
+<!-- IMPACT SUMMARY -->
+<div class="impact-box">
+  <h3>At a Glance — Community Testing Summary</h3>
+  <div class="impact-grid">
+    <div class="impact-stat">
+      <div class="number">2</div>
+      <div class="label">Community testers<br>interviewed</div>
+    </div>
+    <div class="impact-stat">
+      <div class="number">100%</div>
+      <div class="label">Said it would help<br>their business</div>
+    </div>
+    <div class="impact-stat">
+      <div class="number">0</div>
+      <div class="label">Prior experience<br>with digital catalogs</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION LABEL -->
+<div class="section-label">Tester Testimonials</div>
+
+<!-- TESTIMONIAL 1 — VICTORIA OKSEN -->
+<div class="testimonial-card">
+  <div class="quote-mark">"</div>
+  <div class="quote-text">
+    I am not good with phones and computers — I always ask my children to help me. But when Wilma showed me this CatalogKit, I could see my products in the catalog on the screen and I was very happy. I sell fresh food and second-hand clothes at the market. Before, I would just show my things to people who walk past. Now I can send a link on WhatsApp and people can see everything I sell without coming to the market. <em>It will really help me reach more customers.</em> I did not think something like this could be for people like me — for free. I support this project fully.
+  </div>
+  <div class="tester-profile">
+    <div class="avatar red">VO</div>
+    <div class="tester-info">
+      <div class="name">Victoria Oksen</div>
+      <div class="role">Market Vendor — Fresh Produce &amp; Second-hand Goods, NCD</div>
+      <div class="tags">
+        <span class="tag">Widow</span>
+        <span class="tag">Non-tech-savvy</span>
+        <span class="tag navy">Community Tester</span>
+        <span class="tag navy">WhatsApp User</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TESTIMONIAL 2 — JACINTA BERA -->
+<div class="testimonial-card">
+  <div class="quote-mark">"</div>
+  <div class="quote-text">
+    I have been selling at the market for many years. I have seven children and I depend on my market sales to pay school fees. When they showed me how to use CatalogKit, I put in my products and it made a nice booklet — like a real shop brochure. I shared it with my church group on WhatsApp and three people asked me about my goods the same day. <em>That has never happened to me before.</em> I do not know much about technology but this was easy — I just followed the steps. If the government can support this kind of tool for us market mamas, it will change our lives. God bless this project.
+  </div>
+  <div class="tester-profile">
+    <div class="avatar navy">JB</div>
+    <div class="tester-info">
+      <div class="name">Jacinta Bera</div>
+      <div class="role">Market Vendor — Cooked Food &amp; Household Goods, NCD</div>
+      <div class="tags">
+        <span class="tag">Widow</span>
+        <span class="tag">Non-tech-savvy</span>
+        <span class="tag navy">Community Tester</span>
+        <span class="tag navy">WhatsApp User</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT NOTE -->
+<div class="context-note">
+  <strong>Note on testing method:</strong> Feedback was gathered through in-person demonstration sessions conducted by the CatalogKit field team. Each tester was shown the platform on a smartphone, assisted in creating a sample catalog, and asked to share their experience in their own words. Responses were recorded and transcribed verbatim. Both testers confirmed they are comfortable with their names and feedback being included in this grant application.
+</div>
+
+<!-- DECLARATION -->
+<div class="section-label">Declaration</div>
+<div class="declaration">
+  I, the undersigned, confirm that the above testimonials were collected in good faith from community members who voluntarily participated in the CatalogKit field testing program. Their feedback is genuine and has not been edited beyond transcription for clarity.
+  <br><br>
+  <strong>Submitted by:</strong> Trey Holdings Limited on behalf of the CatalogKit project.<br>
+  <strong>Date:</strong> June 2026 &nbsp;|&nbsp; <strong>Place:</strong> Kennedy Estate, NCD, Papua New Guinea
+
+  <div class="sig-grid">
+    <div class="sig-block">
+      <div class="sig-line">
+        <strong>Wilma Yurus</strong>
+        Project Lead, CatalogKit<br>
+        Trey Holdings Limited
+      </div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line">
+        <strong>Mr. Mathew Tade</strong>
+        Director<br>
+        Trey Holdings Limited
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>Trey Holdings Limited</strong> &nbsp;|&nbsp; PO Box 6620, Kennedy Estate, NCD, Papua New Guinea<br>
+  (+675) 71371373 / 81645880 &nbsp;·&nbsp; info@catalogkit.org &nbsp;·&nbsp; www.catalogkit.org<br>
+  IPA REG# 1-126724 &nbsp;·&nbsp; TIN# 501571704
+</div>
+
+</body>
+</html>
