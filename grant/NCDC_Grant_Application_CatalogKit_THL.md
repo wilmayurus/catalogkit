@@ -31,7 +31,7 @@
 **Physical Address:** PO Box 1775, Boroko, NCD, Papua New Guinea 111
 
 **Contact Person:** Mr. Mathew Tade  
-**Contact Number:** (+675) 710 48400  
+**Contact Number:** (+675) 71371373 / 81645880  
 **Email:** treyholdings2020@gmail.com
 
 **Total Budget (PGK):**
