@@ -61,6 +61,15 @@ export function Scene5() {
         </motion.div>
 
         <motion.p
+          className="mt-[2vh] text-[2vw] font-['Inter'] text-white/80 tracking-wide"
+          initial={{ opacity: 0, y: 10 }}
+          animate={phase >= 4 ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+          transition={{ delay: 0.6 }}
+        >
+          info@catalogkit.org
+        </motion.p>
+
+        <motion.p
           className="absolute bottom-[-15vh] text-[1.5vw] text-white/60 tracking-widest uppercase"
           initial={{ opacity: 0 }}
           animate={phase >= 4 ? { opacity: 1 } : { opacity: 0 }}
