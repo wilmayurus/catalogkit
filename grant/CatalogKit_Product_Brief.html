@@ -242,6 +242,7 @@
 
   /* ── Print ── */
   @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     body { padding: 16px 24px; }
     .no-print { display: none; }
     .card, .card-full { break-inside: avoid; }
