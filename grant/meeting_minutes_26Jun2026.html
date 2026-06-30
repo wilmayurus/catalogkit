@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meeting Minutes — CatalogKit Team | 26 June 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f7f7f9;
+    color: #1a1a2e;
+    padding: 32px 40px;
+    max-width: 860px;
+    margin: 0 auto;
+    line-height: 1.75;
+    font-size: 0.93rem;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #c41230 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 36px 44px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+  .header-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 10px;
+  }
+  .header h1 { font-size: 1.7rem; font-weight: 800; margin-bottom: 4px; }
+  .header .sub { font-size: 0.9rem; color: rgba(255,255,255,0.75); margin-top: 6px; }
+
+  .meta-strip {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px 40px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.9);
+    position: relative;
+    z-index: 1;
+  }
+  .meta-strip span { display: flex; gap: 8px; }
+  .meta-strip strong { color: #fff; min-width: 90px; flex-shrink: 0; }
+
+  /* Section heading */
+  .section-heading {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c41230;
+    border-bottom: 2px solid #f0e0e3;
+    padding-bottom: 6px;
+    margin: 28px 0 14px;
+  }
+
+  /* Attendees table */
+  .attendee-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+  .attendee-table thead tr { background: #1a1a2e; color: #fff; }
+  .attendee-table thead td {
+    padding: 11px 18px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .attendee-table tbody tr:nth-child(even) { background: #f9f3f4; }
+  .attendee-table tbody td {
+    padding: 11px 18px;
+    font-size: 0.87rem;
+    border-bottom: 1px solid #f0e0e3;
+    vertical-align: middle;
+  }
+  .attendee-table tbody tr:last-child td { border-bottom: none; }
+  .attendee-table .role-col { color: #888; font-size: 0.82rem; }
+  .present-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: #2ecc71;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+
+  /* Agenda items */
+  .agenda-item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-left: 5px solid #c41230;
+  }
+  .agenda-item.navy { border-left-color: #1a1a2e; }
+  .agenda-item.gold { border-left-color: #f5a800; }
+  .agenda-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #c41230;
+    margin-bottom: 4px;
+  }
+  .agenda-item.navy .agenda-num { color: #1a1a2e; }
+  .agenda-item.gold .agenda-num { color: #b07800; }
+  .agenda-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 12px;
+  }
+  .agenda-body { font-size: 0.88rem; color: #444; line-height: 1.8; }
+  .agenda-body ul { padding-left: 18px; margin-top: 8px; }
+  .agenda-body ul li { margin-bottom: 6px; }
+  .agenda-body ul li strong { color: #1a1a2e; }
+
+  /* Action items table */
+  .action-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+  }
+  .action-table thead tr { background: #c41230; color: #fff; }
+  .action-table thead td {
+    padding: 11px 16px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .action-table tbody tr:nth-child(even) { background: #fff9f9; }
+  .action-table tbody td {
+    padding: 11px 16px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f0e0e3;
+    vertical-align: top;
+  }
+  .action-table tbody tr:last-child td { border-bottom: none; }
+  .due { color: #c41230; font-weight: 600; white-space: nowrap; }
+  .owner { font-weight: 600; color: #1a1a2e; }
+
+  /* Sign-off */
+  .signoff {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+    font-size: 0.88rem;
+    color: #555;
+    line-height: 1.8;
+  }
+  .sig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 20px;
+  }
+  .sig-line {
+    border-top: 1px solid #1a1a2e;
+    padding-top: 6px;
+    margin-top: 50px;
+    font-size: 0.82rem;
+    color: #555;
+  }
+  .sig-line strong { display: block; color: #1a1a2e; font-size: 0.9rem; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #aaa;
+    padding-top: 20px;
+    border-top: 1px solid #e8e8f0;
+    line-height: 1.9;
+    margin-top: 28px;
+  }
+  .footer strong { color: #1a1a2e; }
+
+  /* Print */
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { padding: 12px 20px; background: #fff; }
+    .no-print { display: none !important; }
+    .agenda-item, .signoff, .action-table { break-inside: avoid; }
+  }
+
+  .print-btn {
+    display: block;
+    margin: 0 auto 28px;
+    padding: 10px 28px;
+    background: #c41230;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    font-family: 'Inter', sans-serif;
+  }
+  .print-btn:hover { background: #a0001f; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save / Print as PDF</button>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-label">Trey Holdings Limited — CatalogKit Project</div>
+  <h1>Meeting Minutes</h1>
+  <div class="sub">Grant Application Preparation, Submission Strategy &amp; Rollout Planning</div>
+  <div class="meta-strip">
+    <span><strong>Date:</strong> Thursday, 26 June 2026</span>
+    <span><strong>Time:</strong> 10:00 AM – 12:30 PM</span>
+    <span><strong>Location:</strong> Section 52, Lot 137, Kennedy Estate, Port Moresby, NCD</span>
+    <span><strong>Chaired by:</strong> Ms. Wilma Yurus</span>
+    <span><strong>Minutes by:</strong> Ms. Annrika Garena</span>
+    <span><strong>Next Meeting:</strong> TBC — upon grant outcome</span>
+  </div>
+</div>
+
+<!-- ATTENDEES -->
+<div class="section-heading">Attendees</div>
+<table class="attendee-table">
+  <thead>
+    <tr>
+      <td>#</td>
+      <td>Name</td>
+      <td>Role</td>
+      <td>Status</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Mr. Mathew Tade</strong></td>
+      <td class="role-col">Managing Director, Trey Holdings Limited</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Ms. Wilma Yurus</strong></td>
+      <td class="role-col">Application Development Lead &amp; Project Contact</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Mr. Isaac Matava</strong></td>
+      <td class="role-col">Web Developer</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Mr. Christopher Kenia</strong></td>
+      <td class="role-col">Field Operations Manager</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Ms. Mirriam Jack</strong></td>
+      <td class="role-col">Community Outreach Lead</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Ms. Annrika Garena</strong></td>
+      <td class="role-col">Finance Officer</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Mr. Leonard Taman</strong></td>
+      <td class="role-col">Field Agent</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><strong>Mr. Joshua Ivan</strong></td>
+      <td class="role-col">Field Agent</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><strong>Ms. Micha Gau</strong></td>
+      <td class="role-col">Field Agent</td>
+      <td><span class="present-dot"></span>Present</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- AGENDA & DISCUSSIONS -->
+<div class="section-heading">Agenda Items &amp; Discussion</div>
+
+<div class="agenda-item">
+  <div class="agenda-num">Agenda Item 1</div>
+  <div class="agenda-title">Opening &amp; Purpose of Meeting</div>
+  <div class="agenda-body">
+    Ms. Wilma Yurus opened the meeting at 10:00 AM and welcomed all team members. She outlined the purpose of the meeting: to finalise the NCDC Community Grants Program Innovation Grant application package under Trey Holdings Limited, to align the team on submission logistics, and to plan how the project would be rolled out and tested in the event of successful funding.
+    <br><br>
+    Mr. Mathew Tade affirmed the strategic importance of the grant for the sustainability of CatalogKit and encouraged all team members to contribute actively to the planning session.
+  </div>
+</div>
+
+<div class="agenda-item navy">
+  <div class="agenda-num">Agenda Item 2</div>
+  <div class="agenda-title">Grant Application Package Review</div>
+  <div class="agenda-body">
+    Ms. Yurus presented the completed grant application package for team review. The following documents were tabled and reviewed:
+    <ul>
+      <li><strong>Grant Application Form</strong> — Organisation details, project description, budget breakdown, and objectives were reviewed. IPA REG# (1-126724) and TIN# (501571704) confirmed.</li>
+      <li><strong>Company Profile</strong> — Trey Holdings Limited corporate profile updated with correct postal address (PO Box 6620, Boroko, NCD) and contact details.</li>
+      <li><strong>CatalogKit Product Brief</strong> — One-page summary of the platform, its impact, and target users.</li>
+      <li><strong>Team Structure &amp; Org Chart</strong> — All team roles confirmed and org chart finalised.</li>
+      <li><strong>Community Feedback &amp; Testimonials</strong> — Feedback from early testers Victoria Oksen and Jacinta Bera included as evidence of community support.</li>
+    </ul>
+    <br>
+    The team confirmed all documents are accurate and ready for submission. Ms. Yurus confirmed the package will be emailed to CommunityG@ncdc.gov.pg before end of June 2026.
+  </div>
+</div>
+
+<div class="agenda-item">
+  <div class="agenda-num">Agenda Item 3</div>
+  <div class="agenda-title">Project Rollout Plan — If Funding is Successful</div>
+  <div class="agenda-body">
+    Mr. Christopher Kenia (Field Operations Manager) led the discussion on the proposed rollout strategy. The team agreed on a phased approach over the 12-month project period (1 August 2026 – 31 July 2027):
+    <ul>
+      <li><strong>Month 1–2 (August–September 2026) — Setup &amp; Preparation:</strong> Finalise field onboarding materials, training guides, and demo devices. Identify target markets across NCD. Ms. Mirriam Jack to lead community engagement and prior communications to market associations.</li>
+      <li><strong>Month 3–5 (October–December 2026) — Pilot Rollout:</strong> Field agents (Leonard Taman, Joshua Ivan, Micha Gau) to conduct on-site vendor onboarding at three initial NCD market locations. Target minimum 50 vendors registered and active on CatalogKit by end of Month 5.</li>
+      <li><strong>Month 6–9 (January–April 2027) — Full Rollout &amp; Scale:</strong> Expand to additional NCD markets. Community training workshops to be conducted fortnightly. Ms. Jack to coordinate WhatsApp group support channels for registered vendors.</li>
+      <li><strong>Month 10–12 (May–July 2027) — Review &amp; Reporting:</strong> Data collection, impact assessment, and final grant report preparation. Ms. Annrika Garena to compile financial acquittal report. Ms. Yurus to prepare technical summary report for NCDC.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="agenda-item navy">
+  <div class="agenda-num">Agenda Item 4</div>
+  <div class="agenda-title">Testing &amp; Quality Assurance Plan</div>
+  <div class="agenda-body">
+    Mr. Isaac Matava (Web Developer) presented the testing framework for ensuring CatalogKit performs reliably for non-tech-savvy vendors in low-connectivity environments:
+    <ul>
+      <li><strong>User Acceptance Testing (UAT):</strong> A structured UAT session will be conducted with 10–15 selected market vendors prior to the pilot rollout. Participants will include individuals with no prior digital catalog experience. Feedback will directly inform any final platform adjustments before full deployment.</li>
+      <li><strong>Connectivity Testing:</strong> The platform will be tested on 3G and limited-data mobile connections — the primary connectivity scenario for PNG market vendors — to ensure image upload, catalog generation, and WhatsApp sharing all function reliably under these conditions.</li>
+      <li><strong>Device Compatibility:</strong> Testing to cover a range of low-to-mid-range Android smartphones commonly used by vendors in NCD markets.</li>
+      <li><strong>Field Agent Feedback Loop:</strong> Field agents to report platform issues weekly during the pilot phase. Mr. Matava will triage and resolve reported bugs within 48 hours where possible.</li>
+      <li><strong>WhatsApp Sharing Verification:</strong> Each catalog generated during pilot onboarding will be shared via WhatsApp by the vendor and confirmed to render correctly on the recipient's device.</li>
+    </ul>
+    <br>
+    The team agreed that a simple paper feedback form will also be used during field sessions for vendors who are uncomfortable with digital surveys.
+  </div>
+</div>
+
+<div class="agenda-item gold">
+  <div class="agenda-num">Agenda Item 5</div>
+  <div class="agenda-title">Budget &amp; Financial Responsibilities</div>
+  <div class="agenda-body">
+    Ms. Annrika Garena presented a high-level overview of the proposed K35,000 budget allocation. Key line items discussed:
+    <ul>
+      <li><strong>Field Operations &amp; Travel:</strong> Costs for field agents to conduct market visits across NCD, including transport and materials.</li>
+      <li><strong>Community Training Workshops:</strong> Venue, printing, refreshments, and facilitator costs for fortnightly training sessions.</li>
+      <li><strong>Platform Hosting &amp; Maintenance:</strong> Server, domain, and cloud storage costs for the 12-month project period.</li>
+      <li><strong>Equipment:</strong> Demo smartphones and accessories for field use.</li>
+      <li><strong>Administration &amp; Reporting:</strong> Documentation, reporting, and financial acquittal costs.</li>
+    </ul>
+    <br>
+    Ms. Garena confirmed that a detailed budget spreadsheet will be maintained and that all expenditure will be receipted and reconciled monthly as per grant acquittal requirements.
+  </div>
+</div>
+
+<div class="agenda-item">
+  <div class="agenda-num">Agenda Item 6</div>
+  <div class="agenda-title">Any Other Business</div>
+  <div class="agenda-body">
+    <ul>
+      <li>Ms. Yurus reminded the team that the grant application will be submitted by email before end of June 2026 and that all team members should be available to provide additional information if requested by NCDC Grants Secretariat.</li>
+      <li>Mr. Tade noted that the team should continue normal operations while awaiting the grant outcome, and that CatalogKit will remain live and free for all PNG vendors regardless of the outcome.</li>
+      <li>The field agents confirmed they have already identified several vendors at Boroko Market and Koki Market who have expressed interest in CatalogKit and are ready to participate in the pilot.</li>
+      <li>Ms. Jack confirmed that two community testers — Victoria Oksen and Jacinta Bera — have consented to their feedback being included in the grant submission and expressed strong support for the project.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ACTION ITEMS -->
+<div class="section-heading">Action Items</div>
+<table class="action-table">
+  <thead>
+    <tr>
+      <td>#</td>
+      <td>Action</td>
+      <td>Owner</td>
+      <td>Due</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Email final grant application package to CommunityG@ncdc.gov.pg</td>
+      <td class="owner">Wilma Yurus</td>
+      <td class="due">30 Jun 2026</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Finalise field onboarding guide and vendor training materials</td>
+      <td class="owner">Christopher Kenia</td>
+      <td class="due">31 Jul 2026</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Prepare UAT participant list and feedback form template</td>
+      <td class="owner">Isaac Matava</td>
+      <td class="due">31 Jul 2026</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Identify and confirm target markets for pilot rollout</td>
+      <td class="owner">Christopher Kenia / Field Agents</td>
+      <td class="due">31 Jul 2026</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Set up vendor WhatsApp support group structure</td>
+      <td class="owner">Mirriam Jack</td>
+      <td class="due">31 Jul 2026</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Prepare detailed budget spreadsheet for grant period</td>
+      <td class="owner">Annrika Garena</td>
+      <td class="due">31 Jul 2026</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Platform connectivity and device compatibility testing</td>
+      <td class="owner">Isaac Matava</td>
+      <td class="due">Ongoing</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- SIGN OFF -->
+<div class="section-heading">Sign-off</div>
+<div class="signoff">
+  These minutes are a true and accurate record of the meeting held on Thursday, 26 June 2026 at Section 52, Lot 137, Kennedy Estate, Port Moresby, NCD, Papua New Guinea.
+  <div class="sig-grid">
+    <div>
+      <div class="sig-line">
+        <strong>Ms. Wilma Yurus</strong>
+        Chairperson &amp; Application Development Lead<br>
+        Trey Holdings Limited
+      </div>
+    </div>
+    <div>
+      <div class="sig-line">
+        <strong>Mr. Mathew Tade</strong>
+        Managing Director<br>
+        Trey Holdings Limited
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <strong>Trey Holdings Limited</strong> &nbsp;|&nbsp; Section 52, Lot 137, Kennedy Estate, Port Moresby, NCD, Papua New Guinea<br>
+  PO Box 6620, Boroko, NCD &nbsp;·&nbsp; (+675) 71371373 / 81645880 &nbsp;·&nbsp; info@catalogkit.org &nbsp;·&nbsp; www.catalogkit.org<br>
+  IPA REG# 1-126724 &nbsp;·&nbsp; TIN# 501571704
+</div>
+
+</body>
+</html>
