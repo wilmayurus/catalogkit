@@ -77,61 +77,50 @@ function App() {
     <div className="relative w-full h-screen overflow-hidden">
       <VideoTemplate />
 
-      {/* Overlay controls */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
-        {recState === "idle" && (
-          <button
-            onClick={startDownload}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm px-5 py-2.5 rounded-full shadow-lg transition-all"
-          >
-            <span>⬇</span> Download Video
-          </button>
-        )}
-
-        {recState === "waiting" && (
-          <div className="bg-black/60 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-full shadow-lg text-center">
-            <span className="animate-pulse">● </span>
-            Select this tab in the sharing dialog…
-          </div>
-        )}
-
-        {recState === "recording" && (
-          <div className="flex items-center gap-3 bg-black/70 backdrop-blur-md border border-red-500/60 text-white text-sm px-5 py-3 rounded-full shadow-lg">
-            <span className="text-red-400 animate-pulse">● REC</span>
-            <span className="tabular-nums">{secondsLeft}s remaining</span>
+      {/* Overlay controls — hidden during recording so they don't appear in the captured video */}
+      {recState !== "recording" && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
+          {recState === "idle" && (
             <button
-              onClick={cancelRecording}
-              className="ml-1 text-white/50 hover:text-white text-xs underline"
+              onClick={startDownload}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm px-5 py-2.5 rounded-full shadow-lg transition-all"
             >
-              cancel
+              <span>⬇</span> Download Video
             </button>
-          </div>
-        )}
+          )}
 
-        {recState === "done" && (
-          <div className="flex items-center gap-2 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-sm px-5 py-3 rounded-full shadow-lg">
-            <span>✓</span> catalogkit-demo.webm downloaded!
-            <button
-              onClick={() => setRecState("idle")}
-              className="ml-2 text-green-300/70 hover:text-green-100 text-xs underline"
-            >
-              again
-            </button>
-          </div>
-        )}
+          {recState === "waiting" && (
+            <div className="bg-black/60 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-full shadow-lg text-center">
+              <span className="animate-pulse">● </span>
+              Select this tab in the sharing dialog…
+            </div>
+          )}
 
-        {recState === "error" && (
-          <div className="flex items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-3 rounded-full shadow-lg">
-            <span>✕</span> Permission denied.
-            <button
-              onClick={() => setRecState("idle")}
-              className="ml-2 text-red-300/70 hover:text-red-100 text-xs underline"
-            >
-              retry
-            </button>
-          </div>
-        )}
-      </div>
+          {recState === "done" && (
+            <div className="flex items-center gap-2 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-sm px-5 py-3 rounded-full shadow-lg">
+              <span>✓</span> catalogkit-demo.webm downloaded!
+              <button
+                onClick={() => setRecState("idle")}
+                className="ml-2 text-green-300/70 hover:text-green-100 text-xs underline"
+              >
+                again
+              </button>
+            </div>
+          )}
+
+          {recState === "error" && (
+            <div className="flex items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-3 rounded-full shadow-lg">
+              <span>✕</span> Permission denied.
+              <button
+                onClick={() => setRecState("idle")}
+                className="ml-2 text-red-300/70 hover:text-red-100 text-xs underline"
+              >
+                retry
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
