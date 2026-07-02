@@ -36,6 +36,30 @@ uri = "file://artifacts/mockup-sandbox/public/images/tech-bg.png"
 type = "image"
 title = "Dark tech geometric background"
 
+[[generated]]
+id = "1s_oKkXlnJR6ILQtgkD9q"
+uri = "file://artifacts/mockup-sandbox/public/images/product-bilum.png"
+type = "image"
+title = "PNG woven bilum bag"
+
+[[generated]]
+id = "JZ_Ilic81e-M1z8jt3YG0"
+uri = "file://artifacts/mockup-sandbox/public/images/product-mask.png"
+type = "image"
+title = "Carved wooden mask"
+
+[[generated]]
+id = "UjlUhkXvZDhu4DLEDfQ2U"
+uri = "file://artifacts/mockup-sandbox/public/images/product-fruit.png"
+type = "image"
+title = "Fresh tropical fruit"
+
+[[generated]]
+id = "rVkafmdcp6Lprcig46PrZ"
+uri = "file://artifacts/mockup-sandbox/public/images/dark-surface.png"
+type = "image"
+title = "Dark elegant surface"
+
 [[outputs]]
 id = "Y1oXJOwFVw8acuWvXjfBC"
 uri = "file://grant/NCDC_Grant_Application_CatalogKit_THL.md"

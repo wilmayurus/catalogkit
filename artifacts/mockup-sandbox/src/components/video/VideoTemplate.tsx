@@ -8,11 +8,11 @@ import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
 
 const SCENE_DURATIONS = { 
-  problem: 6000, 
-  solution: 8000, 
-  howItWorks: 10000, 
-  whoItHelps: 8000, 
-  theCall: 8000 
+  hook: 5000, 
+  upload: 6000, 
+  flipbook: 10000, 
+  share: 10000, 
+  closing: 9000 
 };
 
 export default function VideoTemplate() {
@@ -22,7 +22,6 @@ export default function VideoTemplate() {
     <div className="relative w-full h-screen overflow-hidden bg-[#0D0D0D] font-['Montserrat']">
       {/* Persistent Background Layer */}
       <div className="absolute inset-0 z-0">
-        <img src={`${import.meta.env.BASE_URL}images/tech-bg.png`} className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-screen" alt="background" />
         <motion.div 
           className="absolute inset-0 opacity-40 mix-blend-screen"
           style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 50%, #6B1A0A 0%, #0D0D0D 50%, transparent 100%)' }}
@@ -43,36 +42,12 @@ export default function VideoTemplate() {
         />
       </div>
 
-      {/* Persistent Midground / Abstract Shapes */}
-      <motion.div 
-        className="absolute z-10 w-[2px] bg-[#F5A800]/60"
-        animate={{
-          left: ['15vw', '85vw', '50vw', '20vw', '10vw'][currentScene] || '15vw',
-          height: ['100vh', '60vh', '80vh', '100vh', '50vh'][currentScene] || '100vh',
-          top: ['0vh', '20vh', '10vh', '0vh', '25vh'][currentScene] || '0vh',
-        }}
-        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-      />
-      
-      <motion.div 
-        className="absolute z-10 rounded-full border border-[#C41230]/40 mix-blend-screen"
-        animate={{
-          width: ['15vw', '30vw', '10vw', '25vw', '20vw'][currentScene] || '15vw',
-          height: ['15vw', '30vw', '10vw', '25vw', '20vw'][currentScene] || '15vw',
-          x: ['65vw', '15vw', '75vw', '70vw', '25vw'][currentScene] || '65vw',
-          y: ['55vh', '15vh', '70vh', '25vh', '60vh'][currentScene] || '55vh',
-          opacity: [0.3, 0.6, 0.2, 0.5, 0.8][currentScene] || 0.3,
-          rotate: [0, 45, 90, 135, 180][currentScene] || 0
-        }}
-        transition={{ duration: 1.8, ease: "easeInOut" }}
-      />
-
       <AnimatePresence mode="popLayout">
-        {currentScene === 0 && <Scene1 key="problem" />}
-        {currentScene === 1 && <Scene2 key="solution" />}
-        {currentScene === 2 && <Scene3 key="howItWorks" />}
-        {currentScene === 3 && <Scene4 key="whoItHelps" />}
-        {currentScene === 4 && <Scene5 key="theCall" />}
+        {currentScene === 0 && <Scene1 key="hook" />}
+        {currentScene === 1 && <Scene2 key="upload" />}
+        {currentScene === 2 && <Scene3 key="flipbook" />}
+        {currentScene === 3 && <Scene4 key="share" />}
+        {currentScene === 4 && <Scene5 key="closing" />}
       </AnimatePresence>
     </div>
   );

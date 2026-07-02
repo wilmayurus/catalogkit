@@ -6,127 +6,136 @@ export function Scene4() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 300),
-      setTimeout(() => setPhase(2), 1200), // cards
-      setTimeout(() => setPhase(3), 3500), // pricing transition
-      setTimeout(() => setPhase(4), 4500), // pricing cards
-      setTimeout(() => setPhase(5), 7000), // exit
+      setTimeout(() => setPhase(1), 300), // link appears
+      setTimeout(() => setPhase(2), 1500), // split reveal left (flipbook)
+      setTimeout(() => setPhase(3), 3000), // split reveal right (PDF)
+      setTimeout(() => setPhase(4), 5000), // text reveal
+      setTimeout(() => setPhase(5), 9000), // exit
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
 
-  const avatars = [
-    { label: 'Market Vendors', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg> },
-    { label: 'Garment Sellers', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.38 3.46L16 2a8 8 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg> },
-    { label: 'Trade Stores', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"></path><path d="M3 9l2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path><path d="M12 3v6"></path></svg> },
-    { label: 'Artisans', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> },
-  ];
-
   return (
     <motion.div 
       className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, y: -100 }}
-      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
+      transition={{ duration: 1 }}
     >
-      {/* SECTION 1: Who Benefits (Phase 1-2) */}
-      <AnimatePresence mode="popLayout">
-        {phase < 3 && (
-          <motion.div 
-            className="flex flex-col items-center w-full"
-            exit={{ opacity: 0, y: -50, scale: 0.9 }}
-            transition={{ duration: 0.6 }}
-          >
-            <motion.h2
-              className="text-[4.5vw] font-['Montserrat'] text-white font-bold mb-[8vh]"
-              initial={{ y: -30, opacity: 0 }}
-              animate={phase >= 1 ? { y: 0, opacity: 1 } : { y: -30, opacity: 0 }}
-            >
-              Built for PNG
-            </motion.h2>
+      {/* Background */}
+      <div className="absolute inset-0 bg-[#0D0D0D]" />
 
-            <div className="flex gap-[3vw]">
-              {avatars.map((item, i) => (
-                <motion.div
-                  key={i}
-                  className="w-[18vw] h-[22vw] bg-[#1A1A1A] border border-white/10 rounded-2xl flex flex-col items-center justify-center p-[2vw] shadow-lg relative overflow-hidden"
-                  initial={{ scale: 0.8, opacity: 0, y: 50 }}
-                  animate={phase >= 2 ? { scale: 1, opacity: 1, y: 0 } : { scale: 0.8, opacity: 0, y: 50 }}
-                  transition={{ type: 'spring', damping: 15, stiffness: 100, delay: i * 0.1 }}
-                >
-                  <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/5 to-transparent opacity-50" />
-                  <div className="w-[6vw] h-[6vw] text-[#F5A800] mb-[3vh]">
-                    {item.icon}
-                  </div>
-                  <span className="text-[2.2vw] text-center text-white/90 font-medium leading-snug">{item.label}</span>
-                </motion.div>
-              ))}
+      <motion.div 
+        className="absolute top-[8vh] flex items-center justify-center gap-[1vw] bg-[#25D366]/10 px-[3vw] py-[1.5vh] rounded-full border border-[#25D366]/30"
+        initial={{ y: -50, opacity: 0 }}
+        animate={phase >= 1 ? { y: 0, opacity: 1 } : { y: -50, opacity: 0 }}
+        transition={{ type: 'spring', damping: 15 }}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-[2.5vw] h-[2.5vw] text-[#25D366]">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.405-.883-.733-1.48-1.639-1.653-1.935-.173-.299-.018-.461.13-.611.134-.135.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+        </svg>
+        <span className="text-[2vw] text-[#25D366] font-medium tracking-wide">catalogkit.org/v/my-shop</span>
+      </motion.div>
+
+      <div className="relative w-full flex-1 mt-[20vh] mb-[20vh] flex px-[5vw]">
+        {/* Left Side: Flipbook */}
+        <div className="w-1/2 h-full flex flex-col items-center justify-center relative">
+          <motion.div
+            className="w-[18vw] h-[36vw] bg-[#111] rounded-[2.5vw] border-4 border-[#333] shadow-2xl relative overflow-hidden"
+            initial={{ opacity: 0, x: -50, rotate: -5 }}
+            animate={phase >= 2 ? { opacity: 1, x: 0, rotate: 0 } : { opacity: 0, x: -50, rotate: -5 }}
+            transition={{ type: 'spring', damping: 15 }}
+          >
+            {/* Phone notch */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[6vw] h-[1.5vw] bg-[#333] rounded-b-xl z-20" />
+            
+            {/* Flipbook content in phone */}
+            <div className="w-full h-full bg-white flex flex-col pt-[3vw]">
+               <div className="h-[10%] bg-[#C41230] w-full flex items-center justify-center text-white font-bold text-[1.5vw]">My Shop</div>
+               <div className="flex-1 flex flex-col items-center justify-center relative">
+                 <img src={`${import.meta.env.BASE_URL}images/product-mask.png`} className="w-[80%] h-auto object-contain" alt="Mask" />
+                 <div className="absolute right-[-1vw] top-1/2 w-[2vw] h-[2vw] bg-black/10 rounded-full flex items-center justify-center text-black font-bold">›</div>
+               </div>
+               <div className="h-[8%] bg-[#0D0D0D] w-full flex items-center justify-center text-white/80 text-[1vw]">Contact Us</div>
             </div>
+            
+            {/* Swipe animation indicator */}
+            <motion.div 
+              className="absolute top-1/2 right-[2vw] w-[3vw] h-[3vw] rounded-full bg-white/50 backdrop-blur-sm pointer-events-none flex items-center justify-center"
+              initial={{ x: 0, opacity: 0 }}
+              animate={phase >= 2 ? { x: [-30, 0], opacity: [0, 1, 0] } : {}}
+              transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
+            >
+              <div className="w-[1vw] h-[1vw] bg-white rounded-full" />
+            </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
 
-      {/* SECTION 2: Pricing (Phase 3+) */}
-      {phase >= 3 && (
-        <motion.div 
-          className="flex flex-col items-center w-full absolute inset-0 justify-center"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <motion.h2
-            className="text-[4.5vw] font-['Montserrat'] text-white font-bold mb-[8vh]"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.4 }}
+        {/* Right Side: PDF */}
+        <div className="w-1/2 h-full flex flex-col items-center justify-center relative">
+          <motion.div
+            className="w-[20vw] h-[28vw] bg-white rounded-xl shadow-2xl flex flex-col border border-gray-200 relative"
+            initial={{ opacity: 0, x: 50, rotate: 5 }}
+            animate={phase >= 3 ? { opacity: 1, x: 0, rotate: 0 } : { opacity: 0, x: 50, rotate: 5 }}
+            transition={{ type: 'spring', damping: 15 }}
           >
-            Accessible to everyone
-          </motion.h2>
-
-          <div className="flex items-stretch gap-[2vw] px-[5vw]">
-            {/* Free Tier */}
-            <motion.div
-              className="flex-1 bg-gradient-to-b from-[#1A1A1A] to-black border border-white/10 rounded-3xl p-[3vw] flex flex-col items-center text-center"
-              initial={{ opacity: 0, x: -50 }}
-              animate={phase >= 4 ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-              transition={{ type: "spring", delay: 0.1 }}
+            {/* PDF Header */}
+            <div className="h-[15%] w-full bg-[#e53935] rounded-t-xl flex items-center px-[1.5vw] gap-[1vw]">
+               <svg viewBox="0 0 24 24" fill="none" className="w-[2vw] h-[2vw] text-white" stroke="currentColor" strokeWidth="2">
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+               </svg>
+               <span className="text-white font-bold text-[1.2vw]">Catalog.pdf</span>
+            </div>
+            {/* PDF Content grid */}
+            <div className="flex-1 p-[1.5vw] grid grid-cols-2 gap-[1vw]">
+               <div className="bg-gray-100 rounded flex flex-col items-center justify-center p-[0.5vw]">
+                 <img src={`${import.meta.env.BASE_URL}images/product-bilum.png`} className="w-[80%] object-contain" alt="item" />
+                 <div className="w-[60%] h-[0.5vw] bg-gray-300 mt-[1vh] rounded" />
+               </div>
+               <div className="bg-gray-100 rounded flex flex-col items-center justify-center p-[0.5vw]">
+                 <img src={`${import.meta.env.BASE_URL}images/product-mask.png`} className="w-[80%] object-contain" alt="item" />
+                 <div className="w-[60%] h-[0.5vw] bg-gray-300 mt-[1vh] rounded" />
+               </div>
+               <div className="bg-gray-100 rounded flex flex-col items-center justify-center p-[0.5vw]">
+                 <img src={`${import.meta.env.BASE_URL}images/product-fruit.png`} className="w-[80%] object-contain" alt="item" />
+                 <div className="w-[60%] h-[0.5vw] bg-gray-300 mt-[1vh] rounded" />
+               </div>
+               <div className="bg-gray-100 rounded flex flex-col items-center justify-center p-[0.5vw]">
+                 <div className="w-[80%] h-[60%] bg-gray-200" />
+                 <div className="w-[60%] h-[0.5vw] bg-gray-300 mt-[1vh] rounded" />
+               </div>
+            </div>
+            
+            {/* Download Arrow Animation */}
+            <motion.div 
+              className="absolute -right-[3vw] top-1/2 -translate-y-1/2 w-[4vw] h-[4vw] bg-[#C41230] rounded-full flex items-center justify-center text-white shadow-lg"
+              initial={{ y: -20, opacity: 0 }}
+              animate={phase >= 3 ? { y: [0, 10, 0], opacity: 1 } : { y: -20, opacity: 0 }}
+              transition={{ duration: 2, repeat: Infinity }}
             >
-              <h3 className="text-[2.5vw] text-white/70 uppercase tracking-widest mb-[1vh] font-semibold">Starter</h3>
-              <div className="text-[4.5vw] font-['Bebas_Neue'] text-white mb-[2vh]">Free to start</div>
-              <p className="text-[1.8vw] text-white/50">3 catalogs/month</p>
+              <svg viewBox="0 0 24 24" fill="none" className="w-[2vw] h-[2vw]" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
             </motion.div>
+          </motion.div>
+        </div>
+      </div>
 
-            {/* Basic Tier */}
-            <motion.div
-              className="flex-1 bg-gradient-to-b from-[#C41230]/20 to-black border border-[#C41230]/50 rounded-3xl p-[3vw] flex flex-col items-center text-center relative transform -translate-y-[2vh]"
-              initial={{ opacity: 0, y: 50 }}
-              animate={phase >= 4 ? { opacity: 1, y: -20 } : { opacity: 0, y: 50 }}
-              transition={{ type: "spring", delay: 0.2 }}
-            >
-              <div className="absolute -top-[1.5vh] bg-[#C41230] text-white text-[1.2vw] px-[2vw] py-[0.5vh] rounded-full uppercase tracking-wider font-bold">Popular</div>
-              <h3 className="text-[2.5vw] text-[#C41230] uppercase tracking-widest mb-[1vh] font-semibold">Basic</h3>
-              <div className="text-[4.5vw] font-['Bebas_Neue'] text-white mb-[2vh]">K20<span className="text-[2vw] text-white/50 font-['Montserrat']">/mo</span></div>
-              <p className="text-[1.8vw] text-white/70">20 catalogs/month</p>
-            </motion.div>
+      <motion.div
+        className="absolute bottom-[10vh] text-center w-full px-[10vw]"
+        initial={{ opacity: 0, y: 30 }}
+        animate={phase >= 4 ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+        transition={{ duration: 0.8 }}
+      >
+        <h2 className="text-[3.5vw] font-['Montserrat'] font-bold text-white leading-tight">
+          One link. Two ways to share.
+        </h2>
+        <p className="text-[2.5vw] text-[#F5A800] mt-[1vh]">
+          Browse online or download the PDF.
+        </p>
+      </motion.div>
 
-            {/* Pro Tier */}
-            <motion.div
-              className="flex-1 bg-gradient-to-b from-[#1A1A1A] to-black border border-white/10 rounded-3xl p-[3vw] flex flex-col items-center text-center"
-              initial={{ opacity: 0, x: 50 }}
-              animate={phase >= 4 ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
-              transition={{ type: "spring", delay: 0.3 }}
-            >
-              <h3 className="text-[2.5vw] text-[#F5A800] uppercase tracking-widest mb-[1vh] font-semibold">Pro</h3>
-              <div className="text-[4.5vw] font-['Bebas_Neue'] text-white mb-[2vh]">K50<span className="text-[2vw] text-white/50 font-['Montserrat']">/mo</span></div>
-              <p className="text-[1.8vw] text-white/70">Unlimited</p>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
     </motion.div>
   );
 }
-
-// Ensure AnimatePresence is imported in the file that uses it, though we don't strictly need it here if we use conditional rendering correctly with framer-motion
-import { AnimatePresence } from 'framer-motion';
