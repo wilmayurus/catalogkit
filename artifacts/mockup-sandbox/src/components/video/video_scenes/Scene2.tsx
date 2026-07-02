@@ -6,105 +6,158 @@ export function Scene2() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 500),   // Text 1
-      setTimeout(() => setPhase(2), 1500),  // Phone appears
-      setTimeout(() => setPhase(3), 2500),  // Photos drop in
-      setTimeout(() => setPhase(4), 4500),  // Text 2
-      setTimeout(() => setPhase(5), 5500),  // Book opens
+      setTimeout(() => setPhase(1), 300),   // heading in
+      setTimeout(() => setPhase(2), 1000),  // phone appears
+      setTimeout(() => setPhase(3), 2000),  // photo drops in
+      setTimeout(() => setPhase(4), 3200),  // name types in
+      setTimeout(() => setPhase(5), 4400),  // price types in
+      setTimeout(() => setPhase(6), 5600),  // catalog result appears
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
 
   return (
-    <motion.div 
-      className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden bg-[#FFF8F0]"
+    <motion.div
+      className="absolute inset-0 z-20 overflow-hidden bg-[#FFF8F0]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Background warm circles */}
-      <motion.div 
-        className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-[#F5A800]/10 rounded-full blur-3xl pointer-events-none"
-        animate={{ scale: [1, 1.2, 1], x: [0, 50, 0] }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      
+      {/* Warm glow background */}
+      <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] bg-[#F5A800]/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* HEADING — absolutely pinned at top, always visible */}
       <motion.div
-        className="absolute top-[8vh] text-center"
-        initial={{ opacity: 0, y: -20 }}
+        className="absolute top-0 left-0 right-0 text-center pt-[4vh] pb-[2vh] px-[5vw] z-10"
+        initial={{ opacity: 0, y: -15 }}
         animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.7 }}
       >
-        <h2 className="text-[5vw] font-black text-[#C41230] font-display">
-          Upload your photos.
+        <h2 className="text-[5vw] font-black text-[#C41230] font-display leading-tight">
+          Add photo, name and price.
         </h2>
+        <p className="text-[2.6vw] text-[#0D0D0D]/65 font-semibold mt-[1vh]">
+          CatalogKit builds your catalog — <span className="text-[#C41230]">automatically.</span>
+        </p>
       </motion.div>
 
-      <div className="relative flex-1 w-full flex items-center justify-center mt-[10vh]">
-        {/* Phone */}
+      {/* Content — sits below the heading */}
+      <div className="absolute inset-0 flex items-center justify-center gap-[4vw] px-[5vw]"
+           style={{ paddingTop: '22vh', paddingBottom: '5vh' }}>
+
+        {/* Phone with upload form */}
         <motion.div
-          className="absolute w-[18vw] h-[36vw] bg-[#333] rounded-[2vw] border-[0.5vw] border-[#222] shadow-2xl overflow-hidden flex flex-col items-center"
-          initial={{ y: '20vh', opacity: 0, scale: 0.8 }}
-          animate={phase >= 2 ? (phase >= 5 ? { x: '-20vw', opacity: 0, scale: 0.8 } : { y: 0, opacity: 1, scale: 1 }) : {}}
+          className="w-[19vw] h-[33vw] bg-[#333] rounded-[2.5vw] border-[0.6vw] border-[#111] shadow-2xl overflow-hidden flex flex-col flex-shrink-0"
+          initial={{ y: '15vh', opacity: 0, scale: 0.85 }}
+          animate={phase >= 2 ? { y: 0, opacity: 1, scale: 1 } : {}}
           transition={{ type: 'spring', damping: 20 }}
         >
-          <div className="w-full h-[15%] bg-white flex items-end justify-center pb-[1vh]">
-             <div className="text-[1.5vw] font-bold text-[#C41230]">New Item</div>
+          {/* App bar */}
+          <div className="w-full h-[13%] bg-white flex items-center justify-center border-b border-gray-100 flex-shrink-0">
+            <span className="text-[1.8vw] font-bold text-[#C41230]">Add Product</span>
           </div>
-          <div className="w-full flex-1 bg-[#F5F5F5] flex flex-col items-center p-[2vw]">
-             <div className="w-[12vw] h-[12vw] border-[0.3vw] border-dashed border-[#C41230]/40 rounded-xl flex items-center justify-center overflow-hidden bg-white mb-[2vh]">
-                {/* Photo dropping in */}
-                <motion.img 
-                  src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
-                  className="w-[80%] h-[80%] object-contain"
-                  initial={{ y: '-30vh', opacity: 0 }}
-                  animate={phase >= 3 ? { y: 0, opacity: 1 } : {}}
-                  transition={{ type: 'spring', bounce: 0.5 }}
-                />
-             </div>
-             <div className="w-[10vw] h-[2vh] bg-gray-300 rounded mb-[1vh]" />
-             <div className="w-[6vw] h-[2vh] bg-gray-300 rounded" />
+
+          {/* Form body */}
+          <div className="flex-1 bg-[#F8F8F8] flex flex-col items-center px-[1.5vw] py-[1.5vh] gap-[1.2vh] overflow-hidden">
+
+            {/* Photo box */}
+            <div className="w-full h-[13vw] border-[0.3vw] border-dashed border-[#C41230]/40 rounded-xl flex items-center justify-center overflow-hidden bg-white flex-shrink-0">
+              <motion.img
+                src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
+                className="w-[75%] h-[75%] object-contain"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={phase >= 3 ? { scale: 1, opacity: 1 } : {}}
+                transition={{ type: 'spring', bounce: 0.4 }}
+              />
+            </div>
+
+            {/* Product name */}
+            <div className="w-full flex-shrink-0">
+              <div className="text-[1.2vw] text-gray-500 mb-[0.4vh] font-medium px-[0.3vw]">Product Name</div>
+              <div className="w-full bg-white rounded-lg border-[0.2vw] border-gray-200 px-[1vw] py-[0.8vh] text-[1.5vw] font-bold text-[#0D0D0D] flex items-center min-h-[3vh]">
+                <motion.span
+                  animate={phase >= 4 ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {phase >= 4 ? 'Bilum Bag' : ''}
+                </motion.span>
+                {phase === 4 && (
+                  <motion.span className="inline-block w-[0.12vw] h-[1.6vw] bg-[#C41230] ml-[0.2vw]"
+                    animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} />
+                )}
+              </div>
+            </div>
+
+            {/* Price */}
+            <div className="w-full flex-shrink-0">
+              <div className="text-[1.2vw] text-gray-500 mb-[0.4vh] font-medium px-[0.3vw]">Price (Kina)</div>
+              <div className="w-full bg-white rounded-lg border-[0.2vw] border-gray-200 px-[1vw] py-[0.8vh] text-[1.5vw] font-bold text-[#C41230] flex items-center min-h-[3vh]">
+                <motion.span
+                  animate={phase >= 5 ? { opacity: 1 } : { opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {phase >= 5 ? 'K 25.00' : ''}
+                </motion.span>
+                {phase === 5 && (
+                  <motion.span className="inline-block w-[0.12vw] h-[1.6vw] bg-[#C41230] ml-[0.2vw]"
+                    animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} />
+                )}
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        {/* Book */}
+        {/* Arrow */}
         <motion.div
-          className="absolute w-[50vw] h-[35vw] flex perspective-[2000px]"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={phase >= 5 ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-          transition={{ duration: 0.8 }}
+          className="flex-shrink-0"
+          initial={{ opacity: 0 }}
+          animate={phase >= 6 ? { opacity: 1 } : {}}
+          transition={{ duration: 0.5 }}
         >
-          <div className="w-1/2 h-full bg-[#C41230] rounded-l-xl shadow-2xl flex flex-col items-center justify-center p-[2vw]">
-            <h3 className="text-[3vw] text-white font-bold font-display text-center">My Shop</h3>
-            <div className="w-[10vw] h-[0.5vh] bg-[#F5A800] mt-[2vh]" />
+          <svg viewBox="0 0 60 24" fill="none" className="w-[7vw] text-[#C41230]">
+            <path d="M0 12 H50 M38 2 L52 12 L38 22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </motion.div>
+
+        {/* Finished catalog page */}
+        <motion.div
+          className="w-[21vw] h-[30vw] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col flex-shrink-0"
+          initial={{ opacity: 0, scale: 0.85, x: 30 }}
+          animate={phase >= 6 ? { opacity: 1, scale: 1, x: 0 } : {}}
+          transition={{ type: 'spring', damping: 18 }}
+        >
+          <div className="h-[13%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-[1.8vw] font-black font-display">Mary's Catalog</span>
           </div>
-          <div className="w-1/2 h-full bg-white rounded-r-xl shadow-2xl flex flex-col items-center justify-between p-[2vw] border-l border-gray-200">
-             <div className="w-full h-[60%] flex items-center justify-center">
-                <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-[80%] h-[80%] object-contain" />
-             </div>
-             <div className="text-center w-full">
-                <h4 className="text-[2.5vw] font-bold text-black font-display leading-none">BILUM BAG</h4>
-                <div className="text-[2vw] text-[#C41230] font-bold mt-[1vh]">K 25.00</div>
-             </div>
-             <div className="w-full bg-[#F5A800]/20 text-[#0D0D0D] text-[1.2vw] font-bold text-center py-[1vh] rounded mt-[2vh]">
-                WhatsApp: +675 123 4567
-             </div>
+          <div className="flex-1 flex flex-col items-center justify-between py-[2vh] px-[1.5vw] overflow-hidden">
+            <img
+              src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
+              className="flex-1 w-[65%] object-contain"
+              alt=""
+            />
+            <div className="text-center mt-[1vh]">
+              <div className="text-[2.2vw] font-black text-[#0D0D0D] font-display">BILUM BAG</div>
+              <div className="text-[2vw] font-bold text-[#C41230]">K 25.00</div>
+            </div>
+          </div>
+          <div className="h-[11%] bg-[#F5A800]/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-[1.1vw] font-bold text-[#0D0D0D]">+675 7000 0000</span>
           </div>
         </motion.div>
       </div>
 
+      {/* Bottom label — "Your catalog built automatically" visual reinforcement */}
       <motion.div
-        className="absolute bottom-[10vh] text-center"
-        initial={{ opacity: 0, y: 20 }}
-        animate={phase >= 4 ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8 }}
+        className="absolute bottom-[2vh] w-full text-center"
+        initial={{ opacity: 0 }}
+        animate={phase >= 6 ? { opacity: 1 } : {}}
+        transition={{ duration: 0.6 }}
       >
-        <h2 className="text-[4vw] font-bold text-[#0D0D0D] font-display">
-          Your catalog builds — <span className="text-[#C41230]">automatically.</span>
-        </h2>
+        <span className="text-[2.8vw] font-bold text-[#0D0D0D] font-display">
+          Your catalog — <span className="text-[#C41230]">done!</span>
+        </span>
       </motion.div>
-
     </motion.div>
   );
 }
