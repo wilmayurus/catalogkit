@@ -143,13 +143,13 @@ export function Scene3() {
 
       {/* Bottom caption */}
       <motion.div
-        className="absolute bottom-[3vh] w-full text-center px-[10vw]"
+        className="absolute bottom-[2vh] w-full text-center px-[4vw]"
         initial={{ opacity: 0, y: 20 }}
         animate={phase >= 4 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-[4vw] font-bold text-[#0D0D0D] font-display leading-tight">
-          Customer opens → <span className="text-[#C41230]">swipes through</span> your catalog.
+        <h2 className="text-[3vw] font-bold text-[#0D0D0D] font-display leading-tight whitespace-nowrap">
+          Customer opens and <span className="text-[#C41230]">swipes through</span> your catalog.
         </h2>
       </motion.div>
     </motion.div>
