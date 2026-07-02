@@ -7,9 +7,10 @@ export function Scene5() {
   useEffect(() => {
     const timers = [
       setTimeout(() => setPhase(1), 500),
-      setTimeout(() => setPhase(2), 2000),
-      setTimeout(() => setPhase(3), 3500),
-      setTimeout(() => setPhase(4), 5000),
+      setTimeout(() => setPhase(2), 1800),
+      setTimeout(() => setPhase(3), 3200),
+      setTimeout(() => setPhase(4), 4600),
+      setTimeout(() => setPhase(5), 6000),
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
@@ -52,11 +53,21 @@ export function Scene5() {
           </h1>
         </motion.div>
 
+        {/* Tagline */}
+        <motion.p
+          className="text-[3vw] text-[#FFF8F0]/80 font-semibold mb-[5vh] tracking-wide"
+          initial={{ opacity: 0, y: 10 }}
+          animate={phase >= 2 ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8 }}
+        >
+          Helping you reach your customers.
+        </motion.p>
+
         {/* Text */}
         <motion.h2
           className="text-[7vw] font-black text-[#F5A800] font-display mb-[2vh] leading-none"
           initial={{ scale: 0.8, opacity: 0 }}
-          animate={phase >= 2 ? { scale: 1, opacity: 1 } : {}}
+          animate={phase >= 3 ? { scale: 1, opacity: 1 } : {}}
           transition={{ type: 'spring', bounce: 0.5 }}
         >
           MORE CUSTOMERS.
@@ -65,7 +76,7 @@ export function Scene5() {
         <motion.div
           className="bg-[#C41230] text-white px-[4vw] py-[2vh] rounded-full shadow-2xl mb-[6vh]"
           initial={{ y: 20, opacity: 0 }}
-          animate={phase >= 3 ? { y: 0, opacity: 1 } : {}}
+          animate={phase >= 4 ? { y: 0, opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
         >
           <span className="text-[4vw] font-bold font-display tracking-wide">FREE TO START.</span>
@@ -74,7 +85,7 @@ export function Scene5() {
         <motion.div
           className="text-[4vw] font-bold text-[#FFF8F0] font-sans"
           initial={{ opacity: 0 }}
-          animate={phase >= 4 ? { opacity: 1 } : {}}
+          animate={phase >= 5 ? { opacity: 1 } : {}}
           transition={{ duration: 1 }}
         >
           www.catalogkit.org
