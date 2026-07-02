@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video/hooks';
 import { Scene1 } from './video_scenes/Scene1';
 import { Scene2 } from './video_scenes/Scene2';
@@ -7,12 +7,13 @@ import { Scene3 } from './video_scenes/Scene3';
 import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
 
+// Total: 7000 + 9000 + 10000 + 11000 + 12000 = 49s
 const SCENE_DURATIONS = {
-  hook: 5000,
-  build: 8000,
-  share: 9000,
-  download: 10000,
-  closing: 13000,
+  problem:  7000,   // WhatsApp flood, mute, pain point
+  build:    9000,   // Upload, add details, catalog built
+  catalog: 10000,   // Link, share icons, customer flipbook
+  share:   11000,   // PDF + WhatsApp button, order comes in
+  closing: 12000,   // Logo, tagline, FREE, URL, credit
 };
 
 const PRELOAD_IMAGES = [
@@ -38,11 +39,9 @@ export default function VideoTemplate() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.volume = 0.55;
+    audio.volume = 0.45;
     audio.loop = true;
-    const tryPlay = () => {
-      audio.play().catch(() => {});
-    };
+    const tryPlay = () => audio.play().catch(() => {});
     if (audio.readyState >= 2) {
       tryPlay();
     } else {
@@ -63,43 +62,33 @@ export default function VideoTemplate() {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#FFF8F0] font-sans">
-      <audio
-        ref={audioRef}
-        src={`${base}audio/background.mp3`}
-        preload="auto"
-        loop
-      />
+    <div className="relative w-full h-screen overflow-hidden bg-[#0D0D0D] font-sans">
+      <audio ref={audioRef} src={`${base}audio/background.mp3`} preload="auto" loop />
 
       <AnimatePresence mode="sync">
-        {currentScene === 0 && <Scene1 key="hook" />}
+        {currentScene === 0 && <Scene1 key="problem" />}
         {currentScene === 1 && <Scene2 key="build" />}
-        {currentScene === 2 && <Scene3 key="share" />}
-        {currentScene === 3 && <Scene4 key="download" />}
+        {currentScene === 2 && <Scene3 key="catalog" />}
+        {currentScene === 3 && <Scene4 key="share" />}
         {currentScene === 4 && <Scene5 key="closing" />}
       </AnimatePresence>
 
-      <motion.button
-        className="absolute top-[2vh] right-[2vw] z-50 w-[4vw] h-[4vw] rounded-full bg-black/40 backdrop-blur flex items-center justify-center border border-white/20 text-white shadow-lg"
+      {/* Mute button */}
+      <button
+        className="absolute top-[2vh] right-[2vw] z-50 w-[3.5vw] h-[3.5vw] rounded-full bg-black/40 backdrop-blur flex items-center justify-center border border-white/20 text-white shadow-lg transition-opacity hover:opacity-100 opacity-60"
         onClick={toggleMute}
-        whileTap={{ scale: 0.9 }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
         title={muted ? 'Unmute' : 'Mute'}
       >
         {muted ? (
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-[2vw] h-[2vw]">
-            <path d="M13 3.586L7.707 8.879A1 1 0 017 9H4a1 1 0 00-1 1v4a1 1 0 001 1h3a1 1 0 01.707.293L13 20.414V3.586z" opacity="0.3"/>
-            <line x1="3" y1="3" x2="21" y2="21" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-[1.8vw] h-[1.8vw]">
+            <path d="M3.63 3.63a.996.996 0 000 1.41L7.29 8.7 7 9H4c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h3l3.29 3.29c.63.63 1.71.18 1.71-.71v-4.17l4.18 4.18a6.997 6.997 0 01-2.65 1.52.998.998 0 00.35 1.93c1.34-.37 2.57-1.07 3.57-2.02l1.49 1.49a.996.996 0 101.41-1.41L5.05 3.63c-.39-.39-1.02-.39-1.42 0zM19 12c0 .82-.15 1.61-.41 2.34l1.53 1.53c.56-1.17.88-2.48.88-3.87 0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zm-7-8l-1.88 1.88L12 7.76V4c0-.89-1.08-1.34-1.71-.71L6.18 7.39 7.59 8.8 12 4.41V4zm4.04 8.79c0-2.08-1.22-3.87-3-4.75v1.83l2.97 2.97c.02-.02.03-.03.03-.05z"/>
           </svg>
         ) : (
-          <svg viewBox="0 0 24 24" fill="currentColor" className="w-[2vw] h-[2vw]">
-            <path d="M13 3.586L7.707 8.879A1 1 0 017 9H4a1 1 0 00-1 1v4a1 1 0 001 1h3a1 1 0 01.707.293L13 20.414V3.586z"/>
-            <path d="M16.243 7.757a1 1 0 011.414 0A8.966 8.966 0 0120 14a8.966 8.966 0 01-2.343 6.243 1 1 0 01-1.414-1.414A6.966 6.966 0 0018 14a6.966 6.966 0 00-1.757-4.829 1 1 0 010-1.414zM18.657 5.343a1 1 0 011.414 0A11.954 11.954 0 0122 14a11.954 11.954 0 01-1.929 6.657 1 1 0 01-1.414-1.414A9.954 9.954 0 0020 14a9.954 9.954 0 00-1.343-5.243 1 1 0 010-1.414z"/>
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-[1.8vw] h-[1.8vw]">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
           </svg>
         )}
-      </motion.button>
+      </button>
     </div>
   );
 }

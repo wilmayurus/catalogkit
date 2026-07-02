@@ -8,8 +8,8 @@ const PAGES = [
 ];
 
 const pageVariants = {
-  enter: { x: '100%', opacity: 0 },
-  center: { x: 0,     opacity: 1 },
+  enter:  { x: '100%',  opacity: 0 },
+  center: { x: 0,       opacity: 1 },
   exit:   { x: '-100%', opacity: 0 },
 };
 
@@ -19,7 +19,7 @@ export function Scene3() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 400),
+      setTimeout(() => setPhase(1),  400),
       setTimeout(() => setPhase(2), 1200),
       setTimeout(() => setPhase(3), 3000),
       setTimeout(() => setPhase(4), 5500),
@@ -45,7 +45,6 @@ export function Scene3() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Heading */}
       <motion.div
         className="w-full text-center pt-[5vh] pb-[3vh] px-[5vw] flex-shrink-0"
         initial={{ opacity: 0, y: -20 }}
@@ -53,17 +52,16 @@ export function Scene3() {
         transition={{ duration: 0.7 }}
       >
         <h2 className="text-[5vw] font-black text-[#C41230] font-display leading-tight">
-          Your catalog has a link.
+          One link. Every product. With prices.
         </h2>
         <p className="text-[2.5vw] text-[#0D0D0D]/70 font-medium mt-[1vh]">
-          Share it anywhere — Facebook, SMS, WhatsApp, print it.
+          Customers swipe through — like a real catalog.
         </p>
       </motion.div>
 
-      {/* Main content row */}
       <div className="flex-1 flex items-center justify-center gap-[4vw] px-[5vw] pb-[12vh]">
 
-        {/* Catalog share card */}
+        {/* Share card */}
         <motion.div
           className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-[2.5vw] w-[34vw] flex-shrink-0"
           initial={{ scale: 0.85, opacity: 0, x: -30 }}
@@ -75,12 +73,9 @@ export function Scene3() {
               <div className="text-[2.2vw] font-black font-display leading-none">Mary's</div>
               <div className="text-[1.6vw] font-black font-display text-[#F5A800]">Catalog</div>
             </div>
-            <img
-              src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`}
-              className="h-[7.5vw] w-[7.5vw] object-contain"
-              alt=""
-            />
+            <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="h-[7.5vw] w-[7.5vw] object-contain" alt="" />
           </div>
+
           <div className="flex items-center gap-[1.5vw]">
             <div className="flex-1 bg-[#F0F4FF] rounded-xl px-[1.5vw] py-[1.2vh] border border-blue-100 min-w-0">
               <span className="text-[1.6vw] text-blue-600 font-bold truncate block">catalogkit.org/c/mary</span>
@@ -96,8 +91,45 @@ export function Scene3() {
               </svg>
             </motion.div>
           </div>
-          <div className="text-[1.4vw] text-gray-400 mt-[1vh] text-center">
-            Copy your link — share it anywhere
+
+          {/* Share row */}
+          <motion.div
+            className="flex items-center justify-center gap-[2vw] mt-[2vh]"
+            initial={{ opacity: 0 }}
+            animate={phase >= 2 ? { opacity: 1 } : {}}
+            transition={{ delay: 0.5 }}
+          >
+            {/* WhatsApp */}
+            <div className="flex flex-col items-center gap-[0.5vh]">
+              <div className="w-[3.5vw] h-[3.5vw] rounded-full bg-[#25D366] flex items-center justify-center shadow-md">
+                <svg viewBox="0 0 24 24" fill="white" className="w-[2.2vw] h-[2.2vw]">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.405-.883-.733-1.48-1.639-1.653-1.935-.173-.299-.018-.461.13-.611.134-.135.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                </svg>
+              </div>
+              <span className="text-[1vw] text-[#0D0D0D]/50 font-semibold">WhatsApp</span>
+            </div>
+            {/* Facebook */}
+            <div className="flex flex-col items-center gap-[0.5vh]">
+              <div className="w-[3.5vw] h-[3.5vw] rounded-full bg-[#1877F2] flex items-center justify-center shadow-md">
+                <svg viewBox="0 0 24 24" fill="white" className="w-[2.2vw] h-[2.2vw]">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </div>
+              <span className="text-[1vw] text-[#0D0D0D]/50 font-semibold">Facebook</span>
+            </div>
+            {/* SMS */}
+            <div className="flex flex-col items-center gap-[0.5vh]">
+              <div className="w-[3.5vw] h-[3.5vw] rounded-full bg-[#6C63FF] flex items-center justify-center shadow-md">
+                <svg viewBox="0 0 24 24" fill="white" className="w-[2.2vw] h-[2.2vw]">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+                </svg>
+              </div>
+              <span className="text-[1vw] text-[#0D0D0D]/50 font-semibold">SMS</span>
+            </div>
+          </motion.div>
+
+          <div className="text-[1.4vw] text-gray-400 mt-[1.5vh] text-center">
+            One link — share anywhere
           </div>
         </motion.div>
 
@@ -113,19 +145,17 @@ export function Scene3() {
           </svg>
         </motion.div>
 
-        {/* Customer phone */}
+        {/* Customer phone — flipbook */}
         <motion.div
           className="relative w-[18vw] h-[34vw] bg-white rounded-[3vw] shadow-2xl border-[0.8vw] border-[#222] overflow-hidden flex-shrink-0 flex flex-col"
           initial={{ y: '20vh', opacity: 0 }}
           animate={phase >= 2 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 20, delay: 0.2 }}
         >
-          {/* Sticky header — never moves */}
           <div className="h-[11%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0 z-10">
             <span className="text-white text-[1.5vw] font-black font-display">Mary's Catalog</span>
           </div>
 
-          {/* Animated page area */}
           <div className="flex-1 relative overflow-hidden">
             <AnimatePresence initial={false} mode="wait">
               <motion.div
@@ -137,19 +167,12 @@ export function Scene3() {
                 transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }}
                 className="absolute inset-0 flex flex-col"
               >
-                {/* Product name */}
                 <div className="h-[14%] flex items-center justify-center border-b border-gray-100 flex-shrink-0">
                   <span className="text-[1.5vw] font-black text-[#0D0D0D] font-display">{page.name}</span>
                 </div>
-                {/* Product image — full middle */}
                 <div className="flex-1 flex items-center justify-center overflow-hidden px-[1vw] py-[0.5vh]">
-                  <img
-                    src={`${import.meta.env.BASE_URL}images/${page.img}`}
-                    className="w-[78%] h-full object-contain"
-                    alt=""
-                  />
+                  <img src={`${import.meta.env.BASE_URL}images/${page.img}`} className="w-[78%] h-full object-contain" alt="" />
                 </div>
-                {/* Price */}
                 <div className="h-[14%] flex items-center justify-center border-t border-gray-100 flex-shrink-0">
                   <span className="text-[1.6vw] font-bold text-[#C41230]">{page.price}</span>
                 </div>
@@ -157,12 +180,10 @@ export function Scene3() {
             </AnimatePresence>
           </div>
 
-          {/* Sticky footer — never moves */}
           <div className="h-[10%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
             <span className="text-[1vw] font-bold text-white">catalogkit.org/c/mary</span>
           </div>
 
-          {/* Page dot indicators */}
           <div className="absolute bottom-[11%] left-0 right-0 flex justify-center gap-[0.5vw] z-20">
             {PAGES.map((_, i) => (
               <div
@@ -177,7 +198,6 @@ export function Scene3() {
             ))}
           </div>
 
-          {/* Swipe finger — repeating in sync with page turns */}
           {phase >= 3 && (
             <motion.div
               className="absolute bottom-[22%] right-[28%] w-[3.5vw] h-[3.5vw] bg-[#25D366] rounded-full flex items-center justify-center shadow-xl z-20"
@@ -196,7 +216,6 @@ export function Scene3() {
         </motion.div>
       </div>
 
-      {/* Bottom caption */}
       <motion.div
         className="absolute bottom-[2vh] w-full text-center px-[4vw]"
         initial={{ opacity: 0, y: 20 }}
@@ -204,7 +223,7 @@ export function Scene3() {
         transition={{ duration: 0.8 }}
       >
         <h2 className="text-[3vw] font-bold text-[#0D0D0D] font-display leading-tight whitespace-nowrap">
-          Customer opens and <span className="text-[#C41230]">swipes through</span> your catalog.
+          No more scrolling through 20 images. <span className="text-[#C41230]">Just tap and browse.</span>
         </h2>
       </motion.div>
     </motion.div>
