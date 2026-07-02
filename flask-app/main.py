@@ -488,6 +488,68 @@ def register():
         db.session.add(user)
         db.session.commit()
         session['user_id'] = user.id
+
+        # ── Welcome email to new user ──────────────────────────────────────
+        first_name = name.split()[0]
+        send_email(
+            email,
+            'Welcome to CatalogKit! 🎉 Here\'s how to get started',
+            f"""Hi {first_name},
+
+Welcome to CatalogKit! Your account has been created and you're ready to build your first digital product catalog.
+
+Here's how to get started in 4 easy steps:
+
+  1. COMPLETE YOUR PROFILE
+     Add your business name, WhatsApp number, and brand colour.
+     This information appears on every catalog you share.
+     👉 www.catalogkit.org/profile
+
+  2. CHOOSE YOUR PLAN
+     Start with the Free plan (2 builds/month at no cost),
+     or upgrade to Basic (K20/month) or Pro (K50/month) for more builds.
+     👉 www.catalogkit.org/pricing
+
+  3. UPLOAD YOUR PRODUCT PHOTOS
+     Drag and drop your product photos into your catalog workspace.
+     Add a name and price to each product.
+
+  4. BUILD & SHARE
+     Click "Confirm & Build Catalog" and CatalogKit will generate
+     your flipbook and PDF instantly — ready to share on WhatsApp!
+
+──────────────────────────────────────
+Need help getting started?
+
+📲 WhatsApp us: +675 7381 7000
+✉  Email: info@catalogkit.org
+🌐 Website: www.catalogkit.org
+
+We also offer a Done-For-You setup visit (K50 cash on site) where
+our agent comes to your market stall or shop and builds your first
+catalog right beside you.
+👉 www.catalogkit.org/assisted-setup
+──────────────────────────────────────
+
+Thank you for joining CatalogKit. We're excited to help grow your business!
+
+Warm regards,
+The CatalogKit Team
+Sapphire Consulting Services · Port Moresby, PNG
+"""
+        )
+
+        # ── Notify info@catalogkit.org of new signup ───────────────────────
+        send_email(
+            'info@catalogkit.org',
+            f'[CatalogKit] New signup — {name}',
+            f"A new user has registered on CatalogKit.\n\n"
+            f"Name:  {name}\n"
+            f"Email: {email}\n\n"
+            f"They have been sent a welcome email with getting-started steps.\n"
+            f"View their account: https://www.catalogkit.org/admin\n"
+        )
+
         flash('Account created! Please complete your profile to get started.', 'success')
         return redirect(url_for('profile'))
     return render_template('register.html')
