@@ -12,7 +12,7 @@ const BADGES = [
   { emoji: '🎨', label: 'Crafts',     bottom: '10vh', left: '28vw', delay: 0.8, rotate: -4 },
   { emoji: '🍠', label: 'Sweet Potato', bottom: '8vh', right: '22vw', delay: 0.55, rotate: 7 },
   { emoji: '🐔', label: 'Chicken',    top: '55vh', left: '2vw',   delay: 0.65, rotate: -7 },
-  { emoji: '🌿', label: 'Greens',     top: '50vh', right: '2vw',  delay: 0.45, rotate: 5  },
+  { emoji: '🌿', label: 'Herbs',     top: '50vh', right: '2vw',  delay: 0.45, rotate: 5  },
   { emoji: '🧺', label: 'Basket',     top: '12vh', left: '38vw',  delay: 0.35, rotate: -3 },
 ];
 
