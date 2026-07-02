@@ -2,18 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const BADGES = [
-  { emoji: '🍌', label: 'Banana',     top: '8vh',  left: '3vw',   delay: 0.1, rotate: -8  },
-  { emoji: '🥬', label: 'Kumu',     top: '18vh', left: '18vw',  delay: 0.3, rotate: 5   },
-  { emoji: '🐟', label: 'Fish',       top: '6vh',  right: '5vw',  delay: 0.2, rotate: 6   },
-  { emoji: '🌺', label: 'Flowers',    top: '35vh', left: '4vw',   delay: 0.5, rotate: -5  },
-  { emoji: '🍍', label: 'Pineapple',  top: '28vh', right: '3vw',  delay: 0.4, rotate: 8   },
-  { emoji: '🥥', label: 'Coconut',    bottom: '22vh', left: '8vw',  delay: 0.6, rotate: -6 },
-  { emoji: '👗', label: 'Clothing',   bottom: '30vh', right: '6vw', delay: 0.7, rotate: 4  },
-  { emoji: '🎨', label: 'Crafts',     bottom: '10vh', left: '28vw', delay: 0.8, rotate: -4 },
-  { emoji: '🍠', label: 'Sweet Potato', bottom: '8vh', right: '22vw', delay: 0.55, rotate: 7 },
-  { emoji: '🐔', label: 'Chicken',    top: '55vh', left: '2vw',   delay: 0.65, rotate: -7 },
-  { emoji: '🌿', label: 'Herbs',     top: '50vh', right: '2vw',  delay: 0.45, rotate: 5  },
-  { emoji: '🧺', label: 'Basket',     top: '12vh', left: '38vw',  delay: 0.35, rotate: -3 },
+  // ── Top row ──────────────────────────────────────
+  { emoji: '🍌', label: 'Banana',       top: '3vh',    left: '2vw',    delay: 0.10, rotate: -6 },
+  { emoji: '🧺', label: 'Basket',       top: '3vh',    left: '24vw',   delay: 0.20, rotate:  3 },
+  { emoji: '🐟', label: 'Fish',         top: '3vh',    right: '24vw',  delay: 0.15, rotate: -4 },
+  { emoji: '🍍', label: 'Pineapple',    top: '3vh',    right: '2vw',   delay: 0.25, rotate:  7 },
+  // ── Left column ──────────────────────────────────
+  { emoji: '🥬', label: 'Kumu',         top: '32vh',   left: '2vw',    delay: 0.35, rotate: -5 },
+  { emoji: '🌺', label: 'Flowers',      top: '55vh',   left: '2vw',    delay: 0.45, rotate:  4 },
+  // ── Right column ─────────────────────────────────
+  { emoji: '🌿', label: 'Herbs',        top: '32vh',   right: '2vw',   delay: 0.30, rotate:  5 },
+  { emoji: '👗', label: 'Clothing',     top: '55vh',   right: '2vw',   delay: 0.40, rotate: -4 },
+  // ── Bottom row ───────────────────────────────────
+  { emoji: '🥥', label: 'Coconut',      bottom: '3vh', left: '2vw',    delay: 0.55, rotate: -6 },
+  { emoji: '🎨', label: 'Crafts',       bottom: '3vh', left: '24vw',   delay: 0.65, rotate:  3 },
+  { emoji: '🍠', label: 'Sweet Potato', bottom: '3vh', right: '24vw',  delay: 0.60, rotate: -3 },
+  { emoji: '🐔', label: 'Chicken',      bottom: '3vh', right: '2vw',   delay: 0.70, rotate:  6 },
 ];
 
 export function Scene1() {
@@ -64,33 +68,33 @@ export function Scene1() {
         </motion.div>
       ))}
 
-      {/* Existing product images */}
+      {/* Product images — in the side gaps between badge rows */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Bilum bag — top left */}
+        {/* Bilum bag — left gap (between left-column badges) */}
         <motion.div 
-          className="absolute -left-[8vw] top-[25vh] w-[22vw] h-[22vw]"
+          className="absolute -left-[4vw] top-[40vh] w-[20vw] h-[20vw]"
           initial={{ scale: 0, rotate: -20, opacity: 0 }}
-          animate={phase >= 2 ? { scale: 1, rotate: -10, opacity: 0.85 } : {}}
+          animate={phase >= 2 ? { scale: 1, rotate: -8, opacity: 0.85 } : {}}
           transition={{ type: 'spring', bounce: 0.4 }}
         >
           <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-full h-full object-contain" alt="" />
         </motion.div>
 
-        {/* Tropical fruit — bottom right */}
+        {/* Tropical fruit — right gap (between right-column badges) */}
         <motion.div 
-          className="absolute -right-[18vw] bottom-[5vh] w-[28vw] h-[28vw]"
+          className="absolute -right-[4vw] top-[40vh] w-[20vw] h-[20vw]"
           initial={{ scale: 0, rotate: 20, opacity: 0 }}
-          animate={phase >= 2 ? { scale: 1, rotate: 12, opacity: 0.8 } : {}}
+          animate={phase >= 2 ? { scale: 1, rotate: 10, opacity: 0.80 } : {}}
           transition={{ type: 'spring', bounce: 0.4, delay: 0.1 }}
         >
           <img src={`${import.meta.env.BASE_URL}/images/tropical-fruit-warm.png`} className="w-full h-full object-contain" alt="" />
         </motion.div>
 
-        {/* Carved mask — bottom centre-left */}
+        {/* Carved mask — bottom centre gap */}
         <motion.div 
-          className="absolute left-[28vw] bottom-[2vh] w-[16vw] h-[16vw]"
+          className="absolute left-[44vw] bottom-[10vh] w-[14vw] h-[14vw]"
           initial={{ scale: 0, rotate: 10, opacity: 0 }}
-          animate={phase >= 3 ? { scale: 1, rotate: 5, opacity: 0.75 } : {}}
+          animate={phase >= 3 ? { scale: 1, rotate: 4, opacity: 0.75 } : {}}
           transition={{ type: 'spring', bounce: 0.4 }}
         >
           <img src={`${import.meta.env.BASE_URL}/images/product-mask.png`} className="w-full h-full object-contain" alt="" />
