@@ -95,7 +95,7 @@ export function Scene3() {
 
         {/* Customer phone */}
         <motion.div
-          className="w-[18vw] h-[34vw] bg-white rounded-[3vw] shadow-2xl border-[0.8vw] border-[#222] overflow-hidden flex-shrink-0"
+          className="relative w-[18vw] h-[34vw] bg-white rounded-[3vw] shadow-2xl border-[0.8vw] border-[#222] overflow-hidden flex-shrink-0"
           initial={{ y: '20vh', opacity: 0 }}
           animate={phase >= 2 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 20, delay: 0.2 }}

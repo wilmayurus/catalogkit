@@ -48,7 +48,40 @@ export function Scene1() {
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Floating product badges */}
+      {/* Product images — rendered first so badges sit on top */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+        {/* Bilum bag — left side */}
+        <motion.div
+          className="absolute -left-[4vw] top-[40vh] w-[20vw] h-[20vw]"
+          initial={{ scale: 0, rotate: -20, opacity: 0 }}
+          animate={phase >= 2 ? { scale: 1, rotate: -8, opacity: 0.85 } : {}}
+          transition={{ type: 'spring', bounce: 0.4 }}
+        >
+          <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-full h-full object-contain" alt="" />
+        </motion.div>
+
+        {/* Tropical fruit — right side */}
+        <motion.div
+          className="absolute -right-[4vw] top-[40vh] w-[20vw] h-[20vw]"
+          initial={{ scale: 0, rotate: 20, opacity: 0 }}
+          animate={phase >= 2 ? { scale: 1, rotate: 10, opacity: 0.80 } : {}}
+          transition={{ type: 'spring', bounce: 0.4, delay: 0.1 }}
+        >
+          <img src={`${import.meta.env.BASE_URL}/images/tropical-fruit-warm.png`} className="w-full h-full object-contain" alt="" />
+        </motion.div>
+
+        {/* Carved mask — bottom centre */}
+        <motion.div
+          className="absolute left-[44vw] bottom-[10vh] w-[14vw] h-[14vw]"
+          initial={{ scale: 0, rotate: 10, opacity: 0 }}
+          animate={phase >= 3 ? { scale: 1, rotate: 4, opacity: 0.75 } : {}}
+          transition={{ type: 'spring', bounce: 0.4 }}
+        >
+          <img src={`${import.meta.env.BASE_URL}/images/product-mask.png`} className="w-full h-full object-contain" alt="" />
+        </motion.div>
+      </div>
+
+      {/* Badges — rendered after images so they appear on top */}
       {BADGES.map((b, i) => (
         <motion.div
           key={i}
@@ -56,6 +89,7 @@ export function Scene1() {
           style={{
             top: b.top, bottom: b.bottom,
             left: b.left, right: b.right,
+            zIndex: 2,
           }}
           initial={{ scale: 0, opacity: 0, rotate: b.rotate * 2 }}
           animate={phase >= 1 ? { scale: 1, opacity: 0.92, rotate: b.rotate } : {}}
@@ -68,41 +102,8 @@ export function Scene1() {
         </motion.div>
       ))}
 
-      {/* Product images — in the side gaps between badge rows */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Bilum bag — left gap (between left-column badges) */}
-        <motion.div 
-          className="absolute -left-[4vw] top-[40vh] w-[20vw] h-[20vw]"
-          initial={{ scale: 0, rotate: -20, opacity: 0 }}
-          animate={phase >= 2 ? { scale: 1, rotate: -8, opacity: 0.85 } : {}}
-          transition={{ type: 'spring', bounce: 0.4 }}
-        >
-          <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-full h-full object-contain" alt="" />
-        </motion.div>
-
-        {/* Tropical fruit — right gap (between right-column badges) */}
-        <motion.div 
-          className="absolute -right-[4vw] top-[40vh] w-[20vw] h-[20vw]"
-          initial={{ scale: 0, rotate: 20, opacity: 0 }}
-          animate={phase >= 2 ? { scale: 1, rotate: 10, opacity: 0.80 } : {}}
-          transition={{ type: 'spring', bounce: 0.4, delay: 0.1 }}
-        >
-          <img src={`${import.meta.env.BASE_URL}/images/tropical-fruit-warm.png`} className="w-full h-full object-contain" alt="" />
-        </motion.div>
-
-        {/* Carved mask — bottom centre gap */}
-        <motion.div 
-          className="absolute left-[44vw] bottom-[10vh] w-[14vw] h-[14vw]"
-          initial={{ scale: 0, rotate: 10, opacity: 0 }}
-          animate={phase >= 3 ? { scale: 1, rotate: 4, opacity: 0.75 } : {}}
-          transition={{ type: 'spring', bounce: 0.4 }}
-        >
-          <img src={`${import.meta.env.BASE_URL}/images/product-mask.png`} className="w-full h-full object-contain" alt="" />
-        </motion.div>
-      </div>
-
-      {/* Main text — centre */}
-      <div className="relative z-10 flex flex-col items-center gap-[2vh] text-center px-[5vw]">
+      {/* Main text — always on top */}
+      <div className="relative flex flex-col items-center gap-[2vh] text-center px-[5vw]" style={{ zIndex: 3 }}>
         <motion.h1 
           className="text-[8vw] font-black text-[#F5A800] leading-none"
           style={{ fontFamily: 'var(--font-display)' }}
