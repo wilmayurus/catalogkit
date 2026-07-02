@@ -1,13 +1,15 @@
 import { useState, useRef } from "react";
 import VideoTemplate from "./components/video/VideoTemplate";
 
-const TOTAL_DURATION_MS = 6000 + 8000 + 10000 + 8000 + 8000; // 40s
+// Must match SCENE_DURATIONS in VideoTemplate: 5000+8000+9000+10000+13000 = 45s
+const TOTAL_DURATION_MS = 5000 + 8000 + 9000 + 10000 + 13000 + 2500; // +2.5s buffer
 
 type RecordState = "idle" | "waiting" | "recording" | "done" | "error";
 
 function App() {
   const [recState, setRecState] = useState<RecordState>("idle");
   const [secondsLeft, setSecondsLeft] = useState(0);
+  const [videoKey, setVideoKey] = useState(0); // incrementing restarts the video
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -20,7 +22,7 @@ function App() {
     try {
       stream = await (navigator.mediaDevices as any).getDisplayMedia({
         video: { frameRate: 30, width: 1920, height: 1080 },
-        audio: false,
+        audio: true,
         preferCurrentTab: true,
       } as any);
     } catch {
@@ -28,11 +30,19 @@ function App() {
       return;
     }
 
-    const recorder = new MediaRecorder(stream, {
-      mimeType: MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-        ? "video/webm;codecs=vp9"
-        : "video/webm",
-    });
+    // Restart the video from Scene 1 before recording begins
+    setVideoKey(k => k + 1);
+
+    // Small delay so the video remounts cleanly before recording starts
+    await new Promise(r => setTimeout(r, 600));
+
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+      ? "video/webm;codecs=vp9"
+      : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
+      ? "video/webm;codecs=vp8"
+      : "video/webm";
+
+    const recorder = new MediaRecorder(stream, { mimeType });
     mediaRef.current = recorder;
 
     recorder.ondataavailable = (e) => {
@@ -75,9 +85,9 @@ function App() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      <VideoTemplate />
+      <VideoTemplate key={videoKey} />
 
-      {/* Overlay controls — hidden during recording so they don't appear in the captured video */}
+      {/* Controls — hidden during recording so they don't appear in the captured video */}
       {recState !== "recording" && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
           {recState === "idle" && (
@@ -90,9 +100,10 @@ function App() {
           )}
 
           {recState === "waiting" && (
-            <div className="bg-black/60 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-full shadow-lg text-center">
-              <span className="animate-pulse">● </span>
-              Select this tab in the sharing dialog…
+            <div className="bg-black/60 backdrop-blur-md border border-white/20 text-white text-sm px-6 py-3 rounded-2xl shadow-lg text-center max-w-xs leading-snug">
+              <span className="animate-pulse text-[#F5A800]">● </span>
+              <strong>Select this tab</strong> in the sharing dialog,<br/>
+              then the video will record automatically.
             </div>
           )}
 
@@ -103,22 +114,40 @@ function App() {
                 onClick={() => setRecState("idle")}
                 className="ml-2 text-green-300/70 hover:text-green-100 text-xs underline"
               >
-                again
+                record again
               </button>
             </div>
           )}
 
           {recState === "error" && (
-            <div className="flex items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-3 rounded-full shadow-lg">
-              <span>✕</span> Permission denied.
+            <div className="flex flex-col items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-3 rounded-xl shadow-lg text-center max-w-xs">
+              <span>✕ Permission denied or cancelled.</span>
+              <span className="text-xs text-red-300/70">
+                Make sure to click <strong>Share</strong> and select this tab.
+              </span>
               <button
                 onClick={() => setRecState("idle")}
-                className="ml-2 text-red-300/70 hover:text-red-100 text-xs underline"
+                className="mt-1 text-red-300 hover:text-red-100 text-xs underline"
               >
-                retry
+                Try again
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Recording countdown — shown over the video but tucked in corner */}
+      {recState === "recording" && (
+        <div className="absolute bottom-4 right-4 z-50 flex items-center gap-2 bg-black/50 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-red-500/50">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          Recording… {secondsLeft}s
+          <button
+            onClick={cancelRecording}
+            className="ml-1 text-white/50 hover:text-white transition-colors"
+            title="Cancel"
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>
