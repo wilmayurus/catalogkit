@@ -49,8 +49,8 @@ export function Scene3() {
             </svg>
           </div>
           <div>
-            <div className="text-[2vw] text-blue-500 underline font-bold">catalogkit.org/myshop</div>
-            <div className="text-[1.5vw] text-gray-500 mt-[0.5vh]">Here is my shop!</div>
+            <div className="text-[2vw] text-blue-500 underline font-bold">catalogkit.org/c/abc123</div>
+            <div className="text-[1.5vw] text-gray-500 mt-[0.5vh]">Look at my catalog!</div>
           </div>
         </motion.div>
 
