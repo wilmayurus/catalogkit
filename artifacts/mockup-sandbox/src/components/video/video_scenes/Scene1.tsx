@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 const BADGES = [
   { emoji: '🍌', label: 'Banana',     top: '8vh',  left: '3vw',   delay: 0.1, rotate: -8  },
-  { emoji: '🥬', label: 'Kaukau',     top: '18vh', left: '18vw',  delay: 0.3, rotate: 5   },
+  { emoji: '🥬', label: 'Kumu',     top: '18vh', left: '18vw',  delay: 0.3, rotate: 5   },
   { emoji: '🐟', label: 'Fish',       top: '6vh',  right: '5vw',  delay: 0.2, rotate: 6   },
   { emoji: '🌺', label: 'Flowers',    top: '35vh', left: '4vw',   delay: 0.5, rotate: -5  },
   { emoji: '🍍', label: 'Pineapple',  top: '28vh', right: '3vw',  delay: 0.4, rotate: 8   },
