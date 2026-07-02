@@ -43,7 +43,7 @@ export function Scene1() {
           
           {/* Vegetables */}
           <motion.div 
-            className="absolute -right-[15vw] top-[20vh] w-[30vw] h-[30vw]"
+            className="absolute -right-[22vw] top-[35vh] w-[30vw] h-[30vw]"
             initial={{ scale: 0, rotate: 20, opacity: 0 }}
             animate={phase >= 2 ? { scale: 1, rotate: 15, opacity: 0.8 } : {}}
             transition={{ type: 'spring', bounce: 0.4 }}
