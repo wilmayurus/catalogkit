@@ -25,7 +25,7 @@ export function Scene5() {
 
   return (
     <motion.div
-      className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden bg-[#0D0D0D]"
+      className="absolute inset-0 z-20 flex flex-col items-center overflow-hidden bg-[#0D0D0D]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -49,11 +49,11 @@ export function Scene5() {
         transition={{ duration: 2 }}
       />
 
-      <div className="relative z-10 flex flex-col items-center w-full px-[6cqw]">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full px-[6cqw] py-[2cqh]">
 
         {/* Logo */}
         <motion.div
-          className="flex items-center gap-[2cqw] mb-[5cqh]"
+          className="flex items-center gap-[2cqw] mb-[2cqh]"
           initial={{ y: 40, opacity: 0 }}
           animate={phase >= 1 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 18 }}
@@ -70,7 +70,7 @@ export function Scene5() {
 
         {/* Tagline */}
         <motion.p
-          className="text-[2.8cqw] text-[#FFF8F0]/70 font-semibold mb-[5cqh] text-center leading-snug"
+          className="text-[2.8cqw] text-[#FFF8F0]/70 font-semibold mb-[2cqh] text-center leading-snug"
           initial={{ opacity: 0, y: 10 }}
           animate={phase >= 2 ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
@@ -81,7 +81,7 @@ export function Scene5() {
 
         {/* Feature pills */}
         <motion.div
-          className="flex flex-wrap justify-center gap-[1.5cqw] mb-[5cqh]"
+          className="flex flex-wrap justify-center gap-[1.5cqw] mb-[2cqh]"
           initial={{ opacity: 0 }}
           animate={phase >= 3 ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
@@ -102,7 +102,7 @@ export function Scene5() {
 
         {/* FREE badge */}
         <motion.div
-          className="bg-[#C41230] text-white px-[5cqw] py-[2.2cqh] rounded-full shadow-2xl mb-[4cqh]"
+          className="bg-[#C41230] text-white px-[5cqw] py-[2.2cqh] rounded-full shadow-2xl mb-[2cqh]"
           initial={{ y: 20, opacity: 0, scale: 0.9 }}
           animate={phase >= 4 ? { y: 0, opacity: 1, scale: 1 } : {}}
           transition={{ type: 'spring', damping: 16 }}
@@ -112,7 +112,7 @@ export function Scene5() {
 
         {/* URL */}
         <motion.div
-          className="flex items-center gap-[1.5cqw] bg-white/10 border border-white/20 px-[4cqw] py-[1.5cqh] rounded-2xl mb-[3cqh]"
+          className="flex items-center gap-[1.5cqw] bg-white/10 border border-white/20 px-[4cqw] py-[1.5cqh] rounded-2xl mb-[1.5cqh]"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={phase >= 5 ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.7 }}
@@ -140,7 +140,7 @@ export function Scene5() {
 
       {/* Credit */}
       <motion.div
-        className="absolute bottom-[2cqh] w-full text-center"
+        className="flex-shrink-0 mt-auto w-full text-center pb-[2cqh]"
         initial={{ opacity: 0 }}
         animate={phase >= 5 ? { opacity: 0.4 } : {}}
         transition={{ duration: 1, delay: 1 }}

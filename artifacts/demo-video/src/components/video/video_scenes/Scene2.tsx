@@ -28,7 +28,7 @@ export function Scene2() {
 
   return (
     <motion.div
-      className="absolute inset-0 z-20 overflow-hidden bg-[#FFF8F0]"
+      className="absolute inset-0 z-20 flex flex-col overflow-hidden bg-[#FFF8F0]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -37,7 +37,7 @@ export function Scene2() {
       <div className="absolute top-[-20%] left-[-10%] w-[60cqw] h-[60cqw] bg-[#F5A800]/10 rounded-full blur-3xl pointer-events-none" />
 
       <motion.div
-        className="absolute top-0 left-0 right-0 text-center pt-[3.5cqh] pb-[1.5cqh] px-[5cqw] z-10"
+        className="flex-shrink-0 text-center pt-[3cqh] pb-[1cqh] px-[5cqw] z-10"
         initial={{ opacity: 0, y: -15 }}
         animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
@@ -51,8 +51,7 @@ export function Scene2() {
       </motion.div>
 
       <div
-        className="absolute inset-0 flex items-center justify-center gap-[4cqw] px-[5cqw]"
-        style={{ paddingTop: '21cqh', paddingBottom: '4cqh' }}
+        className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]"
       >
         {/* Phone */}
         <motion.div
@@ -209,7 +208,7 @@ export function Scene2() {
       </div>
 
       <motion.div
-        className="absolute bottom-[2cqh] w-full text-center"
+        className="flex-shrink-0 w-full text-center pb-[2.5cqh]"
         initial={{ opacity: 0 }}
         animate={phase >= 10 ? { opacity: 1 } : {}}
         transition={{ duration: 0.6 }}

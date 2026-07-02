@@ -39,7 +39,7 @@ export function Scene4() {
       </motion.div>
 
       {/* Two columns */}
-      <div className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[10cqh]">
+      <div className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]">
 
         {/* Left — PDF */}
         <motion.div
@@ -121,11 +121,16 @@ export function Scene4() {
             </motion.div>
           </div>
 
+          <div className="text-center mt-[1.5cqh]">
+            <h3 className="text-[3cqw] font-bold text-[#0D0D0D] font-display">WhatsApp Order</h3>
+            <p className="text-[2cqw] text-[#25D366] font-medium mt-[0.5cqh]">Customers tap to message you.</p>
+          </div>
+
           {/* Customer reply bubble */}
           <AnimatePresence>
             {phase >= 4 && (
               <motion.div
-                className="absolute -right-[2cqw] top-[25%] bg-[#25D366] rounded-2xl rounded-br-none shadow-xl px-[1.8cqw] py-[1cqw] max-w-[18cqw] z-10"
+                className="mt-[1.5cqh] bg-[#25D366] rounded-2xl rounded-tl-none shadow-xl px-[1.8cqw] py-[1cqw]"
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
@@ -136,17 +141,12 @@ export function Scene4() {
               </motion.div>
             )}
           </AnimatePresence>
-
-          <div className="text-center">
-            <h3 className="text-[3cqw] font-bold text-[#0D0D0D] font-display">WhatsApp Order</h3>
-            <p className="text-[2cqw] text-[#25D366] font-medium mt-[0.5cqh]">Customers tap to message you.</p>
-          </div>
         </motion.div>
       </div>
 
       {/* Bottom caption */}
       <motion.div
-        className="absolute bottom-[2cqh] w-full text-center"
+        className="flex-shrink-0 w-full text-center pb-[2.5cqh]"
         initial={{ opacity: 0 }}
         animate={phase >= 5 ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}
