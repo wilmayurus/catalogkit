@@ -28,10 +28,10 @@ export function Scene5() {
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       />
       
-      {/* Background Market Scene (Very dim) */}
+      {/* Background Market Scene */}
       <motion.img 
         src={`${import.meta.env.BASE_URL}/images/market-scene-warm.png`}
-        className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
+        className="absolute inset-0 w-full h-full object-cover opacity-30"
       />
 
       <div className="relative z-10 text-center flex flex-col items-center">
@@ -80,17 +80,19 @@ export function Scene5() {
           www.catalogkit.org
         </motion.div>
 
-        <motion.div
-          className="absolute top-[35vh] text-center w-full"
-          initial={{ opacity: 0 }}
-          animate={phase >= 4 ? { opacity: 0.6 } : {}}
-          transition={{ duration: 1, delay: 1 }}
-        >
-          <p className="text-[1.5vw] text-white font-sans uppercase tracking-widest">
-            Sapphire Consulting Services · Trey Holdings Limited
-          </p>
-        </motion.div>
       </div>
+
+      {/* Credit — tiny, bottom of screen */}
+      <motion.div
+        className="absolute bottom-[2vh] w-full text-center"
+        initial={{ opacity: 0 }}
+        animate={phase >= 4 ? { opacity: 0.45 } : {}}
+        transition={{ duration: 1, delay: 1.5 }}
+      >
+        <p className="text-[1vw] text-white font-sans">
+          Developed by Sapphire Consulting Services, a subsidiary of Trey Holdings Limited
+        </p>
+      </motion.div>
 
     </motion.div>
   );
