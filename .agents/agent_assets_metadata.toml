@@ -60,6 +60,24 @@ uri = "file://artifacts/mockup-sandbox/public/images/dark-surface.png"
 type = "image"
 title = "Dark elegant surface"
 
+[[generated]]
+id = "_WePVpuWuW__72cU4rGX1"
+uri = "file://artifacts/mockup-sandbox/public/images/market-scene-warm.png"
+type = "image"
+title = "PNG market scene"
+
+[[generated]]
+id = "ZVNE-YsUKoH04CmPpwrKA"
+uri = "file://artifacts/mockup-sandbox/public/images/bilum-bag-clean.png"
+type = "image"
+title = "Clean bilum bag"
+
+[[generated]]
+id = "JMIHApS7cOgvLLDPaHOUR"
+uri = "file://artifacts/mockup-sandbox/public/images/tropical-fruit-warm.png"
+type = "image"
+title = "Tropical fruit"
+
 [[outputs]]
 id = "Y1oXJOwFVw8acuWvXjfBC"
 uri = "file://grant/NCDC_Grant_Application_CatalogKit_THL.md"

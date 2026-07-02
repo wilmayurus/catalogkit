@@ -6,64 +6,81 @@ export function Scene1() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 300),
+      setTimeout(() => setPhase(1), 500),
       setTimeout(() => setPhase(2), 1200),
-      setTimeout(() => setPhase(3), 2000),
-      setTimeout(() => setPhase(4), 4000), // exit begin
+      setTimeout(() => setPhase(3), 1800),
+      setTimeout(() => setPhase(4), 3000),
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
 
   return (
     <motion.div 
-      className="absolute inset-0 z-20 flex items-center justify-center overflow-hidden"
+      className="absolute inset-0 z-20 flex items-center justify-center overflow-hidden bg-[#2D0B0E]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
-      transition={{ duration: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8 }}
     >
-      <motion.div className="absolute inset-0"
-        initial={{ scale: 1.2 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 5, ease: "easeOut" }}
-      >
-        <img src={`${import.meta.env.BASE_URL}images/market-bg.png`} className="absolute inset-0 w-full h-full object-cover opacity-30" alt="Market" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/20 to-transparent" />
-      </motion.div>
+      <motion.div className="absolute inset-0 opacity-40 mix-blend-screen"
+        style={{ background: 'radial-gradient(circle at 50% 50%, #C41230 0%, #2D0B0E 80%)' }}
+        animate={{ scale: [1, 1.1, 1] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      
+      <div className="relative z-10 w-full flex flex-col items-center justify-center h-full">
+        {/* Images stagger in */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {/* Bilum bag */}
+          <motion.div 
+            className="absolute -left-[10vw] top-[10vh] w-[25vw] h-[25vw]"
+            initial={{ scale: 0, rotate: -20, opacity: 0 }}
+            animate={phase >= 1 ? { scale: 1, rotate: -10, opacity: 0.8 } : {}}
+            transition={{ type: 'spring', bounce: 0.4 }}
+          >
+             <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="w-full h-full object-contain" alt="" />
+          </motion.div>
+          
+          {/* Vegetables */}
+          <motion.div 
+            className="absolute -right-[15vw] top-[20vh] w-[30vw] h-[30vw]"
+            initial={{ scale: 0, rotate: 20, opacity: 0 }}
+            animate={phase >= 2 ? { scale: 1, rotate: 15, opacity: 0.8 } : {}}
+            transition={{ type: 'spring', bounce: 0.4 }}
+          >
+             <img src={`${import.meta.env.BASE_URL}images/tropical-fruit-warm.png`} className="w-full h-full object-contain" alt="" />
+          </motion.div>
+        </div>
 
-      <div className="relative z-10 w-full flex flex-col items-center text-center px-[5vw]">
-        <motion.h1 
-          className="text-[7vw] leading-[1.1] font-bold text-[#F5F5F5] font-['Montserrat'] tracking-tight"
-        >
-          {"Your products".split(' ').map((word, i) => (
-            <motion.span 
-              key={i} 
-              className="inline-block mr-[2vw]"
-              initial={{ opacity: 0, y: 40, rotateX: 45 }}
-              animate={phase >= 1 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 40, rotateX: 45 }}
-              transition={{ type: 'spring', damping: 20, stiffness: 200, delay: phase >= 1 ? i * 0.1 : 0 }}
-            >
-              {word}
-            </motion.span>
-          ))}
-        </motion.h1>
+        {/* Text */}
+        <div className="flex flex-col items-center gap-[4vh] text-center px-[5vw]">
+          <motion.h1 
+            className="text-[8vw] font-black text-[#F5A800] leading-none"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {'YOU SELL THINGS.'.split(' ').map((word, i) => (
+              <motion.span 
+                key={i} 
+                className="inline-block mr-[2vw]"
+                initial={{ y: 50, opacity: 0 }}
+                animate={phase >= 1 ? { y: 0, opacity: 1 } : {}}
+                transition={{ type: 'spring', damping: 20, delay: i * 0.15 }}
+              >
+                {word}
+              </motion.span>
+            ))}
+          </motion.h1>
 
-        <motion.h2
-          className="text-[6vw] mt-[2vh] text-[#F5A800] font-['Bebas_Neue'] tracking-wide"
-          initial={{ opacity: 0, filter: 'blur(15px)', scale: 0.9 }}
-          animate={phase >= 2 ? { opacity: 1, filter: 'blur(0px)', scale: 1 } : { opacity: 0, filter: 'blur(15px)', scale: 0.9 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          DESERVE TO BE SEEN.
-        </motion.h2>
-
-        {phase >= 3 && (
-          <motion.div className="mt-[4vh] w-[15vw] h-[2px] bg-[#C41230]"
-            initial={{ width: 0 }}
-            animate={{ width: '15vw' }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          />
-        )}
+          <motion.div
+            className="text-[6vw] font-bold text-white leading-tight mt-[4vh]"
+            style={{ fontFamily: 'var(--font-display)' }}
+            initial={{ scale: 0.8, opacity: 0, filter: 'blur(10px)' }}
+            animate={phase >= 4 ? { scale: 1, opacity: 1, filter: 'blur(0px)' } : {}}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            Show them to the <span className="text-[#F5A800]">WORLD.</span>
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );
