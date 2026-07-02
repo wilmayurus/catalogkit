@@ -94,7 +94,7 @@ export function Scene4() {
             >
               <h3 className="text-[2.5vw] text-white/70 uppercase tracking-widest mb-[1vh] font-semibold">Starter</h3>
               <div className="text-[4.5vw] font-['Bebas_Neue'] text-white mb-[2vh]">Free to start</div>
-              <p className="text-[1.8vw] text-white/50">2 catalogs/month</p>
+              <p className="text-[1.8vw] text-white/50">3 catalogs/month</p>
             </motion.div>
 
             {/* Basic Tier */}

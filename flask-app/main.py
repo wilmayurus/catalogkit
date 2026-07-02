@@ -217,7 +217,7 @@ class User(db.Model):
         if self.is_admin or self.is_moderator: return None
         if self.plan == 'pro':   return None
         if self.plan == 'basic': return 20
-        return 2
+        return 3
 
     @property
     def builds_remaining(self):
@@ -506,7 +506,7 @@ Here's how to get started in 4 easy steps:
      👉 www.catalogkit.org/profile
 
   2. CHOOSE YOUR PLAN
-     Start with the Free plan (2 builds/month at no cost),
+     Start with the Free plan (3 builds/month at no cost),
      or upgrade to Basic (K20/month) or Pro (K50/month) for more builds.
      👉 www.catalogkit.org/pricing
 
@@ -679,7 +679,7 @@ def process(catalog_id):
         limit = user.monthly_limit
         if limit is not None and (user.monthly_builds_used or 0) >= limit:
             db.session.commit()
-            plan_names = {'free': 'Free (2/month)', 'basic': 'Basic (20/month)'}
+            plan_names = {'free': 'Free (3/month)', 'basic': 'Basic (20/month)'}
             label = plan_names.get(user.plan, user.plan_label)
             return jsonify({
                 'error': f"You've used all {limit} builds for this month on the {label} plan. "
