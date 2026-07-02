@@ -1,18 +1,41 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const PAGES = [
+  { name: 'BILUM BAG',      price: 'K 25.00', img: 'bilum-bag-clean.png' },
+  { name: 'TROPICAL FRUIT', price: 'K 10.00', img: 'tropical-fruit-warm.png' },
+  { name: 'CARVED MASK',    price: 'K 45.00', img: 'product-mask.png' },
+];
+
+const pageVariants = {
+  enter: { x: '100%', opacity: 0 },
+  center: { x: 0,     opacity: 1 },
+  exit:   { x: '-100%', opacity: 0 },
+};
 
 export function Scene3() {
   const [phase, setPhase] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 400),   // heading
-      setTimeout(() => setPhase(2), 1200),  // card + arrow + phone
-      setTimeout(() => setPhase(3), 3000),  // swipe hint
-      setTimeout(() => setPhase(4), 5500),  // caption
+      setTimeout(() => setPhase(1), 400),
+      setTimeout(() => setPhase(2), 1200),
+      setTimeout(() => setPhase(3), 3000),
+      setTimeout(() => setPhase(4), 5500),
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
+
+  useEffect(() => {
+    if (phase < 3) return;
+    const interval = setInterval(() => {
+      setCurrentPage(p => (p + 1) % PAGES.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  const page = PAGES[currentPage];
 
   return (
     <motion.div
@@ -22,7 +45,7 @@ export function Scene3() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      {/* Heading — fixed at top, full width */}
+      {/* Heading */}
       <motion.div
         className="w-full text-center pt-[5vh] pb-[3vh] px-[5vw] flex-shrink-0"
         initial={{ opacity: 0, y: -20 }}
@@ -37,7 +60,7 @@ export function Scene3() {
         </p>
       </motion.div>
 
-      {/* Main content row — below heading */}
+      {/* Main content row */}
       <div className="flex-1 flex items-center justify-center gap-[4vw] px-[5vw] pb-[12vh]">
 
         {/* Catalog share card */}
@@ -47,7 +70,6 @@ export function Scene3() {
           animate={phase >= 2 ? { scale: 1, opacity: 1, x: 0 } : {}}
           transition={{ type: 'spring', damping: 20 }}
         >
-          {/* Mini catalog preview — fully contained */}
           <div className="w-full h-[9vw] bg-[#0D0D0D] rounded-xl mb-[2vh] flex items-center justify-between px-[2vw] overflow-hidden flex-shrink-0">
             <div className="text-white">
               <div className="text-[2.2vw] font-black font-display leading-none">Mary's</div>
@@ -59,8 +81,6 @@ export function Scene3() {
               alt=""
             />
           </div>
-
-          {/* Link row */}
           <div className="flex items-center gap-[1.5vw]">
             <div className="flex-1 bg-[#F0F4FF] rounded-xl px-[1.5vw] py-[1.2vh] border border-blue-100 min-w-0">
               <span className="text-[1.6vw] text-blue-600 font-bold truncate block">catalogkit.org/c/mary</span>
@@ -95,49 +115,84 @@ export function Scene3() {
 
         {/* Customer phone */}
         <motion.div
-          className="relative w-[18vw] h-[34vw] bg-white rounded-[3vw] shadow-2xl border-[0.8vw] border-[#222] overflow-hidden flex-shrink-0"
+          className="relative w-[18vw] h-[34vw] bg-white rounded-[3vw] shadow-2xl border-[0.8vw] border-[#222] overflow-hidden flex-shrink-0 flex flex-col"
           initial={{ y: '20vh', opacity: 0 }}
           animate={phase >= 2 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 20, delay: 0.2 }}
         >
-          <div className="w-full h-full flex flex-col bg-white">
-            {/* Header */}
-            <div className="h-[11%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-[1.5vw] font-black font-display">Mary's Catalog</span>
-            </div>
-            {/* Product name — top */}
-            <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-b border-gray-100">
-              <span className="text-[1.7vw] font-black text-[#0D0D0D] font-display">BILUM BAG</span>
-            </div>
-            {/* Image — centre */}
-            <div className="flex-1 flex items-center justify-center overflow-hidden px-[1vw]">
-              <img
-                src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
-                className="w-[75%] h-full object-contain"
-                alt=""
-              />
-            </div>
-            {/* Price — bottom */}
-            <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-t border-gray-100">
-              <span className="text-[1.6vw] font-bold text-[#C41230]">K 25.00</span>
-            </div>
-            {/* Footer */}
-            <div className="h-[10%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
-              <span className="text-[1vw] font-bold text-white">catalogkit.org/c/mary</span>
-            </div>
+          {/* Sticky header — never moves */}
+          <div className="h-[11%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0 z-10">
+            <span className="text-white text-[1.5vw] font-black font-display">Mary's Catalog</span>
           </div>
 
-          {/* Swipe finger */}
-          <motion.div
-            className="absolute bottom-[20%] right-[25%] w-[4vw] h-[4vw] bg-[#25D366] rounded-full flex items-center justify-center shadow-xl"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={phase >= 3 ? { opacity: [0, 1, 1, 0], scale: [0, 1, 1, 0.8], x: [0, -25, -50] } : {}}
-            transition={{ duration: 1.5, ease: 'easeInOut' }}
-          >
-            <svg viewBox="0 0 24 24" fill="white" className="w-[2.2vw] h-[2.2vw]">
-              <path d="M18 11V8a2 2 0 1 0-4 0v3M14 11V6a2 2 0 1 0-4 0v5M10 11V8a2 2 0 1 0-4 0v8a6 6 0 0 0 12 0v-5a2 2 0 1 0-4 0v0"/>
-            </svg>
-          </motion.div>
+          {/* Animated page area */}
+          <div className="flex-1 relative overflow-hidden">
+            <AnimatePresence initial={false} mode="wait">
+              <motion.div
+                key={currentPage}
+                variants={pageVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ type: 'tween', ease: 'easeInOut', duration: 0.35 }}
+                className="absolute inset-0 flex flex-col"
+              >
+                {/* Product name */}
+                <div className="h-[14%] flex items-center justify-center border-b border-gray-100 flex-shrink-0">
+                  <span className="text-[1.5vw] font-black text-[#0D0D0D] font-display">{page.name}</span>
+                </div>
+                {/* Product image — full middle */}
+                <div className="flex-1 flex items-center justify-center overflow-hidden px-[1vw] py-[0.5vh]">
+                  <img
+                    src={`${import.meta.env.BASE_URL}/images/${page.img}`}
+                    className="w-[78%] h-full object-contain"
+                    alt=""
+                  />
+                </div>
+                {/* Price */}
+                <div className="h-[14%] flex items-center justify-center border-t border-gray-100 flex-shrink-0">
+                  <span className="text-[1.6vw] font-bold text-[#C41230]">{page.price}</span>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Sticky footer — never moves */}
+          <div className="h-[10%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
+            <span className="text-[1vw] font-bold text-white">catalogkit.org/c/mary</span>
+          </div>
+
+          {/* Page dot indicators */}
+          <div className="absolute bottom-[11%] left-0 right-0 flex justify-center gap-[0.5vw] z-20">
+            {PAGES.map((_, i) => (
+              <div
+                key={i}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentPage ? '1.6vw' : '0.6vw',
+                  height: '0.6vw',
+                  background: i === currentPage ? '#C41230' : 'rgba(0,0,0,0.2)',
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Swipe finger — repeating in sync with page turns */}
+          {phase >= 3 && (
+            <motion.div
+              className="absolute bottom-[22%] right-[28%] w-[3.5vw] h-[3.5vw] bg-[#25D366] rounded-full flex items-center justify-center shadow-xl z-20"
+              animate={{
+                opacity: [0, 0.9, 0.9, 0],
+                x: [0, -22, -44, -44],
+                scale: [0.8, 1, 1, 0.9],
+              }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <svg viewBox="0 0 24 24" fill="white" className="w-[2vw] h-[2vw]">
+                <path d="M18 11V8a2 2 0 1 0-4 0v3M14 11V6a2 2 0 1 0-4 0v5M10 11V8a2 2 0 1 0-4 0v8a6 6 0 0 0 12 0v-5a2 2 0 1 0-4 0v0"/>
+              </svg>
+            </motion.div>
+          )}
         </motion.div>
       </div>
 
