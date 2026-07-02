@@ -67,8 +67,8 @@
     {% endfor %}
   </div>
 
-  {# ── Confirm button — shown when images are in the grid ── #}
-  <div id="confirm-wrap" class="{% if not catalog.get_pages() %}hidden{% endif %}">
+  {# ── Confirm button — only shown after user makes changes ── #}
+  <div id="confirm-wrap" class="hidden">
     <button class="btn-confirm-build" id="confirm-btn" onclick="confirmBuild()">
       &#10003; Confirm Prices &amp; Build Catalog
     </button>
@@ -77,7 +77,7 @@
     </p>
   </div>
 
-  {# ── Ready card — shown after build ── #}
+  {# ── Ready card — shown on load if catalog already built, or after build ── #}
   <div id="catalog-ready-card" class="{% if not catalog.get_pages() %}hidden{% endif %}"
        style="background:var(--surface);border:1.5px solid var(--accent);border-radius:16px;padding:24px;margin-top:20px">
 
@@ -159,6 +159,12 @@ const toast        = document.getElementById('toast');
 
 let regenTimer   = null;
 let isProcessing = false;
+let dirty        = false;
+
+function markDirty() {
+  dirty = true;
+  updateUI();
+}
 
 // ── Sortable ─────────────────────────────────────────────────────────────────
 Sortable.create(grid, {
@@ -172,6 +178,11 @@ Sortable.create(grid, {
     clearTimeout(regenTimer);
     regenTimer = setTimeout(() => processImages('Updating catalog…'), 900);
   }
+});
+
+// Mark dirty when user edits any price or product name input
+grid.addEventListener('input', (e) => {
+  if (e.target.matches('.thumb-price, .thumb-item-name')) markDirty();
 });
 
 // ── Upload zone ───────────────────────────────────────────────────────────────
@@ -363,6 +374,8 @@ async function processImages(msg = 'Building catalog…') {
 
     readyMeta.textContent = metaLine;
     readyCard.classList.remove('hidden');
+    dirty = false;
+    updateUI();
     isProcessing = false;
     return true;
   } catch {
@@ -394,14 +407,16 @@ function addThumb(filename, price = '', itemName = '') {
   `;
   grid.appendChild(item);
   updateNumbers();
+  markDirty();
 }
 
 function removeThumb(btn) {
   btn.closest('.thumb-item').remove();
   updateNumbers();
-  updateUI();
+  markDirty();
   if (!getOrder().length) {
     readyCard.classList.add('hidden');
+    dirty = false;
     clearStatus();
   }
 }
@@ -416,7 +431,7 @@ function updateUI() {
   const has = grid.querySelectorAll('.thumb-item').length > 0;
   gridHeader.classList.toggle('hidden', !has);
   priceHint.style.display = has ? '' : 'none';
-  document.getElementById('confirm-wrap').classList.toggle('hidden', !has);
+  document.getElementById('confirm-wrap').classList.toggle('hidden', !(dirty && has));
 }
 
 async function confirmBuild() {

@@ -1238,7 +1238,7 @@ def unsuspend_user(user_id):
             'CatalogKit — Your account has been reinstated',
             f'Hi {user.name},\n\nGood news! Your CatalogKit account has been reinstated. '
             f'You can now log in and continue using CatalogKit.\n\n'
-            f'Log in at: https://catalogkit.replit.app'
+            f'Log in at: https://www.catalogkit.org'
         )
     return redirect(url_for('admin'))
 
