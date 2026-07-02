@@ -63,16 +63,6 @@ export function Scene5() {
           Helping you reach your customers.
         </motion.p>
 
-        {/* Text */}
-        <motion.h2
-          className="text-[7vw] font-black text-[#F5A800] font-display mb-[2vh] leading-none"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={phase >= 3 ? { scale: 1, opacity: 1 } : {}}
-          transition={{ type: 'spring', bounce: 0.5 }}
-        >
-          MORE CUSTOMERS.
-        </motion.h2>
-
         <motion.div
           className="bg-[#C41230] text-white px-[4vw] py-[2vh] rounded-full shadow-2xl mb-[6vh]"
           initial={{ y: 20, opacity: 0 }}
