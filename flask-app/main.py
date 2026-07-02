@@ -50,7 +50,7 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_FROM', _mail_user)
 db   = SQLAlchemy(app)
 mail = Mail(app)
 
-# ── Supabase Storage ──────────────────────────────────────────────────────────
+# ── Storage (Supabase when configured, local filesystem otherwise) ─────────────
 _SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
 _SUPABASE_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
 _supabase_client = None
@@ -58,43 +58,87 @@ if _SUPABASE_URL and _SUPABASE_KEY:
     from supabase import create_client
     _supabase_client = create_client(_SUPABASE_URL, _SUPABASE_KEY)
 
+# Local-storage root: flask-app/static/local_storage/<bucket>/<path>
+_LOCAL_STORAGE_ROOT = os.path.join(os.path.dirname(__file__), 'static', 'local_storage')
+
+def _local_path(bucket, path):
+    return os.path.join(_LOCAL_STORAGE_ROOT, bucket, path)
+
+def _local_url(bucket, path):
+    """Return a URL the browser can reach via Flask's static file serving."""
+    return f'/static/local_storage/{bucket}/{path}'
+
 def _sbucket(name):
     if not _supabase_client:
         raise RuntimeError('Supabase not configured — set SUPABASE_URL and SUPABASE_ANON_KEY.')
     return _supabase_client.storage.from_(name)
 
 def storage_upload(bucket, path, data, content_type='image/jpeg'):
+    if _supabase_client:
+        try:
+            _sbucket(bucket).upload(path, data, {'content-type': content_type, 'x-upsert': 'true'})
+            return True
+        except Exception as e:
+            app.logger.error('storage_upload (supabase) failed: %s', e)
+            return False
+    # Local filesystem fallback
     try:
-        _sbucket(bucket).upload(path, data, {'content-type': content_type, 'x-upsert': 'true'})
+        dest = _local_path(bucket, path)
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        with open(dest, 'wb') as f:
+            f.write(data if isinstance(data, bytes) else data.read())
         return True
     except Exception as e:
-        app.logger.error('storage_upload failed: %s', e)
+        app.logger.error('storage_upload (local) failed: %s', e)
         return False
 
 def storage_download(bucket, path):
+    if _supabase_client:
+        try:
+            return _sbucket(bucket).download(path)
+        except Exception:
+            return None
+    # Local filesystem fallback
     try:
-        return _sbucket(bucket).download(path)
+        with open(_local_path(bucket, path), 'rb') as f:
+            return f.read()
     except Exception:
         return None
 
 def storage_public_url(bucket, path):
-    try:
-        return _sbucket(bucket).get_public_url(path)
-    except Exception:
-        return ''
+    if _supabase_client:
+        try:
+            return _sbucket(bucket).get_public_url(path)
+        except Exception:
+            return ''
+    return _local_url(bucket, path)
 
 def storage_delete(bucket, paths):
-    try:
-        _sbucket(bucket).remove(paths)
-    except Exception:
-        pass
+    if _supabase_client:
+        try:
+            _sbucket(bucket).remove(paths)
+        except Exception:
+            pass
+        return
+    # Local filesystem fallback
+    for p in paths:
+        try:
+            os.remove(_local_path(bucket, p))
+        except Exception:
+            pass
 
 def storage_list_prefix(bucket, prefix):
-    try:
-        items = _sbucket(bucket).list(prefix)
-        return [f['name'] for f in (items or []) if isinstance(f, dict) and f.get('name')]
-    except Exception:
+    if _supabase_client:
+        try:
+            items = _sbucket(bucket).list(prefix)
+            return [f['name'] for f in (items or []) if isinstance(f, dict) and f.get('name')]
+        except Exception:
+            return []
+    # Local filesystem fallback
+    base = _local_path(bucket, prefix)
+    if not os.path.isdir(base):
         return []
+    return [f for f in os.listdir(base) if os.path.isfile(os.path.join(base, f))]
 
 @app.template_global()
 def storage_url(bucket, path):

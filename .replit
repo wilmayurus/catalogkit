@@ -29,7 +29,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd flask-app && python main.py"
+args = "pip install -r flask-app/requirements.txt -q && cd flask-app && python main.py"
 waitForPort = 8000
 
 [agent]
