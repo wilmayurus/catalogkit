@@ -48,16 +48,16 @@ export function Scene3() {
           transition={{ type: 'spring', damping: 20 }}
         >
           {/* Mini catalog preview */}
-          <div className="w-full h-[12vw] bg-[#0D0D0D] rounded-xl mb-[2vh] flex items-center justify-center overflow-hidden relative">
+          <div className="w-full h-[10vw] bg-[#0D0D0D] rounded-xl mb-[2vh] flex items-center justify-between px-[2vw] overflow-hidden">
+            <div className="text-white flex-shrink-0">
+              <div className="text-[2.2vw] font-black font-display leading-none">Mary's</div>
+              <div className="text-[1.6vw] font-black font-display text-[#F5A800]">Catalog</div>
+            </div>
             <img
               src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
-              className="absolute w-[40%] h-[90%] object-contain right-[5%]"
+              className="h-[8vw] w-[8vw] object-contain flex-shrink-0"
               alt=""
             />
-            <div className="absolute left-[5%] text-white">
-              <div className="text-[2vw] font-black font-display leading-none">Mary's</div>
-              <div className="text-[1.5vw] font-black font-display text-[#F5A800]">Catalog</div>
-            </div>
           </div>
 
           {/* Link row */}
