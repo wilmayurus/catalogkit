@@ -49,28 +49,28 @@ export function Scene5() {
         transition={{ duration: 2 }}
       />
 
-      <div className="relative z-10 flex flex-col items-center w-full px-[6vw]">
+      <div className="relative z-10 flex flex-col items-center w-full px-[6cqw]">
 
         {/* Logo */}
         <motion.div
-          className="flex items-center gap-[2vw] mb-[5vh]"
+          className="flex items-center gap-[2cqw] mb-[5cqh]"
           initial={{ y: 40, opacity: 0 }}
           animate={phase >= 1 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 18 }}
         >
-          <div className="w-[7vw] h-[7vw] bg-[#FFF8F0] rounded-2xl flex items-center justify-center shadow-2xl">
-            <svg viewBox="0 0 24 24" fill="none" className="w-[4.5vw] h-[4.5vw]" stroke="#C41230" strokeWidth="2.5">
+          <div className="w-[7cqw] h-[7cqw] bg-[#FFF8F0] rounded-2xl flex items-center justify-center shadow-2xl">
+            <svg viewBox="0 0 24 24" fill="none" className="w-[4.5cqw] h-[4.5cqw]" stroke="#C41230" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <h1 className="text-[7vw] font-black text-[#FFF8F0] font-display tracking-tight leading-none">
+          <h1 className="text-[7cqw] font-black text-[#FFF8F0] font-display tracking-tight leading-none">
             CatalogKit
           </h1>
         </motion.div>
 
         {/* Tagline */}
         <motion.p
-          className="text-[2.8vw] text-[#FFF8F0]/70 font-semibold mb-[5vh] text-center leading-snug"
+          className="text-[2.8cqw] text-[#FFF8F0]/70 font-semibold mb-[5cqh] text-center leading-snug"
           initial={{ opacity: 0, y: 10 }}
           animate={phase >= 2 ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
@@ -81,7 +81,7 @@ export function Scene5() {
 
         {/* Feature pills */}
         <motion.div
-          className="flex flex-wrap justify-center gap-[1.5vw] mb-[5vh]"
+          className="flex flex-wrap justify-center gap-[1.5cqw] mb-[5cqh]"
           initial={{ opacity: 0 }}
           animate={phase >= 3 ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
@@ -89,47 +89,47 @@ export function Scene5() {
           {FEATURES.map((f, i) => (
             <motion.div
               key={i}
-              className="flex items-center gap-[1vw] bg-white/8 border border-white/15 backdrop-blur-sm px-[2vw] py-[1vh] rounded-full"
+              className="flex items-center gap-[1cqw] bg-white/8 border border-white/15 backdrop-blur-sm px-[2cqw] py-[1cqh] rounded-full"
               initial={{ scale: 0, opacity: 0 }}
               animate={phase >= 3 ? { scale: 1, opacity: 1 } : {}}
               transition={{ delay: i * 0.15, type: 'spring', bounce: 0.4 }}
             >
-              <span className="text-[2vw]">{f.icon}</span>
-              <span className="text-[1.6vw] font-semibold text-white/85">{f.text}</span>
+              <span className="text-[2cqw]">{f.icon}</span>
+              <span className="text-[1.6cqw] font-semibold text-white/85">{f.text}</span>
             </motion.div>
           ))}
         </motion.div>
 
         {/* FREE badge */}
         <motion.div
-          className="bg-[#C41230] text-white px-[5vw] py-[2.2vh] rounded-full shadow-2xl mb-[4vh]"
+          className="bg-[#C41230] text-white px-[5cqw] py-[2.2cqh] rounded-full shadow-2xl mb-[4cqh]"
           initial={{ y: 20, opacity: 0, scale: 0.9 }}
           animate={phase >= 4 ? { y: 0, opacity: 1, scale: 1 } : {}}
           transition={{ type: 'spring', damping: 16 }}
         >
-          <span className="text-[4.5vw] font-black font-display tracking-wide">FREE TO START</span>
+          <span className="text-[4.5cqw] font-black font-display tracking-wide">FREE TO START</span>
         </motion.div>
 
         {/* URL */}
         <motion.div
-          className="flex items-center gap-[1.5vw] bg-white/10 border border-white/20 px-[4vw] py-[1.5vh] rounded-2xl mb-[3vh]"
+          className="flex items-center gap-[1.5cqw] bg-white/10 border border-white/20 px-[4cqw] py-[1.5cqh] rounded-2xl mb-[3cqh]"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={phase >= 5 ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.7 }}
         >
-          <div className="w-[3vw] h-[3vw] bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="white" className="w-[1.8vw] h-[1.8vw]">
+          <div className="w-[3cqw] h-[3cqw] bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 24 24" fill="white" className="w-[1.8cqw] h-[1.8cqw]">
               <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/>
             </svg>
           </div>
-          <span className="text-[3.5vw] font-black text-[#FFF8F0] font-display tracking-wide">
+          <span className="text-[3.5cqw] font-black text-[#FFF8F0] font-display tracking-wide">
             www.catalogkit.org
           </span>
         </motion.div>
 
         {/* For PNG vendors */}
         <motion.p
-          className="text-[1.8vw] text-white/40 font-medium text-center"
+          className="text-[1.8cqw] text-white/40 font-medium text-center"
           initial={{ opacity: 0 }}
           animate={phase >= 6 ? { opacity: 1 } : {}}
           transition={{ duration: 1 }}
@@ -140,12 +140,12 @@ export function Scene5() {
 
       {/* Credit */}
       <motion.div
-        className="absolute bottom-[2vh] w-full text-center"
+        className="absolute bottom-[2cqh] w-full text-center"
         initial={{ opacity: 0 }}
         animate={phase >= 5 ? { opacity: 0.4 } : {}}
         transition={{ duration: 1, delay: 1 }}
       >
-        <p className="text-[1vw] text-white font-sans">
+        <p className="text-[1cqw] text-white font-sans">
           Developed by Sapphire Consulting Services, a subsidiary of Trey Holdings Limited — Port Moresby, PNG
         </p>
       </motion.div>
