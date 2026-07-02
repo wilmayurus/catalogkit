@@ -203,6 +203,17 @@
             <td>
               <div class="action-group" style="flex-wrap:wrap;gap:6px">
                 <a href="/admin/logs?type=activity&user_id={{ u.id }}" class="btn btn-secondary btn-sm">📋 Activity</a>
+                {% if u.whatsapp %}
+                {% set wa_num = u.whatsapp | replace(' ','') | replace('+','') | replace('-','') %}
+                {% set wa_msg = 'Hi ' ~ u.name.split()[0] ~ '! Welcome to CatalogKit 🎉 I\'m Wilma from Sapphire Consulting Services. Your account is all set up at www.catalogkit.org — log in and complete your profile to build your first catalog. Message me here if you need any help getting started!' %}
+                <a href="https://wa.me/{{ wa_num }}?text={{ wa_msg | urlencode }}"
+                   target="_blank" rel="noopener"
+                   class="btn btn-sm"
+                   style="background:#25d366;color:#fff;border:none"
+                   title="Send WhatsApp welcome to {{ u.name }}">
+                  📲 WhatsApp
+                </a>
+                {% endif %}
                 {% if me.is_admin %}
                   <a href="/admin/user/{{ u.id }}/edit" class="btn btn-secondary btn-sm">✏ Edit</a>
                   {% if u.id != me.id and not u.is_admin %}
