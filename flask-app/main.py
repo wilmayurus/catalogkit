@@ -712,7 +712,7 @@ def process(catalog_id):
             img      = fit_with_padding(img, TARGET_WIDTH, TARGET_HEIGHT)
             out_name = f'page_{i + 1:03d}.jpg'
             buf = io.BytesIO()
-            img.save(buf, 'JPEG', quality=72, optimize=True, progressive=True)
+            img.save(buf, 'JPEG', quality=82, optimize=True, progressive=True)
             buf.seek(0)
             ok = storage_upload(BUCKET_IMAGES, f'{proc_pfx}/{out_name}', buf.read())
             if ok:
