@@ -74,15 +74,18 @@ export function Scene4() {
          >
             {/* Last page of catalog showing WhatsApp button at the bottom */}
             <div className="relative w-[20vw] h-[28vw] bg-white rounded-2xl shadow-2xl border border-gray-100 mb-[3vh] flex flex-col overflow-hidden">
-              {/* Page header */}
-              <div className="h-[10%] bg-[#0D0D0D] flex items-center justify-center">
+              {/* Header */}
+              <div className="h-[10%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-[1.2vw] font-bold tracking-wide">Mary's Catalog</span>
               </div>
+              {/* Product name — top */}
+              <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-b border-gray-100">
+                <span className="text-[1.4vw] font-black text-[#0D0D0D] font-display">LAST PAGE</span>
+              </div>
               {/* Page body */}
-              <div className="flex-1 flex flex-col items-center justify-center px-[1.5vw] gap-[1vh]">
-                <div className="text-[1.4vw] text-gray-400 text-center">— last page —</div>
+              <div className="flex-1 flex flex-col items-center justify-center px-[1.5vw] gap-[0.8vh]">
                 <div className="text-[1.8vw] font-bold text-[#0D0D0D] text-center">Thank you for viewing!</div>
-                <div className="text-[1.3vw] text-gray-500 text-center">Contact me to order</div>
+                <div className="text-[1.3vw] text-gray-500 text-center">Tap below to order</div>
               </div>
               {/* WhatsApp button at the BOTTOM of the last page */}
               <motion.div

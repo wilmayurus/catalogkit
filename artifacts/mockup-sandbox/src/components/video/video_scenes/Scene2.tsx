@@ -127,22 +127,29 @@ export function Scene2() {
           animate={phase >= 6 ? { opacity: 1, scale: 1, x: 0 } : {}}
           transition={{ type: 'spring', damping: 18 }}
         >
-          <div className="h-[13%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
+          {/* Header */}
+          <div className="h-[12%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
             <span className="text-white text-[1.8vw] font-black font-display">Mary's Catalog</span>
           </div>
-          <div className="flex-1 flex flex-col items-center justify-between py-[2vh] px-[1.5vw] overflow-hidden">
+          {/* Product name — top */}
+          <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-b border-gray-100">
+            <span className="text-[2vw] font-black text-[#0D0D0D] font-display">BILUM BAG</span>
+          </div>
+          {/* Image — centre */}
+          <div className="flex-1 flex items-center justify-center overflow-hidden px-[1vw]">
             <img
               src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
-              className="flex-1 w-[65%] object-contain"
+              className="w-[70%] h-full object-contain"
               alt=""
             />
-            <div className="text-center mt-[1vh]">
-              <div className="text-[2.2vw] font-black text-[#0D0D0D] font-display">BILUM BAG</div>
-              <div className="text-[2vw] font-bold text-[#C41230]">K 25.00</div>
-            </div>
           </div>
-          <div className="h-[11%] bg-[#F5A800]/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-[1.1vw] font-bold text-[#0D0D0D]">+675 7000 0000</span>
+          {/* Price — bottom */}
+          <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-t border-gray-100">
+            <span className="text-[2vw] font-bold text-[#C41230]">K 25.00</span>
+          </div>
+          {/* Footer */}
+          <div className="h-[11%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
+            <span className="text-[1.1vw] font-bold text-white">+675 7000 0000</span>
           </div>
         </motion.div>
       </div>

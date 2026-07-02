@@ -101,22 +101,29 @@ export function Scene3() {
           transition={{ type: 'spring', damping: 20, delay: 0.2 }}
         >
           <div className="w-full h-full flex flex-col bg-white">
-            <div className="h-[12%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-[1.6vw] font-black font-display">Mary's Catalog</span>
+            {/* Header */}
+            <div className="h-[11%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-[1.5vw] font-black font-display">Mary's Catalog</span>
             </div>
-            <div className="flex-1 flex flex-col items-center justify-between py-[2vh] px-[1vw] overflow-hidden">
+            {/* Product name — top */}
+            <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-b border-gray-100">
+              <span className="text-[1.7vw] font-black text-[#0D0D0D] font-display">BILUM BAG</span>
+            </div>
+            {/* Image — centre */}
+            <div className="flex-1 flex items-center justify-center overflow-hidden px-[1vw]">
               <img
                 src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
-                className="w-[70%] flex-1 object-contain"
+                className="w-[75%] h-full object-contain"
                 alt=""
               />
-              <div className="text-center w-full mt-[1vh]">
-                <div className="text-[1.8vw] font-black text-[#0D0D0D] font-display">BILUM BAG</div>
-                <div className="text-[1.6vw] font-bold text-[#C41230]">K 25.00</div>
-              </div>
             </div>
-            <div className="h-[10%] bg-[#F5A800]/20 flex items-center justify-center flex-shrink-0">
-              <span className="text-[1.1vw] font-bold text-[#0D0D0D]">catalogkit.org/c/mary</span>
+            {/* Price — bottom */}
+            <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-t border-gray-100">
+              <span className="text-[1.6vw] font-bold text-[#C41230]">K 25.00</span>
+            </div>
+            {/* Footer */}
+            <div className="h-[10%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
+              <span className="text-[1vw] font-bold text-white">catalogkit.org/c/mary</span>
             </div>
           </div>
 
