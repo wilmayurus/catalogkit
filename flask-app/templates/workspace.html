@@ -3,20 +3,84 @@
 {% block body %}
 <div class="container">
 
-  {# ── Back + editable catalog name ── #}
+  {# ── Back + catalog name ── #}
   <div class="workspace-header">
     <a href="/" class="btn btn-ghost btn-sm">&#8592; All catalogs</a>
     <div class="workspace-title-wrap">
-      <span class="workspace-title" id="catalog-title"
-            onclick="startRename()" title="Click to rename">{{ catalog.name }}</span>
-      <button class="workspace-rename-btn" onclick="startRename()" title="Rename">&#9998;</button>
-      <input type="text" id="rename-input" class="workspace-rename-input hidden"
-             value="{{ catalog.name }}"
-             onblur="saveRename()"
-             onkeydown="if(event.key==='Enter')saveRename(); if(event.key==='Escape')cancelRename();">
+      {% if catalog.is_published %}
+        <span class="workspace-title">{{ catalog.name }}</span>
+        <span style="font-size:0.75rem;font-weight:700;color:var(--warning);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:2px 8px;margin-left:6px">&#128274; Published</span>
+      {% else %}
+        <span class="workspace-title" id="catalog-title"
+              onclick="startRename()" title="Click to rename">{{ catalog.name }}</span>
+        <button class="workspace-rename-btn" onclick="startRename()" title="Rename">&#9998;</button>
+        <input type="text" id="rename-input" class="workspace-rename-input hidden"
+               value="{{ catalog.name }}"
+               onblur="saveRename()"
+               onkeydown="if(event.key==='Enter')saveRename(); if(event.key==='Escape')cancelRename();">
+      {% endif %}
     </div>
   </div>
 
+{% if catalog.is_published %}
+
+  {# ── LOCKED STATE — catalog is published ── #}
+  <div style="background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(245,158,11,0.04));border:1.5px solid rgba(245,158,11,0.35);border-radius:14px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px">
+    <div style="font-size:1.6rem;flex-shrink:0">&#128274;</div>
+    <div>
+      <div style="font-weight:700;font-size:0.95rem;margin-bottom:3px">This catalog is published and locked</div>
+      <div style="font-size:0.83rem;color:var(--muted);line-height:1.5">
+        You can view the flipbook, download the PDF, and share the link — but the images and prices can no longer be edited.
+        To make changes, create a new catalog.
+      </div>
+    </div>
+  </div>
+
+  {# ── Read-only image grid ── #}
+  {% set pages = catalog.get_page_data() %}
+  {% if pages %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px">
+    {% for item in pages %}
+    <div style="background:var(--surface2);border-radius:10px;overflow:hidden;border:1px solid var(--border)">
+      <img src="{{ storage_url('catalog-images', 'processed/' ~ user.id|string ~ '/' ~ catalog.id|string ~ '/' ~ item.file) }}"
+           alt="" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block">
+      <div style="padding:8px 10px">
+        <div style="font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          {{ item.item_name or ('Item ' ~ loop.index) }}
+        </div>
+        <div style="font-size:0.75rem;color:var(--accent);font-weight:700">{{ item.price or '—' }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {# ── Actions for published catalog ── #}
+  <div style="background:var(--surface);border:1.5px solid var(--accent);border-radius:16px;padding:24px;margin-bottom:24px">
+    <div style="font-size:1rem;font-weight:700;margin-bottom:16px">&#127881; {{ catalog.name }}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <a href="/catalog/{{ catalog.id }}" target="_blank"
+         style="display:inline-flex;align-items:center;gap:6px;background:#25d366;color:#fff;text-decoration:none;border-radius:10px;padding:11px 18px;font-size:0.9rem;font-weight:700">
+        &#128218; Open Flipbook
+      </a>
+      <a href="/catalog/{{ catalog.id }}/download" download
+         style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;text-decoration:none;border-radius:10px;padding:11px 18px;font-size:0.9rem;font-weight:700">
+        &#128190; Download PDF
+      </a>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap">&#128279; Share:</span>
+      <input type="text" readonly
+             onclick="this.select()"
+             value="{{ request.host_url.rstrip('/') }}/catalog/{{ catalog.id }}"
+             style="flex:1;background:none;border:none;outline:none;font-size:0.82rem;color:var(--accent);font-family:monospace;cursor:pointer;min-width:0">
+    </div>
+    <form method="POST" action="/catalog/new" style="margin:0">
+      <button type="submit" class="btn btn-primary">+ Create New Catalog</button>
+    </form>
+  </div>
+
+{% else %}
 
   {# ── Upload zone ── #}
   <div class="upload-zone" id="upload-zone">
@@ -134,10 +198,12 @@
 
   </div>
 
+{% endif %}
 </div>
 {% endblock %}
 
 {% block scripts %}
+{% if not catalog.is_published %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 const CATALOG_ID  = {{ catalog.id }};
@@ -361,7 +427,13 @@ async function processImages(msg = 'Building catalog…') {
 
     if (!res.ok) {
       setProgress(0);
-      setStatus('error', '&#9888; ' + (data.message || 'Processing error.'));
+      if (data.limit_reached) {
+        setStatus('error',
+          '&#128274; ' + data.error +
+          ' <a href="/pricing" style="color:var(--accent);font-weight:700;margin-left:6px">View Plans &#8594;</a>');
+      } else {
+        setStatus('error', '&#9888; ' + (data.error || data.message || 'Processing error.'));
+      }
       isProcessing = false;
       return false;
     }
@@ -578,4 +650,5 @@ function setProgress(pct) {
 
 updateUI();
 </script>
+{% endif %}
 {% endblock %}

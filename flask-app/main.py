@@ -139,9 +139,11 @@ class User(db.Model):
     logo_filename = db.Column(db.String(500), nullable=True)
     brand_color   = db.Column(db.String(7),   nullable=True)   # hex e.g. #7c5cfc
     pdf_layout    = db.Column(db.String(20),  default='classic')
-    plan          = db.Column(db.String(20), default='free')
-    plan_expires  = db.Column(db.DateTime, nullable=True)
-    plan_start    = db.Column(db.DateTime, nullable=True)
+    plan                = db.Column(db.String(20), default='free')
+    plan_expires        = db.Column(db.DateTime, nullable=True)
+    plan_start          = db.Column(db.DateTime, nullable=True)
+    monthly_builds_used = db.Column(db.Integer, default=0)
+    monthly_reset_date  = db.Column(db.Date, nullable=True)
     is_admin      = db.Column(db.Boolean, default=False)
     is_moderator  = db.Column(db.Boolean, default=False)
     is_suspended  = db.Column(db.Boolean, default=False)
@@ -151,15 +153,48 @@ class User(db.Model):
 
     @property
     def plan_label(self):
-        if self.is_admin: return 'Admin'
+        if self.is_admin:     return 'Admin'
         if self.is_moderator: return 'Moderator'
-        return 'User'
+        if self.plan == 'pro':   return 'Pro'
+        if self.plan == 'basic': return 'Basic'
+        return 'Free'
 
     @property
     def plan_css(self):
-        if self.is_admin: return 'admin'
+        if self.is_admin:     return 'admin'
         if self.is_moderator: return 'moderator'
+        if self.plan == 'pro':   return 'pro'
+        if self.plan == 'basic': return 'basic'
         return 'free'
+
+    @property
+    def monthly_limit(self):
+        """Max builds per month. None = unlimited."""
+        if self.is_admin or self.is_moderator: return None
+        if self.plan == 'pro':   return None
+        if self.plan == 'basic': return 20
+        return 2
+
+    @property
+    def builds_remaining(self):
+        limit = self.monthly_limit
+        if limit is None: return None
+        used = self.monthly_builds_used or 0
+        return max(0, limit - used)
+
+    def reset_monthly_if_needed(self):
+        """Reset build count when a new month begins. Returns True if reset."""
+        from datetime import date
+        today = date.today()
+        reset = self.monthly_reset_date
+        if reset is None or today >= reset:
+            self.monthly_builds_used = 0
+            if today.month == 12:
+                self.monthly_reset_date = date(today.year + 1, 1, 1)
+            else:
+                self.monthly_reset_date = date(today.year, today.month + 1, 1)
+            return True
+        return False
 
     @property
     def can_create_catalog(self):
@@ -181,6 +216,7 @@ class Catalog(db.Model):
     pages         = db.Column(db.Text, nullable=True)   # JSON list of processed filenames
     page_count    = db.Column(db.Integer, default=0)
     pdf_downloads = db.Column(db.Integer, default=0)    # total PDFs downloaded for this catalog
+    is_published  = db.Column(db.Boolean, default=False) # locked after first build
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -516,6 +552,20 @@ def process(catalog_id):
     if not catalog:
         return jsonify({'error': 'Not found'}), 404
 
+    # ── Subscription limit check ───────────────────────────────────────────────
+    if not user.is_admin and not user.is_moderator:
+        user.reset_monthly_if_needed()
+        limit = user.monthly_limit
+        if limit is not None and (user.monthly_builds_used or 0) >= limit:
+            db.session.commit()
+            plan_names = {'free': 'Free (2/month)', 'basic': 'Basic (20/month)'}
+            label = plan_names.get(user.plan, user.plan_label)
+            return jsonify({
+                'error': f"You've used all {limit} builds for this month on the {label} plan. "
+                         f"Upgrade your plan or wait until next month.",
+                'limit_reached': True
+            }), 403
+
     data      = request.get_json()
     order     = data.get('order', [])
     name      = data.get('name', '').strip() or catalog.name
@@ -561,12 +611,20 @@ def process(catalog_id):
     processed = [r[1] for r in results if r[1] is not None]
     errors    = [r[2] for r in results if r[2] is not None]
 
-    catalog.name = name
+    catalog.name         = name
+    catalog.is_published = True
     catalog.set_pages(processed)
+    if not user.is_admin and not user.is_moderator:
+        user.monthly_builds_used = (user.monthly_builds_used or 0) + 1
     db.session.commit()
     log_activity(user.id, 'catalog_published', f'{name} ({len(processed)} pages)')
-    return jsonify({'processed': [p['file'] for p in processed], 'count': len(processed),
-                    'errors': errors})
+    remaining = user.builds_remaining
+    return jsonify({
+        'processed':  [p['file'] for p in processed],
+        'count':      len(processed),
+        'errors':     errors,
+        'builds_remaining': remaining,
+    })
 
 @app.route('/workspace/<int:catalog_id>/rename', methods=['POST'])
 @login_required
@@ -595,6 +653,7 @@ def clear(catalog_id):
         if files:
             storage_delete(BUCKET_IMAGES, [f'{prefix}/{n}' for n in files])
     catalog.set_pages([])
+    catalog.is_published = False
     db.session.commit()
     return jsonify({'ok': True})
 
@@ -1448,6 +1507,13 @@ def admin_reports():
         top_users=top_users, pending_count=0, admin_active='reports')
 
 
+# ── Pricing page ──────────────────────────────────────────────────────────────
+
+@app.route('/pricing')
+def pricing():
+    return render_template('pricing.html')
+
+
 # ── Context processor ─────────────────────────────────────────────────────────
 
 @app.context_processor
@@ -1455,8 +1521,22 @@ def inject_globals():
     return dict(current_user=current_user())
 
 
+# ── Startup: create tables + run column migrations ────────────────────────────
+
 with app.app_context():
     db.create_all()
+    _migrations = [
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_builds_used INTEGER DEFAULT 0',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_reset_date DATE',
+        'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE',
+    ]
+    with db.engine.connect() as _conn:
+        for _sql in _migrations:
+            try:
+                _conn.execute(text(_sql))
+                _conn.commit()
+            except Exception as _e:
+                app.logger.warning('Migration skipped: %s', _e)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))

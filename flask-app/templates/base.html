@@ -25,6 +25,7 @@
         <a href="/logout" class="btn btn-ghost btn-sm">Sign out</a>
       </div>
     {% else %}
+      <a href="/pricing" {% if request.endpoint == 'pricing' %}class="active"{% endif %}>Pricing</a>
       <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
       <a href="/register" class="btn btn-primary btn-sm">Sign up</a>
     {% endif %}

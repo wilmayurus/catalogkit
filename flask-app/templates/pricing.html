@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}Pricing — CatalogKit{% endblock %}
+{% block head %}
+<style>
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 820px;
+  margin: 0 auto 48px;
+}
+.pricing-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+.pricing-card.featured {
+  border-color: var(--accent);
+  background: linear-gradient(160deg, rgba(108,99,255,0.07) 0%, var(--surface) 100%);
+}
+.pricing-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.pricing-plan { font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.pricing-price { font-size: 2.4rem; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.pricing-price span { font-size: 1rem; font-weight: 500; color: var(--muted); }
+.pricing-desc { font-size: 0.83rem; color: var(--muted); margin-bottom: 22px; }
+.pricing-features { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 10px; }
+.pricing-features li { font-size: 0.875rem; display: flex; align-items: flex-start; gap: 9px; }
+.pricing-features li::before { content: '✓'; color: #22c55e; font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+.pricing-cta { margin-top: auto; }
+.contact-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+  max-width: 520px;
+  margin: 0 auto 60px;
+  text-align: center;
+}
+</style>
+{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:40px">
+
+  <div style="text-align:center;margin-bottom:40px;max-width:560px;margin-left:auto;margin-right:auto">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:10px">Simple, honest pricing</h1>
+    <p style="color:var(--muted);font-size:0.95rem;line-height:1.6">
+      Pay in <strong>kina</strong> · No credit card needed to start · Cancel any time<br>
+      Upgrade by messaging us on WhatsApp.
+    </p>
+  </div>
+
+  <div class="pricing-grid">
+
+    {# ── FREE ── #}
+    <div class="pricing-card">
+      <div class="pricing-plan">Free</div>
+      <div class="pricing-price">K0 <span>/month</span></div>
+      <div class="pricing-desc">Get started — no payment needed</div>
+      <ul class="pricing-features">
+        <li>2 catalog builds per month</li>
+        <li>Shareable flipbook link</li>
+        <li>PDF download</li>
+        <li>WhatsApp share button</li>
+        <li>Product names &amp; prices</li>
+        <li>Custom brand colour</li>
+      </ul>
+      <div class="pricing-cta">
+        {% if current_user %}
+          {% if current_user.plan == 'free' %}
+          <div class="btn btn-secondary btn-block" style="text-align:center;cursor:default">&#10003; Your current plan</div>
+          {% else %}
+          <div class="btn btn-ghost btn-block" style="text-align:center;cursor:default">Downgrade via WhatsApp</div>
+          {% endif %}
+        {% else %}
+        <a href="/register" class="btn btn-secondary btn-block">Get started free</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── BASIC ── #}
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Most Popular</div>
+      <div class="pricing-plan">Basic</div>
+      <div class="pricing-price">K20 <span>/month</span></div>
+      <div class="pricing-desc">For active vendors with multiple catalogs</div>
+      <ul class="pricing-features">
+        <li>20 catalog builds per month</li>
+        <li>Everything in Free</li>
+        <li>Business logo on cover</li>
+        <li>3 PDF cover layouts</li>
+        <li>Priority WhatsApp support</li>
+      </ul>
+      <div class="pricing-cta">
+        {% if current_user %}
+          {% if current_user.plan == 'basic' %}
+          <div class="btn btn-primary btn-block" style="text-align:center;cursor:default">&#10003; Your current plan</div>
+          {% else %}
+          <a href="https://wa.me/67571371373?text={{ 'Hi! I want to upgrade to the Basic plan (K20/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
+             class="btn btn-primary btn-block" target="_blank" rel="noopener">Upgrade via WhatsApp</a>
+          {% endif %}
+        {% else %}
+        <a href="/register" class="btn btn-primary btn-block">Start free, upgrade later</a>
+        {% endif %}
+      </div>
+    </div>
+
+    {# ── PRO ── #}
+    <div class="pricing-card">
+      <div class="pricing-plan">Pro</div>
+      <div class="pricing-price">K50 <span>/month</span></div>
+      <div class="pricing-desc">Unlimited builds for power users</div>
+      <ul class="pricing-features">
+        <li>Unlimited catalog builds</li>
+        <li>Everything in Basic</li>
+        <li>Unlimited catalogs</li>
+        <li>Dedicated support</li>
+      </ul>
+      <div class="pricing-cta">
+        {% if current_user %}
+          {% if current_user.plan == 'pro' %}
+          <div class="btn btn-primary btn-block" style="text-align:center;cursor:default">&#10003; Your current plan</div>
+          {% else %}
+          <a href="https://wa.me/67571371373?text={{ 'Hi! I want to upgrade to the Pro plan (K50/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
+             class="btn btn-primary btn-block" target="_blank" rel="noopener">Upgrade via WhatsApp</a>
+          {% endif %}
+        {% else %}
+        <a href="/register" class="btn btn-primary btn-block">Start free, upgrade later</a>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  {# ── Done-For-You add-on ── #}
+  <div class="contact-box">
+    <div style="font-size:2rem;margin-bottom:10px">&#128101;</div>
+    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:8px">Need help getting set up?</h3>
+    <p style="font-size:0.875rem;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Our agent will come to your market stall or shop and build your first catalog right there with you.
+      <strong>K50 cash on site</strong> — paid directly to the agent.
+    </p>
+    <a href="/assisted-setup" class="btn btn-secondary">Book a setup visit</a>
+  </div>
+
+  {# ── FAQ ── #}
+  <div style="max-width:560px;margin:0 auto 60px">
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:20px;text-align:center">Common questions</h3>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:var(--surface2);border-radius:12px;padding:16px 18px">
+        <div style="font-weight:700;font-size:0.875rem;margin-bottom:6px">What counts as a "build"?</div>
+        <div style="font-size:0.83rem;color:var(--muted);line-height:1.6">Every time you click <em>Confirm &amp; Build Catalog</em>, that uses one build. Viewing the flipbook or downloading the PDF is always free and doesn't count.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:12px;padding:16px 18px">
+        <div style="font-weight:700;font-size:0.875rem;margin-bottom:6px">Can I edit a catalog after building it?</div>
+        <div style="font-size:0.83rem;color:var(--muted);line-height:1.6">Once built, a catalog is locked so your customers always see the correct version. To make changes, create a new catalog — this uses one build from your plan.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:12px;padding:16px 18px">
+        <div style="font-weight:700;font-size:0.875rem;margin-bottom:6px">How do I upgrade?</div>
+        <div style="font-size:0.83rem;color:var(--muted);line-height:1.6">Message us on WhatsApp and we'll activate your plan manually. We'll confirm within a few hours.</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:12px;padding:16px 18px">
+        <div style="font-weight:700;font-size:0.875rem;margin-bottom:6px">When do my builds reset?</div>
+        <div style="font-size:0.83rem;color:var(--muted);line-height:1.6">On the 1st of every calendar month, your build count resets to zero automatically.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
