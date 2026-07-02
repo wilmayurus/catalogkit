@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block title %}Choose Your Plan — CatalogKit{% endblock %}
+{% block head %}
+<style>
+.plan-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  max-width: 740px;
+  margin: 0 auto 40px;
+}
+.plan-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 26px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s;
+}
+.plan-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(108,99,255,.12); }
+.plan-card.featured { border-color: var(--accent); }
+.plan-name  { font-size: .72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.plan-price { font-size: 2.2rem; font-weight: 800; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.plan-price span { font-size: .9rem; font-weight: 500; color: var(--muted); }
+.plan-desc  { font-size: .82rem; color: var(--muted); margin-bottom: 18px; }
+.plan-feats { list-style: none; padding: 0; margin: 0 0 22px; display: flex; flex-direction: column; gap: 8px; }
+.plan-feats li { font-size: .86rem; display: flex; align-items: flex-start; gap: 8px; }
+.plan-feats li::before { content: '✓'; color: #22c55e; font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+.plan-cta { margin-top: auto; }
+
+/* Payment form */
+.pay-card {
+  max-width: 540px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1.5px solid var(--accent);
+  border-radius: 16px;
+  padding: 32px 28px;
+}
+.pay-method-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+.pay-method-opt  {
+  display: flex; align-items: flex-start; gap: 12px;
+  border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 16px;
+  cursor: pointer; transition: border-color .15s;
+}
+.pay-method-opt:has(input:checked) { border-color: var(--accent); background: rgba(108,99,255,.05); }
+.pay-method-opt input { margin-top: 3px; accent-color: var(--accent); }
+.pay-method-name { font-weight: 700; font-size: .88rem; margin-bottom: 2px; }
+.pay-method-detail { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+</style>
+{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:36px;padding-bottom:60px">
+
+  {% if not show_payment %}
+  {# ── Step 1: Choose plan ── #}
+  <div style="text-align:center;margin-bottom:36px">
+    <h1 style="font-size:1.7rem;font-weight:800;margin-bottom:8px">Choose your plan</h1>
+    <p style="color:var(--muted);font-size:.93rem">
+      You can always upgrade later. Free plan users get 2 builds per month at no cost.
+    </p>
+  </div>
+
+  <div class="plan-cards">
+
+    {# Free #}
+    <form method="POST" action="/choose-plan">
+      <input type="hidden" name="plan" value="free">
+      <div class="plan-card" onclick="this.closest('form').submit()">
+        <div class="plan-name">Free</div>
+        <div class="plan-price">K0 <span>/month</span></div>
+        <div class="plan-desc">No payment needed to get started</div>
+        <ul class="plan-feats">
+          <li>2 catalog builds per month</li>
+          <li>Shareable flipbook link</li>
+          <li>PDF download</li>
+          <li>WhatsApp share button</li>
+          <li>Custom brand colour</li>
+        </ul>
+        <div class="plan-cta">
+          <button type="submit" class="btn btn-secondary btn-block">Continue with Free</button>
+        </div>
+      </div>
+    </form>
+
+    {# Basic #}
+    <form method="POST" action="/choose-plan">
+      <input type="hidden" name="plan" value="basic">
+      <div class="plan-card featured" onclick="this.closest('form').submit()">
+        <div class="plan-name" style="color:var(--accent)">⭐ Basic — Most Popular</div>
+        <div class="plan-price">K20 <span>/month</span></div>
+        <div class="plan-desc">For vendors who build multiple catalogs</div>
+        <ul class="plan-feats">
+          <li>20 catalog builds per month</li>
+          <li>Everything in Free</li>
+          <li>Business logo on cover</li>
+          <li>3 PDF cover layouts</li>
+          <li>Priority WhatsApp support</li>
+        </ul>
+        <div class="plan-cta">
+          <button type="submit" class="btn btn-primary btn-block">Select Basic — K20/mo</button>
+        </div>
+      </div>
+    </form>
+
+    {# Pro #}
+    <form method="POST" action="/choose-plan">
+      <input type="hidden" name="plan" value="pro">
+      <div class="plan-card" onclick="this.closest('form').submit()">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">K50 <span>/month</span></div>
+        <div class="plan-desc">Unlimited builds for power users</div>
+        <ul class="plan-feats">
+          <li>Unlimited catalog builds</li>
+          <li>Everything in Basic</li>
+          <li>Unlimited catalogs</li>
+          <li>Dedicated support</li>
+        </ul>
+        <div class="plan-cta">
+          <button type="submit" class="btn btn-secondary btn-block">Select Pro — K50/mo</button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+
+  {% else %}
+  {# ── Step 2: Payment details ── #}
+  <div style="text-align:center;margin-bottom:32px">
+    <h1 style="font-size:1.7rem;font-weight:800;margin-bottom:8px">
+      Pay for {{ plan | title }} — {{ amount }}/month
+    </h1>
+    <p style="color:var(--muted);font-size:.93rem">
+      We confirm payments manually — usually within a few hours during business hours.
+    </p>
+  </div>
+
+  <form method="POST" action="/payment-request" class="pay-card">
+    <input type="hidden" name="plan" value="{{ plan }}">
+
+    <div style="font-weight:700;font-size:.9rem;margin-bottom:14px">1. Choose how you'll pay</div>
+    <div class="pay-method-list">
+
+      <label class="pay-method-opt">
+        <input type="radio" name="payment_method" value="mobile_money" required>
+        <div>
+          <div class="pay-method-name">📱 Mobile Money (MiCash / BSP Kina)</div>
+          <div class="pay-method-detail">
+            Send {{ amount }} to: <strong>+675 7137 1373</strong> (Wilma Yurus)<br>
+            Note your transaction ID after sending.
+          </div>
+        </div>
+      </label>
+
+      <label class="pay-method-opt">
+        <input type="radio" name="payment_method" value="internet_banking">
+        <div>
+          <div class="pay-method-name">🏦 Internet Banking</div>
+          <div class="pay-method-detail">
+            BSP account: <strong>1000 1234 567</strong> — Trey Holdings Limited<br>
+            Use your email as the reference. Send us the receipt.
+          </div>
+        </div>
+      </label>
+
+      <label class="pay-method-opt">
+        <input type="radio" name="payment_method" value="cash">
+        <div>
+          <div class="pay-method-name">💵 Cash</div>
+          <div class="pay-method-detail">
+            Pay in person at Boroko, NCD or arrange with us via WhatsApp<br>
+            <strong>+675 7137 1373</strong>
+          </div>
+        </div>
+      </label>
+
+    </div>
+
+    <div style="font-weight:700;font-size:.9rem;margin-bottom:10px">
+      2. Transaction reference <span style="font-weight:400;color:var(--muted)">(optional but speeds things up)</span>
+    </div>
+    <input type="text" name="reference" class="form-input"
+           placeholder="e.g. MiCash ref #12345678 or BSP receipt number"
+           style="width:100%;margin-bottom:24px">
+
+    <button type="submit" class="btn btn-primary btn-block" style="font-size:1rem;padding:14px">
+      ✓ Submit Payment &amp; Notify Us
+    </button>
+    <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:12px">
+      We'll email you at <strong>{{ user.email }}</strong> once your plan is activated.
+    </p>
+  </form>
+
+  <div style="text-align:center;margin-top:20px">
+    <a href="/choose-plan" style="font-size:.85rem;color:var(--muted)">← Back to plan selection</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -325,6 +325,21 @@ class ActivityLog(db.Model):
     user       = db.relationship('User', backref=db.backref('activity_logs', lazy=True))
 
 
+class PaymentRequest(db.Model):
+    """Manual payment approval requests for plan upgrades."""
+    id             = db.Column(db.Integer, primary_key=True)
+    user_id        = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    plan           = db.Column(db.String(20),  nullable=False)   # 'basic' | 'pro'
+    amount         = db.Column(db.String(10),  nullable=False)   # 'K20' | 'K50'
+    payment_method = db.Column(db.String(50),  nullable=False)   # 'cash' | 'mobile_money' | 'internet_banking'
+    reference      = db.Column(db.String(255), nullable=True)    # transaction ref / receipt number
+    status         = db.Column(db.String(20),  default='pending') # 'pending' | 'approved' | 'rejected'
+    notes          = db.Column(db.String(500), nullable=True)    # admin notes
+    submitted_at   = db.Column(db.DateTime, default=datetime.utcnow)
+    resolved_at    = db.Column(db.DateTime, nullable=True)
+    user           = db.relationship('User', backref=db.backref('payment_requests', lazy=True))
+
+
 # ── Email ─────────────────────────────────────────────────────────────────────
 
 def send_email(to, subject, body):
@@ -1247,14 +1262,163 @@ def profile():
         db.session.commit()
         # First-time profile completion → go straight to a new catalog
         if was_incomplete and user.profile_complete:
+            return redirect(url_for('choose_plan'))
+        flash('Profile updated!', 'success')
+        return redirect(url_for('profile'))
+    return render_template('profile.html', user=user)
+
+
+# ── Plan selection & payment approval ────────────────────────────────────────
+
+PLAN_AMOUNTS = {'basic': 'K20', 'pro': 'K50'}
+PAYMENT_METHOD_LABELS = {
+    'mobile_money':      'Mobile Money (MiCash / BSP Kina)',
+    'internet_banking':  'Internet Banking',
+    'cash':              'Cash',
+}
+
+@app.route('/choose-plan', methods=['GET', 'POST'])
+@login_required
+def choose_plan():
+    user = current_user()
+    if request.method == 'POST':
+        plan = request.form.get('plan', 'free')
+        if plan == 'free':
+            # Free plan — create first catalog immediately
             catalog = Catalog(user_id=user.id, name='My Catalog')
             db.session.add(catalog)
             db.session.commit()
             log_activity(user.id, 'catalog_created', catalog.name)
+            flash('Welcome to CatalogKit! Your catalog is ready.', 'success')
             return redirect(url_for('workspace', catalog_id=catalog.id))
-        flash('Profile updated!', 'success')
-        return redirect(url_for('profile'))
-    return render_template('profile.html', user=user)
+        if plan not in PLAN_AMOUNTS:
+            flash('Invalid plan selected.', 'error')
+            return redirect(url_for('choose_plan'))
+        # Paid plan — show payment details form
+        return render_template('choose_plan.html', user=user,
+                               show_payment=True, plan=plan,
+                               amount=PLAN_AMOUNTS[plan])
+    return render_template('choose_plan.html', user=user,
+                           show_payment=False, plan=None, amount=None)
+
+
+@app.route('/payment-request', methods=['POST'])
+@login_required
+def payment_request():
+    user   = current_user()
+    plan   = request.form.get('plan', '')
+    method = request.form.get('payment_method', '')
+    ref    = request.form.get('reference', '').strip()
+
+    if plan not in PLAN_AMOUNTS or method not in PAYMENT_METHOD_LABELS:
+        flash('Invalid payment details.', 'error')
+        return redirect(url_for('choose_plan'))
+
+    amount = PLAN_AMOUNTS[plan]
+
+    # Save the request
+    pr = PaymentRequest(
+        user_id        = user.id,
+        plan           = plan,
+        amount         = amount,
+        payment_method = method,
+        reference      = ref or None,
+    )
+    db.session.add(pr)
+    db.session.commit()
+    log_activity(user.id, 'payment_requested', f'{plan} plan via {method}')
+
+    # Email notification to info@catalogkit.org
+    method_label = PAYMENT_METHOD_LABELS[method]
+    body = (
+        f"New plan upgrade request — please verify and approve.\n\n"
+        f"User:           {user.name} ({user.email})\n"
+        f"Business:       {user.business_name or '(not set)'}\n"
+        f"WhatsApp:       {user.whatsapp or '(not set)'}\n"
+        f"Plan requested: {plan.title()} ({amount}/month)\n"
+        f"Payment method: {method_label}\n"
+        f"Reference/Ref#: {ref or '(not provided)'}\n\n"
+        f"To approve, go to: https://www.catalogkit.org/admin\n"
+        f"Request ID: #{pr.id}\n"
+    )
+    send_email('info@catalogkit.org',
+               f'[CatalogKit] Payment request #{pr.id} — {user.name} → {plan.title()} {amount}',
+               body)
+
+    return redirect(url_for('payment_pending'))
+
+
+@app.route('/payment-pending')
+@login_required
+def payment_pending():
+    user = current_user()
+    # Find most recent pending request for this user
+    pr = PaymentRequest.query.filter_by(user_id=user.id, status='pending')\
+                             .order_by(PaymentRequest.submitted_at.desc()).first()
+    return render_template('payment_pending.html', user=user, pr=pr)
+
+
+@app.route('/admin/payment/<int:pr_id>/approve', methods=['POST'])
+@admin_required
+def admin_approve_payment(pr_id):
+    pr = db.session.get(PaymentRequest, pr_id)
+    if not pr:
+        flash('Request not found.', 'error')
+        return redirect(url_for('admin'))
+    pr.status      = 'approved'
+    pr.resolved_at = datetime.utcnow()
+    pr.notes       = request.form.get('notes', '').strip() or None
+    # Upgrade the user's plan
+    user = db.session.get(User, pr.user_id)
+    if user:
+        user.plan = pr.plan
+        # Create their first catalog if they don't have one yet
+        if not user.catalogs:
+            catalog = Catalog(user_id=user.id, name='My Catalog')
+            db.session.add(catalog)
+        db.session.commit()
+        log_activity(user.id, 'plan_upgraded', f'Plan set to {pr.plan} (payment #{pr.id} approved)')
+        # Notify user by email
+        send_email(
+            user.email,
+            f'[CatalogKit] Your {pr.plan.title()} plan is now active!',
+            f"Hi {user.name},\n\n"
+            f"We've confirmed your {pr.amount}/month payment and your {pr.plan.title()} plan is now active.\n\n"
+            f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
+            f"Thank you for supporting CatalogKit!\n"
+            f"— The CatalogKit Team"
+        )
+    else:
+        db.session.commit()
+    flash(f'Payment #{pr_id} approved and {pr.plan.title()} plan activated.', 'success')
+    return redirect(url_for('admin'))
+
+
+@app.route('/admin/payment/<int:pr_id>/reject', methods=['POST'])
+@admin_required
+def admin_reject_payment(pr_id):
+    pr = db.session.get(PaymentRequest, pr_id)
+    if not pr:
+        flash('Request not found.', 'error')
+        return redirect(url_for('admin'))
+    pr.status      = 'rejected'
+    pr.resolved_at = datetime.utcnow()
+    pr.notes       = request.form.get('notes', '').strip() or None
+    db.session.commit()
+    user = db.session.get(User, pr.user_id)
+    if user:
+        log_activity(user.id, 'payment_rejected', f'Payment #{pr.id} rejected')
+        send_email(
+            user.email,
+            '[CatalogKit] Payment not confirmed — please contact us',
+            f"Hi {user.name},\n\n"
+            f"We were unable to confirm your payment for the {pr.plan.title()} plan.\n\n"
+            f"Please message us on WhatsApp: +675 7137 1373\n"
+            f"or email: info@catalogkit.org\n\n"
+            f"— The CatalogKit Team"
+        )
+    flash(f'Payment #{pr_id} rejected.', 'success')
+    return redirect(url_for('admin'))
 
 
 # ── Done-For-You / Agency setup ───────────────────────────────────────────────
@@ -1289,12 +1453,15 @@ def assisted_setup():
 @app.route('/admin')
 @admin_required
 def admin():
-    all_users       = User.query.order_by(User.created_at.desc()).all()
-    agency_requests = AgencyRequest.query.order_by(AgencyRequest.market_location, AgencyRequest.submitted_at).all()
+    all_users        = User.query.order_by(User.created_at.desc()).all()
+    agency_requests  = AgencyRequest.query.order_by(AgencyRequest.market_location, AgencyRequest.submitted_at).all()
+    payment_requests = PaymentRequest.query.order_by(PaymentRequest.submitted_at.desc()).all()
     me = db.session.get(User, session['user_id'])
+    pending_count = PaymentRequest.query.filter_by(status='pending').count()
     return render_template('admin.html', all_users=all_users,
                            agency_requests=agency_requests,
-                           pending_count=0, now=datetime.utcnow(),
+                           payment_requests=payment_requests,
+                           pending_count=pending_count, now=datetime.utcnow(),
                            me=me, admin_active='dashboard')
 
 @app.route('/admin/agency/<int:ar_id>/status', methods=['POST'])
@@ -1573,6 +1740,18 @@ with app.app_context():
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_builds_used INTEGER DEFAULT 0',
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_reset_date DATE',
         'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE',
+        '''CREATE TABLE IF NOT EXISTS payment_request (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES "user"(id),
+            plan VARCHAR(20) NOT NULL,
+            amount VARCHAR(10) NOT NULL,
+            payment_method VARCHAR(50) NOT NULL,
+            reference VARCHAR(255),
+            status VARCHAR(20) DEFAULT \'pending\',
+            notes VARCHAR(500),
+            submitted_at TIMESTAMP DEFAULT NOW(),
+            resolved_at TIMESTAMP
+        )''',
     ]
     with db.engine.connect() as _conn:
         for _sql in _migrations:

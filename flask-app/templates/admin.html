@@ -41,6 +41,74 @@
 
 </div>
 
+<!-- ── Section A2: Payment requests ─────────────────────── -->
+{% set pending_prs = payment_requests | selectattr('status','eq','pending') | list %}
+<div class="admin-section" id="payments" style="{% if pending_prs %}border-color:var(--accent){% endif %}">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      💳 Plan Payment Requests
+      {% if pending_prs %}<span class="chip chip-blue">{{ pending_prs | length }} pending</span>{% endif %}
+    </div>
+  </div>
+  <div class="admin-section-body">
+    {% if payment_requests %}
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>User</th><th>Plan</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for pr in payment_requests %}
+          <tr style="{% if pr.status == 'pending' %}background:rgba(108,99,255,.04){% endif %}">
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ pr.user.name }}</div>
+              <div style="font-size:.78rem;color:var(--muted)">{{ pr.user.email }}</div>
+              {% if pr.user.whatsapp %}
+              <a href="https://wa.me/{{ pr.user.whatsapp | replace(' ','') | replace('+','') }}"
+                 target="_blank" style="font-size:.75rem;color:#22c55e;text-decoration:none">📱 {{ pr.user.whatsapp }}</a>
+              {% endif %}
+            </td>
+            <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
+            <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
+            <td style="font-size:.8rem;color:var(--muted);max-width:160px;word-break:break-all">{{ pr.reference or '—' }}</td>
+            <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ pr.submitted_at.strftime('%d %b %Y %H:%M') }}</td>
+            <td>
+              {% if pr.status == 'pending' %}
+              <span style="background:rgba(245,158,11,.15);color:#d97706;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">Pending</span>
+              {% elif pr.status == 'approved' %}
+              <span style="background:rgba(34,197,94,.15);color:#16a34a;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">Approved</span>
+              {% else %}
+              <span style="background:rgba(239,68,68,.15);color:#ef4444;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">Rejected</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if pr.status == 'pending' %}
+              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                <form method="POST" action="/admin/payment/{{ pr.id }}/approve" style="margin:0">
+                  <button class="btn btn-primary btn-sm">✓ Approve</button>
+                </form>
+                <form method="POST" action="/admin/payment/{{ pr.id }}/reject" style="margin:0">
+                  <button class="btn btn-secondary btn-sm" style="color:var(--danger)">✗ Reject</button>
+                </form>
+              </div>
+              {% else %}
+              <span style="font-size:.78rem;color:var(--muted)">{{ pr.resolved_at.strftime('%d %b') if pr.resolved_at else '—' }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="admin-empty">
+      <div class="ae-icon">💳</div>
+      <p>No payment requests yet</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
 <!-- ── Section B: Agency requests ──────────────────────── -->
 <div class="admin-section" id="agency">
   <div class="admin-section-head">

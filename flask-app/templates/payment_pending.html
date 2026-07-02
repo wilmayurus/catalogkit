@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Payment Submitted — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:60px;padding-bottom:60px;max-width:540px">
+
+  <div style="text-align:center;margin-bottom:40px">
+    <div style="font-size:3.5rem;margin-bottom:16px">⏳</div>
+    <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:10px">Payment submitted!</h1>
+    <p style="color:var(--muted);font-size:.95rem;line-height:1.7">
+      We've received your request and will verify your payment.
+      Once confirmed, your <strong>{{ pr.plan | title if pr else 'paid' }}</strong> plan
+      will be activated and we'll email you at <strong>{{ user.email }}</strong>.
+    </p>
+  </div>
+
+  {% if pr %}
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:32px;font-size:.875rem">
+    <div style="font-weight:700;margin-bottom:12px;color:var(--muted);font-size:.72rem;letter-spacing:1.5px;text-transform:uppercase">Your request</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Plan</span>
+        <strong>{{ pr.plan | title }} — {{ pr.amount }}/month</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Payment method</span>
+        <strong>{{ pr.payment_method | replace('_', ' ') | title }}</strong>
+      </div>
+      {% if pr.reference %}
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Reference</span>
+        <strong>{{ pr.reference }}</strong>
+      </div>
+      {% endif %}
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Status</span>
+        <span style="background:rgba(245,158,11,.15);color:#d97706;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">Pending</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;margin-bottom:32px">
+    <div style="font-size:.875rem;font-weight:700;margin-bottom:10px">While you wait</div>
+    <ul style="margin:0;padding-left:18px;font-size:.85rem;color:var(--muted);line-height:1.9">
+      <li>You can already use the <strong>Free plan</strong> (2 builds/month)</li>
+      <li>Message us on WhatsApp if you need faster confirmation:<br>
+          <a href="https://wa.me/67571371373" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">+675 7137 1373</a></li>
+      <li>We confirm payments during business hours (Mon–Fri, 8am–5pm)</li>
+    </ul>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <a href="/" class="btn btn-primary btn-block" style="text-align:center">Go to My Catalogs</a>
+    <a href="https://wa.me/67571371373?text={{ ('Hi! I just submitted a payment request on CatalogKit for the ' ~ (pr.plan | title if pr else 'paid') ~ ' plan. Request #' ~ (pr.id if pr else '?')) | urlencode }}"
+       class="btn btn-secondary btn-block" style="text-align:center" target="_blank" rel="noopener">
+      📲 Message Us on WhatsApp
+    </a>
+  </div>
+
+</div>
+{% endblock %}
