@@ -1413,7 +1413,7 @@ def admin_reject_payment(pr_id):
             '[CatalogKit] Payment not confirmed — please contact us',
             f"Hi {user.name},\n\n"
             f"We were unable to confirm your payment for the {pr.plan.title()} plan.\n\n"
-            f"Please message us on WhatsApp: +675 7137 1373\n"
+            f"Please message us on WhatsApp: +675 7381 7000\n"
             f"or email: info@catalogkit.org\n\n"
             f"— The CatalogKit Team"
         )

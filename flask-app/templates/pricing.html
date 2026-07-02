@@ -114,7 +114,7 @@
           {% if current_user.plan == 'basic' %}
           <div class="btn btn-primary btn-block" style="text-align:center;cursor:default">&#10003; Your current plan</div>
           {% else %}
-          <a href="https://wa.me/67571371373?text={{ 'Hi! I want to upgrade to the Basic plan (K20/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
+          <a href="https://wa.me/67573817000?text={{ 'Hi! I want to upgrade to the Basic plan (K20/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
              class="btn btn-primary btn-block" target="_blank" rel="noopener">Upgrade via WhatsApp</a>
           {% endif %}
         {% else %}
@@ -139,7 +139,7 @@
           {% if current_user.plan == 'pro' %}
           <div class="btn btn-primary btn-block" style="text-align:center;cursor:default">&#10003; Your current plan</div>
           {% else %}
-          <a href="https://wa.me/67571371373?text={{ 'Hi! I want to upgrade to the Pro plan (K50/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
+          <a href="https://wa.me/67573817000?text={{ 'Hi! I want to upgrade to the Pro plan (K50/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
              class="btn btn-primary btn-block" target="_blank" rel="noopener">Upgrade via WhatsApp</a>
           {% endif %}
         {% else %}
