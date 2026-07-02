@@ -30,7 +30,7 @@ export function Scene5() {
       
       {/* Background Market Scene (Very dim) */}
       <motion.img 
-        src={`${import.meta.env.BASE_URL}images/market-scene-warm.png`}
+        src={`${import.meta.env.BASE_URL}/images/market-scene-warm.png`}
         className="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay"
       />
 

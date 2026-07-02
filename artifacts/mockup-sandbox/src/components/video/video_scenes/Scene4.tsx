@@ -33,14 +33,18 @@ export function Scene4() {
                  <span className="text-white font-bold text-[2vw]">PDF</span>
               </div>
               <div className="flex-1 grid grid-cols-2 gap-[1vw] p-[1.5vw]">
-                 <div className="bg-gray-100 rounded-lg flex items-center justify-center">
-                   <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="w-[80%]" />
+                 <div className="bg-gray-100 rounded-lg flex items-center justify-center p-1">
+                   <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-[80%] object-contain" />
+                 </div>
+                 <div className="bg-gray-100 rounded-lg flex items-center justify-center p-1">
+                   <img src={`${import.meta.env.BASE_URL}/images/tropical-fruit-warm.png`} className="w-[80%] object-contain" />
+                 </div>
+                 <div className="bg-gray-100 rounded-lg flex items-center justify-center p-1">
+                   <img src={`${import.meta.env.BASE_URL}/images/product-mask.png`} className="w-[80%] object-contain" />
                  </div>
                  <div className="bg-gray-100 rounded-lg flex items-center justify-center">
-                   <img src={`${import.meta.env.BASE_URL}images/tropical-fruit-warm.png`} className="w-[80%]" />
+                   <span className="text-gray-400 text-[1.2vw]">+more</span>
                  </div>
-                 <div className="bg-gray-100 rounded-lg"></div>
-                 <div className="bg-gray-100 rounded-lg"></div>
               </div>
               
               <motion.div 

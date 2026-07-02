@@ -38,7 +38,7 @@ export function Scene1() {
             animate={phase >= 1 ? { scale: 1, rotate: -10, opacity: 0.8 } : {}}
             transition={{ type: 'spring', bounce: 0.4 }}
           >
-             <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="w-full h-full object-contain" alt="" />
+             <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-full h-full object-contain" alt="" />
           </motion.div>
           
           {/* Vegetables */}
@@ -48,7 +48,17 @@ export function Scene1() {
             animate={phase >= 2 ? { scale: 1, rotate: 15, opacity: 0.8 } : {}}
             transition={{ type: 'spring', bounce: 0.4 }}
           >
-             <img src={`${import.meta.env.BASE_URL}images/tropical-fruit-warm.png`} className="w-full h-full object-contain" alt="" />
+             <img src={`${import.meta.env.BASE_URL}/images/tropical-fruit-warm.png`} className="w-full h-full object-contain" alt="" />
+          </motion.div>
+
+          {/* Carved mask */}
+          <motion.div 
+            className="absolute left-[30vw] bottom-[5vh] w-[18vw] h-[18vw]"
+            initial={{ scale: 0, rotate: 10, opacity: 0 }}
+            animate={phase >= 3 ? { scale: 1, rotate: 5, opacity: 0.75 } : {}}
+            transition={{ type: 'spring', bounce: 0.4 }}
+          >
+             <img src={`${import.meta.env.BASE_URL}/images/product-mask.png`} className="w-full h-full object-contain" alt="" />
           </motion.div>
         </div>
 

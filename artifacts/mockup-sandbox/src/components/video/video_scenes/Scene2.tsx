@@ -56,7 +56,7 @@ export function Scene2() {
              <div className="w-[12vw] h-[12vw] border-[0.3vw] border-dashed border-[#C41230]/40 rounded-xl flex items-center justify-center overflow-hidden bg-white mb-[2vh]">
                 {/* Photo dropping in */}
                 <motion.img 
-                  src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`}
+                  src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
                   className="w-[80%] h-[80%] object-contain"
                   initial={{ y: '-30vh', opacity: 0 }}
                   animate={phase >= 3 ? { y: 0, opacity: 1 } : {}}
@@ -81,7 +81,7 @@ export function Scene2() {
           </div>
           <div className="w-1/2 h-full bg-white rounded-r-xl shadow-2xl flex flex-col items-center justify-between p-[2vw] border-l border-gray-200">
              <div className="w-full h-[60%] flex items-center justify-center">
-                <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="w-[80%] h-[80%] object-contain" />
+                <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-[80%] h-[80%] object-contain" />
              </div>
              <div className="text-center w-full">
                 <h4 className="text-[2.5vw] font-bold text-black font-display leading-none">BILUM BAG</h4>

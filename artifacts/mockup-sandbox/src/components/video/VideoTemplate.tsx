@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video/hooks';
 import { Scene1 } from './video_scenes/Scene1';
 import { Scene2 } from './video_scenes/Scene2';
@@ -15,8 +15,23 @@ const SCENE_DURATIONS = {
   closing: 13000 
 };
 
+const PRELOAD_IMAGES = [
+  '/images/bilum-bag-clean.png',
+  '/images/tropical-fruit-warm.png',
+  '/images/product-mask.png',
+  '/images/market-scene-warm.png',
+];
+
 export default function VideoTemplate() {
   const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
+  const base = import.meta.env.BASE_URL;
+
+  useEffect(() => {
+    PRELOAD_IMAGES.forEach(src => {
+      const img = new Image();
+      img.src = `${base}${src}`;
+    });
+  }, [base]);
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#FFF8F0] font-sans">

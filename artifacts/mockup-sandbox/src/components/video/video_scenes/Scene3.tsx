@@ -68,7 +68,7 @@ export function Scene3() {
              
              {/* Base page right */}
              <div className="absolute top-0 right-0 w-[50%] h-full bg-white flex flex-col items-center justify-between py-[4vh]">
-                <img src={`${import.meta.env.BASE_URL}images/tropical-fruit-warm.png`} className="w-[80%] object-contain" />
+                <img src={`${import.meta.env.BASE_URL}/images/tropical-fruit-warm.png`} className="w-[80%] object-contain" />
                 <div className="text-center font-bold text-black text-[2vw]">FRUIT</div>
              </div>
 
@@ -79,7 +79,7 @@ export function Scene3() {
                 animate={phase >= 5 ? { rotateY: -180 } : {}}
                 transition={{ duration: 1.5, ease: 'easeInOut' }}
              >
-                <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="w-[80%] object-contain" />
+                <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-[80%] object-contain" />
                 <div className="text-center font-bold text-black text-[2vw]">BILUM</div>
              </motion.div>
           </div>
