@@ -6,95 +6,149 @@ export function Scene3() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 500),   // text 1
-      setTimeout(() => setPhase(2), 1500),  // chat bubble
-      setTimeout(() => setPhase(3), 3500),  // customer phone
-      setTimeout(() => setPhase(4), 5000),  // text 2
-      setTimeout(() => setPhase(5), 6500),  // swipe page
+      setTimeout(() => setPhase(1), 400),   // heading
+      setTimeout(() => setPhase(2), 1200),  // catalog link appears
+      setTimeout(() => setPhase(3), 2800),  // customer phone appears
+      setTimeout(() => setPhase(4), 4200),  // customer swiping
+      setTimeout(() => setPhase(5), 6000),  // caption
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
 
   return (
-    <motion.div 
+    <motion.div
       className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-hidden bg-[#FFF8F0]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
+      {/* Heading */}
       <motion.div
-        className="absolute top-[8vh] text-center"
+        className="absolute top-[8vh] text-center px-[5vw]"
         initial={{ opacity: 0, y: -20 }}
         animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.7 }}
       >
-        <h2 className="text-[6vw] font-black text-[#C41230] font-display">
-          Send ONE link.
+        <h2 className="text-[5.5vw] font-black text-[#C41230] font-display leading-tight">
+          Your catalog has a link.
         </h2>
+        <p className="text-[2.8vw] text-[#0D0D0D]/70 font-medium mt-[1.5vh]">
+          Share it anywhere — Facebook, SMS, WhatsApp, print it.
+        </p>
       </motion.div>
 
-      <div className="relative flex-1 w-full flex items-center justify-center mt-[10vh]">
-        
-        {/* WhatsApp bubble */}
-        <motion.div 
-          className="absolute top-[15vh] left-[20vw] bg-white rounded-2xl rounded-tl-none shadow-xl p-[2vw] border border-gray-100 flex items-center gap-[2vw]"
-          initial={{ scale: 0, opacity: 0, originX: 0, originY: 0 }}
-          animate={phase >= 2 ? (phase >= 3 ? { x: '-20vw', opacity: 0.5, scale: 0.7 } : { scale: 1, opacity: 1 }) : {}}
-          transition={{ type: 'spring', bounce: 0.5 }}
+      <div className="relative flex-1 w-full flex items-center justify-center mt-[8vh]">
+
+        {/* Catalog share card */}
+        <motion.div
+          className="absolute left-[8vw] top-[8vh] bg-white rounded-2xl shadow-2xl border border-gray-100 p-[2.5vw] w-[35vw]"
+          initial={{ scale: 0.85, opacity: 0, x: -30 }}
+          animate={phase >= 2 ? { scale: 1, opacity: 1, x: 0 } : {}}
+          transition={{ type: 'spring', damping: 20 }}
         >
-          <div className="w-[5vw] h-[5vw] bg-[#25D366] rounded-full flex items-center justify-center text-white">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="w-[3vw] h-[3vw]">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.405-.883-.733-1.48-1.639-1.653-1.935-.173-.299-.018-.461.13-.611.134-.135.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-            </svg>
+          {/* Mini catalog preview */}
+          <div className="w-full h-[12vw] bg-[#0D0D0D] rounded-xl mb-[2vh] flex items-center justify-center overflow-hidden relative">
+            <img
+              src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
+              className="absolute w-[40%] h-[90%] object-contain right-[5%]"
+              alt=""
+            />
+            <div className="absolute left-[5%] text-white">
+              <div className="text-[2vw] font-black font-display leading-none">Mary's</div>
+              <div className="text-[1.5vw] font-black font-display text-[#F5A800]">Catalog</div>
+            </div>
           </div>
-          <div>
-            <div className="text-[2vw] text-blue-500 underline font-bold">catalogkit.org/c/abc123</div>
-            <div className="text-[1.5vw] text-gray-500 mt-[0.5vh]">Look at my catalog!</div>
+
+          {/* Link row */}
+          <div className="flex items-center gap-[1.5vw]">
+            <div className="flex-1 bg-[#F0F4FF] rounded-xl px-[1.5vw] py-[1.2vh] border border-blue-100">
+              <span className="text-[1.6vw] text-blue-600 font-bold">catalogkit.org/c/mary</span>
+            </div>
+            {/* Copy button */}
+            <motion.div
+              className="w-[4.5vw] h-[4.5vw] bg-[#C41230] rounded-xl flex items-center justify-center shadow-lg flex-shrink-0"
+              animate={phase >= 2 ? { scale: [1, 1.15, 1] } : {}}
+              transition={{ delay: 0.8, duration: 0.4 }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" className="w-[2.5vw] h-[2.5vw]">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </motion.div>
+          </div>
+          <div className="text-[1.4vw] text-gray-400 mt-[1vh] text-center">
+            Copy your link — share it anywhere
           </div>
         </motion.div>
 
-        {/* Customer Phone */}
+        {/* Arrow */}
         <motion.div
-          className="absolute right-[20vw] w-[22vw] h-[45vw] bg-white rounded-[3vw] shadow-2xl border-[0.8vw] border-[#222] overflow-hidden"
+          className="absolute left-[46vw] top-[16vh]"
+          initial={{ opacity: 0, x: -10 }}
+          animate={phase >= 3 ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.5 }}
+        >
+          <svg viewBox="0 0 60 24" fill="none" className="w-[8vw] text-[#C41230]">
+            <path d="M0 12 H50 M38 2 L52 12 L38 22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </motion.div>
+
+        {/* Customer phone */}
+        <motion.div
+          className="absolute right-[8vw] w-[20vw] h-[38vw] bg-white rounded-[3vw] shadow-2xl border-[0.8vw] border-[#222] overflow-hidden"
           initial={{ y: '30vh', opacity: 0 }}
           animate={phase >= 3 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 20 }}
-          style={{ perspective: 1000 }}
         >
-          {/* Flipbook inside phone */}
-          <div className="w-full h-full bg-[#FFF8F0] relative flex">
-             <div className="w-[50%] h-full bg-[#C41230] relative shadow-[inset_-10px_0_20px_rgba(0,0,0,0.2)]" />
-             
-             {/* Base page right */}
-             <div className="absolute top-0 right-0 w-[50%] h-full bg-white flex flex-col items-center justify-between py-[4vh]">
-                <img src={`${import.meta.env.BASE_URL}/images/tropical-fruit-warm.png`} className="w-[80%] object-contain" />
-                <div className="text-center font-bold text-black text-[2vw]">FRUIT</div>
-             </div>
-
-             {/* Swiping page */}
-             <motion.div 
-                className="absolute top-0 right-0 w-[50%] h-full bg-white flex flex-col items-center justify-between py-[4vh] origin-left shadow-2xl"
-                initial={{ rotateY: 0 }}
-                animate={phase >= 5 ? { rotateY: -180 } : {}}
-                transition={{ duration: 1.5, ease: 'easeInOut' }}
-             >
-                <img src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`} className="w-[80%] object-contain" />
-                <div className="text-center font-bold text-black text-[2vw]">BILUM</div>
-             </motion.div>
+          {/* Catalog page inside phone */}
+          <div className="w-full h-full flex flex-col bg-white">
+            {/* Catalog header */}
+            <div className="h-[12%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-[1.8vw] font-black font-display tracking-wide">Mary's Catalog</span>
+            </div>
+            {/* Product page */}
+            <div className="flex-1 flex flex-col items-center justify-between py-[2vh] px-[1vw]">
+              <img
+                src={`${import.meta.env.BASE_URL}/images/bilum-bag-clean.png`}
+                className="w-[75%] flex-1 object-contain"
+                alt=""
+              />
+              <div className="text-center w-full mt-[1vh]">
+                <div className="text-[2vw] font-black text-[#0D0D0D] font-display">BILUM BAG</div>
+                <div className="text-[1.8vw] font-bold text-[#C41230]">K 25.00</div>
+              </div>
+            </div>
+            {/* Catalog footer */}
+            <div className="h-[10%] bg-[#F5A800]/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-[1.2vw] font-bold text-[#0D0D0D]">catalogkit.org/c/mary</span>
+            </div>
           </div>
-        </motion.div>
 
+          {/* Swipe hint finger */}
+          <motion.div
+            className="absolute bottom-[15%] right-[20%] w-[5vw] h-[5vw] bg-[#25D366] rounded-full flex items-center justify-center shadow-xl"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={phase >= 4 ? { opacity: [0, 1, 1, 0], scale: [0, 1, 1, 0.8], x: [0, -30, -60] } : {}}
+            transition={{ duration: 1.5, ease: 'easeInOut' }}
+          >
+            <svg viewBox="0 0 24 24" fill="white" className="w-[2.5vw] h-[2.5vw]">
+              <path d="M9 11.24V7.5a2.5 2.5 0 0 1 5 0v3.74c1.21-.81 3-1.14 3 1.26v3a5 5 0 0 1-5 5H9.5A4.5 4.5 0 0 1 5 16v-3c0-2.4 1.79-2.07 3-1.26z"/>
+              <path d="M4 11h1M19 11h1M12 4V3"/>
+            </svg>
+          </motion.div>
+        </motion.div>
       </div>
 
+      {/* Bottom caption */}
       <motion.div
-        className="absolute bottom-[10vh] text-center px-[10vw]"
+        className="absolute bottom-[8vh] text-center px-[10vw]"
         initial={{ opacity: 0, y: 20 }}
-        animate={phase >= 4 ? { opacity: 1, y: 0 } : {}}
+        animate={phase >= 5 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-[5vw] font-bold text-[#0D0D0D] font-display leading-tight">
-          Customers <span className="text-[#F5A800]">swipe through</span><br/> your catalog.
+        <h2 className="text-[4.5vw] font-bold text-[#0D0D0D] font-display leading-tight">
+          Customer opens → <span className="text-[#C41230]">swipes through</span> your catalog.
         </h2>
       </motion.div>
     </motion.div>
