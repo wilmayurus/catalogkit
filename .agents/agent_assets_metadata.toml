@@ -83,3 +83,9 @@ id = "Y1oXJOwFVw8acuWvXjfBC"
 uri = "file://grant/NCDC_Grant_Application_CatalogKit_THL.md"
 type = "text"
 title = "NCDC Grant Application — Trey Holdings / CatalogKit"
+
+[[outputs]]
+id = "EO0hBXzXzczALua1226R9"
+uri = "file://artifacts/mockup-sandbox/public/audio/background.mp3"
+type = "audio"
+title = "catalogkit_market_theme"
