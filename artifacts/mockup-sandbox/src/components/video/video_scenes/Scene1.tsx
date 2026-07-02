@@ -68,7 +68,7 @@ export function Scene1() {
             className="text-[8vw] font-black text-[#F5A800] leading-none"
             style={{ fontFamily: 'var(--font-display)' }}
           >
-            {'YOU SELL THINGS.'.split(' ').map((word, i) => (
+            {'YOU SELL THINGS?'.split(' ').map((word, i) => (
               <motion.span 
                 key={i} 
                 className="inline-block mr-[2vw]"
