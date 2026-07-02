@@ -1729,7 +1729,7 @@ def pricing():
 
 @app.context_processor
 def inject_globals():
-    return dict(current_user=current_user())
+    return dict(current_user=current_user(), now=datetime.utcnow())
 
 
 # ── Startup: create tables + run column migrations ────────────────────────────

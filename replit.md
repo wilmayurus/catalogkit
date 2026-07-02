@@ -34,7 +34,7 @@ _Describe the high-level user-facing capabilities of this app once they exist._
 
 ## User preferences
 
-- **User:** Wilma Yurus — she built CatalogKit and works at Trey Holdings Limited (Boroko, NCD, PNG). The grant application is submitted under Trey Holdings Limited as the legal entity. Wilma is the developer and project lead.
+- **User:** Wilma Yurus — she built CatalogKit under **Sapphire Consulting Services**, a subsidiary of Trey Holdings Limited, Port Moresby, PNG. The grant application is submitted under Trey Holdings Limited as the legal entity. Wilma is the developer and project lead.
 - Address her by first name: Wilma.
 - The app runs on Render (catalogkit.onrender.com / www.catalogkit.org) using Flask + Supabase. GitHub repo: wilmayurus/catalogkit. She pushes code via the Shell tab (`git push origin main`) — git push from bash times out.
 
