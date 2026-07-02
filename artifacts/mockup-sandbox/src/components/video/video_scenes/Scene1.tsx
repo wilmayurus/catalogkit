@@ -6,10 +6,10 @@ export function Scene1() {
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 500),
-      setTimeout(() => setPhase(2), 2000),
-      setTimeout(() => setPhase(3), 3500),
-      setTimeout(() => setPhase(4), 7000), // exit
+      setTimeout(() => setPhase(1), 300),
+      setTimeout(() => setPhase(2), 1500),
+      setTimeout(() => setPhase(3), 2800),
+      setTimeout(() => setPhase(4), 5000), // exit
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
@@ -24,48 +24,50 @@ export function Scene1() {
     >
       {/* Background — animated warm market glow */}
       <motion.div className="absolute inset-0"
-        initial={{ scale: 1.15 }}
+        initial={{ scale: 1.2 }}
         animate={{ scale: 1 }}
-        transition={{ duration: 8, ease: "easeOut" }}
+        transition={{ duration: 6, ease: "easeOut" }}
       >
-        <div className="absolute inset-0 bg-[#0D0D0D]" />
+        <img src={`${import.meta.env.BASE_URL}images/market-bg.png`} className="absolute inset-0 w-full h-full object-cover opacity-40" alt="Market" />
+        <div className="absolute inset-0 bg-[#0D0D0D]/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/20 to-transparent" />
+        
+        {/* Simulate market atmosphere with moving lights */}
         <motion.div className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 70% 55% at 60% 45%, #6B2A04 0%, #3A1002 40%, #0D0D0D 100%)' }}
-          animate={{ scale: [1, 1.12, 1], x: [0, 30, 0], y: [0, -20, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ background: 'radial-gradient(ellipse 70% 55% at 60% 45%, #C4123033 0%, #3A1002 40%, transparent 100%)' }}
+          animate={{ scale: [1, 1.1, 1], x: [0, 20, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         />
-        <motion.div className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 50% 40% at 20% 70%, #F5A80022 0%, transparent 70%)' }}
-          animate={{ scale: [1, 1.2, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        />
-        {/* Animated dots simulating market stall lights */}
-        {[...Array(18)].map((_, i) => (
+        
+        {/* Subtle noise/texture */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }}></div>
+
+        {/* Animated bokeh / market stall lights */}
+        {[...Array(12)].map((_, i) => (
           <motion.div key={i}
-            className="absolute rounded-full"
+            className="absolute rounded-full blur-[2px]"
             style={{
-              width: `${4 + (i % 5) * 3}px`, height: `${4 + (i % 5) * 3}px`,
-              left: `${(i * 17 + 5) % 95}%`, top: `${(i * 23 + 10) % 80}%`,
-              background: i % 3 === 0 ? '#F5A800' : i % 3 === 1 ? '#C41230' : '#ffffff',
-              opacity: 0.15 + (i % 4) * 0.08,
+              width: `${4 + (i % 3) * 4}px`, height: `${4 + (i % 3) * 4}px`,
+              left: `${10 + (i * 27) % 80}%`, top: `${15 + (i * 13) % 70}%`,
+              background: i % 2 === 0 ? '#F5A800' : '#F5F5F5',
+              opacity: 0.1 + (i % 3) * 0.1,
             }}
-            animate={{ opacity: [0.1, 0.35, 0.1], scale: [1, 1.5, 1] }}
-            transition={{ duration: 2 + (i % 4), repeat: Infinity, delay: i * 0.3, ease: 'easeInOut' }}
+            animate={{ opacity: [0.1, 0.4, 0.1], scale: [1, 1.5, 1], y: [0, -10, 0] }}
+            transition={{ duration: 3 + (i % 3), repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}
           />
         ))}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/50 to-transparent" />
       </motion.div>
 
-      <div className="relative z-10 max-w-[80vw] text-center">
+      <div className="relative z-10 w-full px-[10vw] flex flex-col items-center text-center">
         <motion.h1 
-          className="text-[6vw] leading-[1.1] font-bold text-[#F5F5F5] font-['Montserrat'] tracking-tight"
+          className="text-[6.5vw] leading-[1.1] font-bold text-[#F5F5F5] font-['Montserrat'] tracking-tight"
         >
-          {"PNG's hardworking market vendors".split(' ').map((word, i) => (
+          {"PNG vendors".split(' ').map((word, i) => (
             <motion.span 
               key={i} 
               className="inline-block mr-[2vw]"
-              initial={{ opacity: 0, y: 50, rotateX: 45 }}
-              animate={phase >= 1 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 50, rotateX: 45 }}
+              initial={{ opacity: 0, y: 40, rotateX: 45 }}
+              animate={phase >= 1 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 40, rotateX: 45 }}
               transition={{ type: 'spring', damping: 20, stiffness: 200, delay: phase >= 1 ? i * 0.1 : 0 }}
             >
               {word}
@@ -74,21 +76,30 @@ export function Scene1() {
         </motion.h1>
 
         <motion.h2
-          className="text-[4vw] mt-[2vh] text-[#F5A800] font-['Montserrat'] font-semibold"
-          initial={{ opacity: 0, filter: 'blur(20px)', y: 20 }}
-          animate={phase >= 2 ? { opacity: 1, filter: 'blur(0px)', y: 0 } : { opacity: 0, filter: 'blur(20px)', y: 20 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          className="text-[4.5vw] mt-[2vh] text-[#F5A800] font-['Montserrat'] font-semibold italic"
+          initial={{ opacity: 0, filter: 'blur(15px)', x: -20 }}
+          animate={phase >= 2 ? { opacity: 1, filter: 'blur(0px)', x: 0 } : { opacity: 0, filter: 'blur(15px)', x: -20 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         >
           have amazing products
         </motion.h2>
 
         <motion.div
-          className="mt-[4vh] py-[2vh] px-[4vw] bg-[#C41230]/20 border border-[#C41230]/50 rounded-xl backdrop-blur-md inline-block"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={phase >= 3 ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-          transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+          className="mt-[6vh] overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={phase >= 3 ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.3 }}
         >
-          <p className="text-[2.5vw] text-white/90 font-medium">but no way to show them online.</p>
+          <motion.div 
+            className="py-[2vh] px-[5vw] bg-black/60 border-l-[4px] border-[#C41230] backdrop-blur-md inline-block"
+            initial={{ x: -100, opacity: 0 }}
+            animate={phase >= 3 ? { x: 0, opacity: 1 } : { x: -100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 15, stiffness: 150 }}
+          >
+            <p className="text-[3vw] text-[#F5F5F5] font-medium tracking-wide">
+              but no way to show them online.
+            </p>
+          </motion.div>
         </motion.div>
       </div>
     </motion.div>

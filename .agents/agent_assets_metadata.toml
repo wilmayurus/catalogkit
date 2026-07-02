@@ -18,6 +18,24 @@ uri = "file://public/images/warm-texture-glow.png"
 type = "image"
 title = "Abstract warm texture glow"
 
+[[generated]]
+id = "_yGmKwYSps2ciJknTDRne"
+uri = "file://artifacts/mockup-sandbox/public/images/market-bg.png"
+type = "image"
+title = "Cinematic night market scene"
+
+[[generated]]
+id = "7JAJau5c6g0xaQ6ZQn9PB"
+uri = "file://artifacts/mockup-sandbox/public/images/red-silk.png"
+type = "image"
+title = "Abstract red flowing silk"
+
+[[generated]]
+id = "gA1Md11pYO-HQfRYK57CB"
+uri = "file://artifacts/mockup-sandbox/public/images/tech-bg.png"
+type = "image"
+title = "Dark tech geometric background"
+
 [[outputs]]
 id = "Y1oXJOwFVw8acuWvXjfBC"
 uri = "file://grant/NCDC_Grant_Application_CatalogKit_THL.md"

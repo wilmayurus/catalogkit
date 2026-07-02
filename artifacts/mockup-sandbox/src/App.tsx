@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import VideoTemplate from "./components/video/VideoTemplate";
 
-const TOTAL_DURATION_MS = 8000 + 12000 + 16000 + 12000 + 12000; // 60s
+const TOTAL_DURATION_MS = 6000 + 8000 + 10000 + 8000 + 8000; // 40s
 
 type RecordState = "idle" | "waiting" | "recording" | "done" | "error";
 
