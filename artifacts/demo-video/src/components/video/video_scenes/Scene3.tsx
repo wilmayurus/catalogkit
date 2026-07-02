@@ -59,7 +59,7 @@ export function Scene3() {
         </p>
       </motion.div>
 
-      <div className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[12cqh]">
+      <div className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]">
 
         {/* Share card */}
         <motion.div
@@ -217,12 +217,12 @@ export function Scene3() {
       </div>
 
       <motion.div
-        className="absolute bottom-[2cqh] w-full text-center px-[4cqw]"
-        initial={{ opacity: 0, y: 20 }}
+        className="w-full text-center px-[4cqw] pb-[2.5cqh] flex-shrink-0"
+        initial={{ opacity: 0, y: 10 }}
         animate={phase >= 4 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8 }}
       >
-        <h2 className="text-[3cqw] font-bold text-[#0D0D0D] font-display leading-tight whitespace-nowrap">
+        <h2 className="text-[3cqw] font-bold text-[#0D0D0D] font-display leading-tight">
           No more scrolling through 20 images. <span className="text-[#C41230]">Just tap and browse.</span>
         </h2>
       </motion.div>
