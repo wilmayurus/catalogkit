@@ -89,6 +89,33 @@
       </div>
     </div>
 
+    <!-- Plan -->
+    <div class="admin-section" style="margin-bottom:20px">
+      <div class="admin-section-head">
+        <div class="admin-section-title">💳 Plan</div>
+      </div>
+      <div class="admin-section-body" style="padding:20px 24px;display:flex;flex-direction:column;gap:10px">
+        <p style="font-size:0.82rem;color:var(--muted);margin:0 0 4px">
+          Use this when a customer pays you directly on WhatsApp — set their plan here to activate it immediately.
+        </p>
+        {% for val, label, desc in [
+          ('free',  'Free',  '3 catalog builds per month.'),
+          ('basic', 'Basic', '20 catalog builds per month (K20/month).'),
+          ('pro',   'Pro',   'Unlimited catalog builds (K50/month).')
+        ] %}
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--surface);border:1px solid {% if u.plan == val %}var(--accent){% else %}var(--border){% endif %};border-radius:10px;padding:12px 14px">
+          <input type="radio" name="plan" value="{{ val }}"
+                 {% if u.plan == val %}checked{% endif %}
+                 style="margin-top:3px;accent-color:var(--accent)">
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;color:var(--text)">{{ label }}</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">{{ desc }}</div>
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
     <!-- Access level -->
     {% if u.id != me.id %}
     <div class="admin-section" style="margin-bottom:20px">

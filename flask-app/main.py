@@ -1637,9 +1637,35 @@ def admin_edit_user(user_id):
             level = request.form.get('access_level', 'user')
             target.is_admin     = (level == 'admin')
             target.is_moderator = (level == 'moderator')
+        # Plan — lets the admin activate a plan directly (e.g. after a
+        # WhatsApp payment) without needing a PaymentRequest record.
+        new_plan = request.form.get('plan')
+        plan_changed = new_plan in ('free', 'basic', 'pro') and new_plan != target.plan
+        if plan_changed:
+            old_plan = target.plan
+            target.plan = new_plan
+            target.monthly_builds_used = 0
+            target.plan_start = datetime.utcnow()
+            if not target.catalogs:
+                catalog = Catalog(user_id=target.id, name='My Catalog')
+                db.session.add(catalog)
+            log_activity(target.id, 'plan_changed_by_admin',
+                         f'Plan changed from {old_plan} to {new_plan} by admin {me.email}')
         db.session.commit()
         log_activity(target.id, 'profile_edited_by_admin', f'Profile edited by admin {me.email}')
-        flash(f'{target.name}\'s profile has been updated.', 'success')
+        if plan_changed:
+            send_email(
+                target.email,
+                f'[CatalogKit] Your {target.plan_label} plan is now active!',
+                f"Hi {target.name},\n\n"
+                f"Your {target.plan_label} plan is now active on CatalogKit.\n\n"
+                f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
+                f"Thank you for supporting CatalogKit!\n"
+                f"— The CatalogKit Team"
+            )
+            flash(f'{target.name}\'s profile has been updated and their plan is now {target.plan_label}.', 'success')
+        else:
+            flash(f'{target.name}\'s profile has been updated.', 'success')
         return redirect(url_for('admin'))
     return render_template('admin_edit_user.html', u=target, me=me,
                            admin_active='users', now=datetime.utcnow(), pending_count=0)
