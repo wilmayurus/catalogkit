@@ -64,7 +64,7 @@
     <h1 style="font-size:2rem;font-weight:800;margin-bottom:10px">Simple, honest pricing</h1>
     <p style="color:var(--muted);font-size:0.95rem;line-height:1.6">
       Pay in <strong>kina</strong> · No credit card needed to start · Cancel any time<br>
-      Upgrade by messaging us on WhatsApp.
+      Upgrade by messaging us on WhatsApp — pay by <strong>card (Visa/Mastercard)</strong>, <strong>mobile banking</strong>, <strong>internet banking</strong>, or <strong>cash on delivery</strong>.
     </p>
   </div>
 
@@ -116,6 +116,7 @@
           {% else %}
           <a href="https://wa.me/67573817000?text={{ 'Hi! I want to upgrade to the Basic plan (K20/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
              class="btn btn-primary btn-block" target="_blank" rel="noopener">Upgrade via WhatsApp</a>
+          <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:8px">Card (Visa/Mastercard) · Mobile banking · Internet banking · Cash on delivery</div>
           {% endif %}
         {% else %}
         <a href="/register" class="btn btn-primary btn-block">Start free, upgrade later</a>
@@ -141,6 +142,7 @@
           {% else %}
           <a href="https://wa.me/67573817000?text={{ 'Hi! I want to upgrade to the Pro plan (K50/month) on CatalogKit. My email: ' ~ (current_user.email if current_user else '') | urlencode }}"
              class="btn btn-primary btn-block" target="_blank" rel="noopener">Upgrade via WhatsApp</a>
+          <div style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:8px">Card (Visa/Mastercard) · Mobile banking · Internet banking · Cash on delivery</div>
           {% endif %}
         {% else %}
         <a href="/register" class="btn btn-primary btn-block">Start free, upgrade later</a>
@@ -175,7 +177,7 @@
       </div>
       <div style="background:var(--surface2);border-radius:12px;padding:16px 18px">
         <div style="font-weight:700;font-size:0.875rem;margin-bottom:6px">How do I upgrade?</div>
-        <div style="font-size:0.83rem;color:var(--muted);line-height:1.6">Message us on WhatsApp and we'll activate your plan manually. We'll confirm within a few hours.</div>
+        <div style="font-size:0.83rem;color:var(--muted);line-height:1.6">Message us on WhatsApp and let us know how you'd like to pay — <strong>card (Visa/Mastercard)</strong>, <strong>mobile banking</strong>, <strong>internet banking</strong>, or <strong>cash on delivery</strong>. We'll activate your plan manually and confirm within a few hours.</div>
       </div>
       <div style="background:var(--surface2);border-radius:12px;padding:16px 18px">
         <div style="font-weight:700;font-size:0.875rem;margin-bottom:6px">When do my builds reset?</div>
