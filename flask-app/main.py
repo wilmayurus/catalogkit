@@ -78,23 +78,26 @@ def _sbucket(name):
     return _supabase_client.storage.from_(name)
 
 def storage_upload(bucket, path, data, content_type='image/jpeg'):
+    """Returns (ok, error_detail). error_detail is the raw exception text so
+    callers/UI can surface the *real* reason (e.g. bucket missing, bad key)
+    instead of a generic message."""
     if _supabase_client:
         try:
             _sbucket(bucket).upload(path, data, {'content-type': content_type, 'x-upsert': 'true'})
-            return True
+            return True, None
         except Exception as e:
             app.logger.error('storage_upload (supabase) failed: %s', e)
-            return False
+            return False, str(e)
     # Local filesystem fallback
     try:
         dest = _local_path(bucket, path)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         with open(dest, 'wb') as f:
             f.write(data if isinstance(data, bytes) else data.read())
-        return True
+        return True, None
     except Exception as e:
         app.logger.error('storage_upload (local) failed: %s', e)
-        return False
+        return False, str(e)
 
 def storage_download(bucket, path):
     if _supabase_client:
@@ -645,10 +648,10 @@ def upload(catalog_id):
             img.save(buf, 'JPEG', quality=82, optimize=True)
             buf.seek(0)
             fname = f'{uuid.uuid4().hex}.jpg'
-            ok = storage_upload(BUCKET_IMAGES, f'{pfx}/{fname}', buf.read(), 'image/jpeg')
+            ok, detail = storage_upload(BUCKET_IMAGES, f'{pfx}/{fname}', buf.read(), 'image/jpeg')
             if ok:
                 return fname, None
-            return None, 'Storage upload failed — check Supabase credentials and bucket.'
+            return None, f'Storage upload failed — {detail or "check Supabase credentials and bucket."}'
         except Exception as e:
             app.logger.error('upload_one failed: %s', e)
             return None, str(e)
@@ -721,7 +724,7 @@ def process(catalog_id):
             buf = io.BytesIO()
             img.save(buf, 'JPEG', quality=82, optimize=True, progressive=True)
             buf.seek(0)
-            ok = storage_upload(BUCKET_IMAGES, f'{proc_pfx}/{out_name}', buf.read())
+            ok, detail = storage_upload(BUCKET_IMAGES, f'{proc_pfx}/{out_name}', buf.read())
             if ok:
                 return i, {
                     'file':      out_name,
@@ -729,7 +732,7 @@ def process(catalog_id):
                     'price':     prices.get(filename, ''),
                     'item_name': names.get(filename, ''),
                 }, None
-            return i, None, f'Upload failed: {filename}'
+            return i, None, f'Upload failed: {filename} — {detail or "unknown error"}'
         except Exception as e:
             return i, None, str(e)
 
@@ -1323,11 +1326,11 @@ def profile():
                         storage_delete(BUCKET_LOGOS, [f'{user.id}/{user.logo_filename}'])
                     fname = f"logo_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
                     ct    = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
-                    ok = storage_upload(BUCKET_LOGOS, f'{user.id}/{fname}', logo_file.read(), ct)
+                    ok, detail = storage_upload(BUCKET_LOGOS, f'{user.id}/{fname}', logo_file.read(), ct)
                     if ok:
                         user.logo_filename = fname
                     else:
-                        flash('Logo upload failed — please try again.', 'error')
+                        flash(f'Logo upload failed — {detail or "please try again."}', 'error')
                 else:
                     flash('Logo must be JPG, PNG, or WebP.', 'error')
         db.session.commit()
