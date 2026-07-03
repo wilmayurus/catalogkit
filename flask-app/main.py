@@ -653,7 +653,10 @@ def upload(catalog_id):
             app.logger.error('upload_one failed: %s', e)
             return None, str(e)
 
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    # Kept low (2) — Render's free-tier instance has only 512MB RAM; too much
+    # concurrent Pillow decoding here was crashing/OOM-killing the single
+    # gunicorn worker mid-request, which looked like a generic network failure.
+    with ThreadPoolExecutor(max_workers=2) as ex:
         results = list(ex.map(_upload_one, tasks))
 
     uploaded = [fname for fname, err in results if fname]
@@ -730,7 +733,9 @@ def process(catalog_id):
         except Exception as e:
             return i, None, str(e)
 
-    with ThreadPoolExecutor(max_workers=6) as ex:
+    # Kept low (2) — see note in upload(): the free-tier instance's 512MB RAM
+    # can't handle high Pillow concurrency without the worker getting killed.
+    with ThreadPoolExecutor(max_workers=2) as ex:
         results = sorted(ex.map(_process_one, enumerate(order)), key=lambda r: r[0])
 
     processed = [r[1] for r in results if r[1] is not None]
