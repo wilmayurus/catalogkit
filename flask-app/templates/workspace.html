@@ -479,7 +479,15 @@ async function processImages(msg = 'Building catalog…') {
     setTimeout(() => setProgress(0), 500);
 
     let metaLine = `${data.count} page${data.count !== 1 ? 's' : ''} · 800×1000px · ready to share`;
-    clearStatus();
+
+    if (data.errors && data.errors.length) {
+      // Some images uploaded fine but failed while building the catalog —
+      // surface this instead of silently showing a shorter flipbook.
+      metaLine += ` — ⚠ ${data.errors.length} image${data.errors.length > 1 ? 's' : ''} could not be added: ${data.errors.join('; ')}`;
+      setStatus('error', `⚠ ${data.errors.length} image${data.errors.length > 1 ? 's' : ''} didn't make it into the catalog. Reorder/re-upload them and rebuild, or tap "Confirm & Build Catalog" again.`);
+    } else {
+      clearStatus();
+    }
 
     readyMeta.textContent = metaLine;
     readyCard.classList.remove('hidden');

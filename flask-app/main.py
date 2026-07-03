@@ -736,9 +736,12 @@ def process(catalog_id):
         except Exception as e:
             return i, None, str(e)
 
-    # Kept low (2) — see note in upload(): the free-tier instance's 512MB RAM
-    # can't handle high Pillow concurrency without the worker getting killed.
-    with ThreadPoolExecutor(max_workers=2) as ex:
+    # Serial (1) — running these downloads/uploads concurrently against the
+    # same Supabase client was intermittently dropping pages (some images
+    # would silently fail to download/upload while others succeeded). Doing
+    # this in-order trades a bit of speed for reliability, which matters more
+    # for a handful of catalog images.
+    with ThreadPoolExecutor(max_workers=1) as ex:
         results = sorted(ex.map(_process_one, enumerate(order)), key=lambda r: r[0])
 
     processed = [r[1] for r in results if r[1] is not None]
