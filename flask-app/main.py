@@ -51,8 +51,12 @@ db   = SQLAlchemy(app)
 mail = Mail(app)
 
 # ── Storage (Supabase when configured, local filesystem otherwise) ─────────────
+# Prefer the service-role key for server-side storage ops: this backend already
+# gates uploads behind login_required, and the service key bypasses bucket RLS
+# policies that would otherwise block writes made with the anon key.
 _SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
-_SUPABASE_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
+_SUPABASE_KEY = (os.environ.get('SUPABASE_SERVICE_KEY')
+                 or os.environ.get('SUPABASE_ANON_KEY', ''))
 _supabase_client = None
 if _SUPABASE_URL and _SUPABASE_KEY:
     from supabase import create_client
