@@ -578,9 +578,16 @@ nav {
   color: #e2e8f0;
   font-size: 0.55rem;
   font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  min-width: 0;
+  max-width: 42%;
+  flex-shrink: 1;
+}
+
+.page-footer-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .page-footer-icon {
