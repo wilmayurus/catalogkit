@@ -311,6 +311,7 @@ class AgencyRequest(db.Model):
     catalog_plan       = db.Column(db.String(20),  default='free')
     status             = db.Column(db.String(30),  default='New Request')
     submitted_at       = db.Column(db.DateTime,    default=datetime.utcnow)
+    completed_at       = db.Column(db.DateTime,    nullable=True)
     user_id            = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     user               = db.relationship('User', backref=db.backref('agency_requests', lazy=True))
 
@@ -1637,6 +1638,10 @@ def update_agency_status(ar_id):
         return redirect(url_for('admin'))
 
     if new_status in allowed:
+        if new_status == 'Completed' and ar.status != 'Completed':
+            ar.completed_at = datetime.utcnow()
+        elif new_status != 'Completed':
+            ar.completed_at = None
         ar.status = new_status
         if linked_user_id:
             linked_user = db.session.get(User, int(linked_user_id))
@@ -1986,9 +1991,60 @@ def admin_reports():
 
         recent_payments = PaymentRequest.query.order_by(PaymentRequest.submitted_at.desc()).limit(15).all()
 
+        # ── Revenue by period (day / week / month / quarter / year) ──
+        period = request.args.get('period', 'month')
+        if period not in ('day', 'week', 'month', 'quarter', 'year'):
+            period = 'month'
+
+        def _bucket(dt):
+            if period == 'day':
+                return dt.strftime('%Y-%m-%d'), dt.strftime('%d %b %Y')
+            if period == 'week':
+                start = dt - timedelta(days=dt.weekday())
+                return start.strftime('%Y-%m-%d'), 'Week of ' + start.strftime('%d %b %Y')
+            if period == 'month':
+                return dt.strftime('%Y-%m'), dt.strftime('%b %Y')
+            if period == 'quarter':
+                q = (dt.month - 1) // 3 + 1
+                return f'{dt.year}-Q{q}', f'Q{q} {dt.year}'
+            return str(dt.year), str(dt.year)
+
+        buckets = {}
+        for p in pr_approved:
+            when = p.resolved_at or p.submitted_at
+            if not when:
+                continue
+            key, label = _bucket(when)
+            b = buckets.setdefault(key, {'label': label, 'plan_revenue': 0, 'agency_revenue': 0, 'tx_count': 0})
+            b['plan_revenue'] += int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0)
+            b['tx_count'] += 1
+
+        for a in agency_completed:
+            when = a.completed_at or a.submitted_at
+            if not when:
+                continue
+            key, label = _bucket(when)
+            b = buckets.setdefault(key, {'label': label, 'plan_revenue': 0, 'agency_revenue': 0, 'tx_count': 0})
+            b['agency_revenue'] += a.total_due
+            b['tx_count'] += 1
+
+        period_rows = []
+        for key in sorted(buckets.keys(), reverse=True):
+            b = buckets[key]
+            period_rows.append({
+                'label': b['label'],
+                'plan_revenue': b['plan_revenue'],
+                'agency_revenue': b['agency_revenue'],
+                'total': b['plan_revenue'] + b['agency_revenue'],
+                'tx_count': b['tx_count'],
+            })
+        period_total = sum(r['total'] for r in period_rows)
+        period_labels = {'day': 'Day', 'week': 'Week', 'month': 'Month', 'quarter': 'Quarter', 'year': 'Year'}
+
         ctx.update(plan_counts=plan_counts, plan_prices=plan_prices, mrr=mrr,
             pr_pending=pr_pending, pr_approved_count=len(pr_approved), pr_rejected=pr_rejected,
             approved_total=approved_total, pr_by_method=pr_by_method, revenue_weeks=revenue_weeks,
+            period=period, period_label=period_labels[period], period_rows=period_rows, period_total=period_total,
             agency_total=len(agency_all), agency_completed_count=len(agency_completed),
             agency_revenue=agency_revenue, agency_by_plan=agency_by_plan,
             recent_payments=recent_payments)
@@ -2081,6 +2137,7 @@ with app.app_context():
         'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE',
         "ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS catalog_plan VARCHAR(20) DEFAULT 'free'",
         'ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES "user"(id)',
+        'ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP',
         '''CREATE TABLE IF NOT EXISTS payment_request (
             id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL REFERENCES "user"(id),
