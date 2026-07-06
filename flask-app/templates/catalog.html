@@ -307,28 +307,30 @@
         {% endif %}
 
         <!-- Payment & Delivery Info -->
+        {% if payment_methods_list or delivery_methods_list %}
         <div class="cb-info-wrap">
+          {% if payment_methods_list %}
           <div class="cb-info-block">
             <p class="cb-info-title">💳 Payment Options</p>
-            <p class="cb-info-intro">We accept payments through all major PNG banks and mobile wallets:</p>
             <ul class="cb-info-list">
-              <li><strong>Internet &amp; Corporate Banking:</strong> Online transfers via BSP, Kina Bank, Westpac, TISA Bank, NBCL, and Credit Bank PNG.</li>
-              <li><strong>Mobile Banking Apps &amp; USSD:</strong> Quick payments via all major bank apps or shortcodes (including BSP *131# and Westpac).</li>
-              <li><strong>Digital Wallets:</strong> Wantok Wallet (BSP) and YumiPei Wallet (TISA).</li>
-              <li><strong>Cash on Delivery (COD):</strong> Pay in person upon receiving your order.</li>
+              {% for method in payment_methods_list %}
+              <li>{{ method }}</li>
+              {% endfor %}
             </ul>
           </div>
+          {% endif %}
+          {% if delivery_methods_list %}
           <div class="cb-info-block">
             <p class="cb-info-title">🚚 Delivery &amp; Collection</p>
-            <p class="cb-info-intro">Choose the most convenient way to receive your items:</p>
             <ul class="cb-info-list">
-              <li><strong>National Postal Services:</strong> Reliable shipping via EMS and Post PNG.</li>
-              <li><strong>Courier &amp; Freight Services:</strong> Fast domestic and international shipping via DHL, TNT, and UPS / EFM.</li>
-              <li><strong>In-Store Pick-Up:</strong> Collect your order directly from our shopfront, warehouse, or office.</li>
-              <li><strong>Agent Collection:</strong> Pick up your items at your designated local post office or holding agent.</li>
+              {% for method in delivery_methods_list %}
+              <li>{{ method }}</li>
+              {% endfor %}
             </ul>
           </div>
+          {% endif %}
         </div>
+        {% endif %}
 
         <!-- Footer Links -->
         <div class="cb-footer">

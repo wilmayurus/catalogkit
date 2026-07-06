@@ -79,32 +79,41 @@
     </div>
 
     <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
-      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Payment & Delivery Options</h3>
-      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">
-        These standard PNG-wide payment and delivery options are shown automatically on the last page of every catalog and PDF — nothing to set up here.
-      </p>
+      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Payment Options</h3>
+      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the payment options your business accepts. These will show on the last page of your digital flipbook and PDF.</p>
 
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px">
-        <p style="font-size:0.82rem;font-weight:700;margin:0 0 6px">💳 Payment Options</p>
-        <p class="text-muted" style="font-size:0.78rem;margin:0 0 8px">We accept payments through all major PNG banks and mobile wallets:</p>
-        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
-          <li style="font-size:0.8rem;color:var(--text)"><strong>Internet &amp; Corporate Banking:</strong> BSP, Kina Bank, Westpac, TISA Bank, NBCL, Credit Bank PNG</li>
-          <li style="font-size:0.8rem;color:var(--text)"><strong>Mobile Banking Apps &amp; USSD:</strong> BSP *131#, Westpac, and others</li>
-          <li style="font-size:0.8rem;color:var(--text)"><strong>Digital Wallets:</strong> Wantok Wallet (BSP), YumiPei Wallet (TISA)</li>
-          <li style="font-size:0.8rem;color:var(--text)"><strong>Cash on Delivery (COD)</strong></li>
-        </ul>
-      </div>
+      {% set saved_pay = (user.payment_methods or '[]') | fromjson %}
 
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
-        <p style="font-size:0.82rem;font-weight:700;margin:0 0 6px">🚚 Delivery &amp; Collection</p>
-        <p class="text-muted" style="font-size:0.78rem;margin:0 0 8px">Choose the most convenient way to receive your items:</p>
-        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
-          <li style="font-size:0.8rem;color:var(--text)"><strong>National Postal Services:</strong> EMS, Post PNG</li>
-          <li style="font-size:0.8rem;color:var(--text)"><strong>Courier &amp; Freight Services:</strong> DHL, TNT, UPS / EFM</li>
-          <li style="font-size:0.8rem;color:var(--text)"><strong>In-Store Pick-Up</strong></li>
-          <li style="font-size:0.8rem;color:var(--text)"><strong>Agent Collection:</strong> local post office / holding agent</li>
-        </ul>
+      {% set payment_groups = [
+        ('Internet & Corporate Banking', [
+          'BSP', 'Kina Bank', 'Westpac', 'TISA Bank', 'NBCL', 'Credit Bank PNG',
+        ]),
+        ('Mobile Banking Apps & USSD', [
+          'BSP *131#', 'Westpac', 'Kina Bank', 'TISA Bank', 'NBCL', 'ANZ goMoney',
+        ]),
+        ('Digital Wallets', [
+          'Wantok Wallet (BSP)', 'YumiPei Wallet (TISA)',
+        ]),
+        ('Cash Payment', [
+          'Cash on Delivery (COD)',
+        ]),
+      ] %}
+
+      {% for group_name, methods in payment_groups %}
+      <div style="margin-bottom:16px">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">{{ group_name }}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          {% for method in methods %}
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.875rem">
+            <input type="checkbox" name="payment_methods" value="{{ method }}"
+                   {% if method in saved_pay %}checked{% endif %}
+                   style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+            {{ method }}
+          </label>
+          {% endfor %}
+        </div>
       </div>
+      {% endfor %}
 
       <div class="field" style="margin-top:18px">
         <label>Account Details <span class="text-muted" style="font-weight:400;font-size:0.8rem">(optional)</span></label>
@@ -113,6 +122,41 @@
                   style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.88rem;resize:vertical">{{ user.bank_account_details or '' }}</textarea>
         <p class="text-muted" style="font-size:0.78rem;margin:4px 0 0">For your own records — not currently shown on the catalog.</p>
       </div>
+    </div>
+
+    <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
+      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Delivery & Collection Options</h3>
+      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the delivery methods you offer. These will show on the last page of your digital flipbook and PDF.</p>
+
+      {% set saved_delv = (user.delivery_methods or '[]') | fromjson %}
+
+      {% set delivery_groups = [
+        ('National Postal Services', [
+          'EMS', 'Post PNG',
+        ]),
+        ('Courier & Freight Services', [
+          'DHL', 'TNT', 'UPS / EFM',
+        ]),
+        ('Pick-Up', [
+          'In-Store Pick-Up', 'Agent Collection (local post office / holding agent)',
+        ]),
+      ] %}
+
+      {% for group_name, methods in delivery_groups %}
+      <div style="margin-bottom:16px">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">{{ group_name }}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          {% for method in methods %}
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.875rem">
+            <input type="checkbox" name="delivery_methods" value="{{ method }}"
+                   {% if method in saved_delv %}checked{% endif %}
+                   style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
+            {{ method }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
     </div>
 
     {% if not current_user.is_admin %}

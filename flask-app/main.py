@@ -1132,42 +1132,41 @@ def _make_back_cover(catalog, user):
         _centered_text(draw, f"WhatsApp Us: {user.whatsapp}", W // 2, y + 12,
                        _font(_FONT_BOLD, 17), (255, 255, 255))
         y += 58
-    # payment / delivery info — fixed PNG-wide copy, matches the digital flipbook
+    # payment / delivery info — per-vendor selections, matches the digital flipbook
+    pay_items  = json.loads(user.payment_methods  or '[]')
+    delv_items = json.loads(user.delivery_methods or '[]')
     PAYMENT_DELIVERY_INFO = [
-        ('PAYMENT OPTIONS', [
-            'Internet & Corporate Banking: BSP, Kina Bank, Westpac, TISA Bank, NBCL, Credit Bank PNG',
-            'Mobile Banking Apps & USSD: BSP *131#, Westpac, and others',
-            'Digital Wallets: Wantok Wallet (BSP), YumiPei Wallet (TISA)',
-            'Cash on Delivery (COD)',
-        ], (237, 233, 254), (91, 33, 182)),
-        ('DELIVERY & COLLECTION', [
-            'National Postal Services: EMS, Post PNG',
-            'Courier & Freight Services: DHL, TNT, UPS / EFM',
-            'In-Store Pick-Up',
-            'Agent Collection: local post office / holding agent',
-        ], (220, 252, 231), (21, 128, 61)),
+        ('PAYMENT OPTIONS', pay_items, (237, 233, 254), (91, 33, 182)),
+        ('DELIVERY & COLLECTION', delv_items, (220, 252, 231), (21, 128, 61)),
     ]
     col_w = (W - 120 - 10) // 2
-    for col_idx, (label, items, badge_fill, badge_txt) in enumerate(PAYMENT_DELIVERY_INFO):
-        bx = pad + col_idx * (col_w + 10)
-        wrapped = []
-        for it in items:
-            wrapped.extend(_wrap_lines(it, _font(_FONT_REG, 9), col_w - 20))
-        bh2 = 28 + len(wrapped) * 14 + 10
-        try:
-            draw.rounded_rectangle([bx, y, bx + col_w, y + bh2], radius=7,
-                                    fill=(248, 249, 251), outline=(226, 232, 240))
-        except AttributeError:
-            draw.rectangle([bx, y, bx + col_w, y + bh2], fill=(248, 249, 251), outline=(226, 232, 240))
-        draw.text((bx + 10, y + 8), label, font=_font(_FONT_BOLD, 11), fill=(100, 116, 139))
-        my = y + 26
-        for line in wrapped:
-            draw.text((bx + 10, my), line, font=_font(_FONT_REG, 9), fill=(71, 85, 105))
-            my += 14
-    y = y + max(
-        28 + sum(len(_wrap_lines(it, _font(_FONT_REG, 9), col_w - 20)) for it in PAYMENT_DELIVERY_INFO[0][1]) * 14 + 10,
-        28 + sum(len(_wrap_lines(it, _font(_FONT_REG, 9), col_w - 20)) for it in PAYMENT_DELIVERY_INFO[1][1]) * 14 + 10,
-    ) + 16
+    if pay_items or delv_items:
+        for col_idx, (label, items, badge_fill, badge_txt) in enumerate(PAYMENT_DELIVERY_INFO):
+            bx = pad + col_idx * (col_w + 10)
+            wrapped = []
+            for it in items:
+                wrapped.extend(_wrap_lines(it, _font(_FONT_REG, 9), col_w - 20))
+            if not wrapped:
+                wrapped = ['Not specified']
+            bh2 = 28 + len(wrapped) * 14 + 10
+            try:
+                draw.rounded_rectangle([bx, y, bx + col_w, y + bh2], radius=7,
+                                        fill=(248, 249, 251), outline=(226, 232, 240))
+            except AttributeError:
+                draw.rectangle([bx, y, bx + col_w, y + bh2], fill=(248, 249, 251), outline=(226, 232, 240))
+            draw.text((bx + 10, y + 8), label, font=_font(_FONT_BOLD, 11), fill=(100, 116, 139))
+            my = y + 26
+            for line in wrapped:
+                draw.text((bx + 10, my), line, font=_font(_FONT_REG, 9), fill=(71, 85, 105))
+                my += 14
+        def _col_height(items):
+            wrapped = []
+            for it in items:
+                wrapped.extend(_wrap_lines(it, _font(_FONT_REG, 9), col_w - 20))
+            if not wrapped:
+                wrapped = ['x']
+            return 28 + len(wrapped) * 14 + 10
+        y = y + max(_col_height(pay_items), _col_height(delv_items)) + 16
     # footer links
     fy = H - 52
     draw.line([(pad, fy), (W - pad, fy)], fill=(241, 245, 249), width=1)
@@ -1338,6 +1337,10 @@ def profile():
         user.phone          = request.form.get('phone', '').strip() or None
         user.email          = request.form.get('email', '').strip().lower() or user.email
         user.facebook_url   = request.form.get('facebook_url', '').strip() or None
+        pay  = request.form.getlist('payment_methods')
+        delv = request.form.getlist('delivery_methods')
+        user.payment_methods      = json.dumps(pay)  if pay  else None
+        user.delivery_methods     = json.dumps(delv) if delv else None
         user.bank_account_details = request.form.get('bank_account_details', '').strip() or None
         log_activity(user.id, 'profile_updated', 'Profile information updated')
         # ── Branding (free for all users) ─────────────────────────────────────
