@@ -792,6 +792,37 @@ def rename_catalog(catalog_id):
         log_activity(user.id, 'catalog_renamed', name)
     return jsonify({'name': catalog.name})
 
+@app.route('/workspace/<int:catalog_id>/unlock', methods=['POST'])
+@login_required
+def unlock_catalog(catalog_id):
+    """Seller has confirmed they understand editing a published catalog will
+    consume another build once they re-confirm/rebuild. Unpublishes it so it
+    becomes editable again, without wiping the existing pages/prices."""
+    user    = current_user()
+    catalog = get_catalog_or_404(catalog_id, user)
+    if not catalog:
+        return jsonify({'error': 'Not found'}), 404
+    if not catalog.is_published:
+        return jsonify({'ok': True, 'already_unlocked': True})
+
+    if not user.is_admin and not user.is_moderator:
+        user.reset_monthly_if_needed()
+        limit = user.monthly_limit
+        if limit is not None and (user.monthly_builds_used or 0) >= limit:
+            db.session.commit()
+            plan_names = {'free': 'Free (3/month)', 'basic': 'Basic (20/month)'}
+            label = plan_names.get(user.plan, user.plan_label)
+            return jsonify({
+                'error': f"You've used all {limit} builds for this month on the {label} plan. "
+                         f"Upgrade your plan or wait until next month to edit this catalog.",
+                'limit_reached': True
+            }), 403
+
+    catalog.is_published = False
+    db.session.commit()
+    log_activity(user.id, 'catalog_unlocked', catalog.name)
+    return jsonify({'ok': True})
+
 @app.route('/workspace/<int:catalog_id>/clear', methods=['POST'])
 @login_required
 def clear(catalog_id):
