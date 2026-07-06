@@ -142,6 +142,23 @@
     </div>
     {% endif %}
 
+    <!-- Tester flag -->
+    <div class="admin-section" style="margin-bottom:20px">
+      <div class="admin-section-head">
+        <div class="admin-section-title">🧪 Tester</div>
+      </div>
+      <div class="admin-section-body" style="padding:20px 24px">
+        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer">
+          <input type="checkbox" name="is_tester" {% if u.is_tester %}checked{% endif %}
+                 style="margin-top:3px;width:16px;height:16px;accent-color:var(--accent)">
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;color:var(--text)">Mark as tester</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">Tester accounts are flagged for internal QA — use this for accounts you use to try out new features without affecting real user metrics.</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
     <!-- Reset password -->
     <div class="admin-section" style="margin-bottom:24px">
       <div class="admin-section-head">

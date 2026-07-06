@@ -197,6 +197,7 @@ class User(db.Model):
     monthly_reset_date  = db.Column(db.Date, nullable=True)
     is_admin      = db.Column(db.Boolean, default=False)
     is_moderator  = db.Column(db.Boolean, default=False)
+    is_tester     = db.Column(db.Boolean, default=False)
     is_suspended  = db.Column(db.Boolean, default=False)
     suspended_at  = db.Column(db.DateTime, nullable=True)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
@@ -1636,6 +1637,35 @@ def set_user_role(user_id):
     flash(f'{target.name}\'s role updated to {role.title()}.', 'success')
     return redirect(url_for('admin'))
 
+@app.route('/admin/user/create', methods=['POST'])
+@full_admin_required
+def admin_create_user():
+    me       = db.session.get(User, session['user_id'])
+    name     = request.form.get('name', '').strip()
+    email    = request.form.get('email', '').strip().lower()
+    password = request.form.get('password', '')
+    access_level = request.form.get('access_level', 'user')
+    is_tester    = request.form.get('is_tester') == 'on'
+    if not name or not email or not password:
+        flash('Name, email and password are required.', 'error')
+        return redirect(url_for('admin'))
+    if len(password) < 6:
+        flash('Password must be at least 6 characters.', 'error')
+        return redirect(url_for('admin'))
+    if User.query.filter_by(email=email).first():
+        flash('An account with that email already exists.', 'error')
+        return redirect(url_for('admin'))
+    user = User(name=name, email=email,
+                password_hash=generate_password_hash(password),
+                is_admin=(access_level == 'admin'),
+                is_moderator=(access_level == 'moderator'),
+                is_tester=is_tester)
+    db.session.add(user)
+    db.session.commit()
+    log_activity(user.id, 'user_created_by_admin', f'Account created by admin {me.email}')
+    flash(f'{user.name}\'s account has been created.', 'success')
+    return redirect(url_for('admin'))
+
 @app.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
 @full_admin_required
 def admin_edit_user(user_id):
@@ -1668,6 +1698,7 @@ def admin_edit_user(user_id):
             level = request.form.get('access_level', 'user')
             target.is_admin     = (level == 'admin')
             target.is_moderator = (level == 'moderator')
+        target.is_tester = request.form.get('is_tester') == 'on'
         # Plan — lets the admin activate a plan directly (e.g. after a
         # WhatsApp payment) without needing a PaymentRequest record.
         new_plan = request.form.get('plan')
@@ -1873,6 +1904,7 @@ with app.app_context():
     _migrations = [
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_builds_used INTEGER DEFAULT 0',
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_reset_date DATE',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_tester BOOLEAN DEFAULT FALSE',
         'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE',
         '''CREATE TABLE IF NOT EXISTS payment_request (
             id SERIAL PRIMARY KEY,
