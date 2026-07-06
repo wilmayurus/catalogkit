@@ -1936,6 +1936,13 @@ def pricing():
     return render_template('pricing.html')
 
 
+# ── Contact & FAQ page ──────────────────────────────────────────────────────────
+
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+
 # ── Context processor ─────────────────────────────────────────────────────────
 
 @app.context_processor

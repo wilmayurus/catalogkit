@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Contact & FAQ — CatalogKit{% endblock %}
+{% block head %}
+<style>
+.faq-item { background: var(--surface2); border-radius: 12px; padding: 16px 18px; }
+.faq-q { font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; }
+.faq-a { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+.contact-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+</style>
+{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:40px;max-width:680px">
+
+  <div style="text-align:center;margin-bottom:36px">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:10px">Contact &amp; FAQ</h1>
+    <p style="color:var(--muted);font-size:0.95rem;line-height:1.6">
+      Got a question or stuck on something? We're just a WhatsApp message away.
+    </p>
+  </div>
+
+  {# ── Contact options ── #}
+  <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:48px">
+    <div class="contact-card">
+      <div style="font-size:1.8rem">&#128241;</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:0.95rem;margin-bottom:2px">WhatsApp us</div>
+        <div style="font-size:0.83rem;color:var(--muted)">Fastest way to reach us — questions, upgrades, or support</div>
+      </div>
+      <a href="https://wa.me/67573817000?text={{ 'Hi! I have a question about CatalogKit.' | urlencode }}"
+         target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:6px;background:#25d366;color:#fff;text-decoration:none;border-radius:10px;padding:10px 16px;font-size:0.85rem;font-weight:700;white-space:nowrap">
+        Chat now
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div style="font-size:1.8rem">&#128101;</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:0.95rem;margin-bottom:2px">Prefer help in person?</div>
+        <div style="font-size:0.83rem;color:var(--muted)">Book our Done-For-You setup — an agent visits your stall</div>
+      </div>
+      <a href="/assisted-setup"
+         style="display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;text-decoration:none;border-radius:10px;padding:10px 16px;font-size:0.85rem;font-weight:700;white-space:nowrap">
+        Book a visit
+      </a>
+    </div>
+  </div>
+
+  {# ── FAQ ── #}
+  <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:18px;text-align:center">Frequently asked questions</h2>
+  <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:40px">
+
+    <div class="faq-item">
+      <div class="faq-q">Is CatalogKit really free?</div>
+      <div class="faq-a">Yes — the Free plan gives you 3 catalog builds a month at no cost, forever. You only pay if you need more builds (Basic or Pro plans) or want our agent to set things up for you in person.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do I need a computer or fast internet?</div>
+      <div class="faq-a">No. CatalogKit works on any smartphone browser, and images are compressed automatically so it works fine on slower mobile data.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What counts as a "build"?</div>
+      <div class="faq-a">Every time you click <em>Confirm &amp; Build Catalog</em>, that uses one build. Viewing the flipbook or downloading the PDF is always free and doesn't count.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I edit a catalog after it's built?</div>
+      <div class="faq-a">Yes. Open the catalog and choose "Edit Catalog" — you'll be asked to confirm first, since re-building uses one build from your plan. Your images and prices stay exactly as they were until you rebuild.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How do I share my catalog?</div>
+      <div class="faq-a">Once built, you get a shareable link and a one-tap WhatsApp share button. You can also download a PDF version to send directly.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How do I upgrade my plan?</div>
+      <div class="faq-a">Message us on WhatsApp and let us know how you'd like to pay — mobile banking, internet banking, or cash on delivery. We'll confirm and activate your plan, usually within a few hours.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What if I don't want to do the setup myself?</div>
+      <div class="faq-a">Book our Done-For-You service — an agent visits your stall, sets everything up, and builds your first catalog with you on the spot. You can also choose a paid plan add-on at booking time.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">When do my monthly builds reset?</div>
+      <div class="faq-a">On the 1st of every calendar month, your build count resets to zero automatically.</div>
+    </div>
+
+  </div>
+
+  <p style="text-align:center;font-size:0.85rem;color:var(--muted)">
+    Still stuck? <a href="https://wa.me/67573817000?text={{ 'Hi! I have a question about CatalogKit.' | urlencode }}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700;text-decoration:none">Message us on WhatsApp</a> — we're happy to help.
+  </p>
+
+</div>
+{% endblock %}

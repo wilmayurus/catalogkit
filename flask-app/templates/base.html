@@ -18,6 +18,7 @@
       <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Catalogs</a>
       {% if not current_user.is_admin %}<a href="/assisted-setup" {% if request.endpoint == 'assisted_setup' %}class="active"{% endif %}>Done For You</a>{% endif %}
       <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>Profile</a>
+      <a href="/contact" {% if request.endpoint == 'contact' %}class="active"{% endif %}>Contact</a>
       {% if current_user.is_admin %}
         <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
       {% endif %}
@@ -26,6 +27,7 @@
       </div>
     {% else %}
       <a href="/pricing" {% if request.endpoint == 'pricing' %}class="active"{% endif %}>Pricing</a>
+      <a href="/contact" {% if request.endpoint == 'contact' %}class="active"{% endif %}>Contact</a>
       <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
       <a href="/register" class="btn btn-primary btn-sm">Sign up</a>
     {% endif %}
@@ -48,7 +50,9 @@
   <p style="font-size:0.78rem;color:var(--muted);margin:0">
     <a href="/pricing" style="color:var(--muted);text-decoration:none">Pricing</a>
     &nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="/assisted-setup" style="color:var(--muted);text-decoration:none">Help</a>
+    <a href="/contact" style="color:var(--muted);text-decoration:none">Contact &amp; FAQ</a>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="/assisted-setup" style="color:var(--muted);text-decoration:none">Done For You</a>
   </p>
   <hr style="border:none;border-top:1px solid var(--border);max-width:200px;margin:12px auto">
   <p style="font-size:0.78rem;color:var(--muted);margin:0">
