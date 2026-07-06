@@ -21,12 +21,57 @@
       </div>
       <div class="field">
         <label for="password">Password <span class="field-hint">min. 6 characters</span></label>
-        <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="new-password" minlength="6">
+        <div style="position:relative">
+          <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="new-password" minlength="6" style="padding-right:44px;width:100%">
+          <button type="button" onclick="togglePwd('password', this)" aria-label="Show password"
+                  style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:4px">👁</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="confirm_password">Confirm password</label>
+        <div style="position:relative">
+          <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required autocomplete="new-password" minlength="6" style="padding-right:44px;width:100%">
+          <button type="button" onclick="togglePwd('confirm_password', this)" aria-label="Show password"
+                  style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1.1rem;line-height:1;padding:4px">👁</button>
+        </div>
+        <p id="pwd-mismatch" class="field-hint" style="color:var(--danger);display:none;margin-top:4px">Passwords do not match</p>
       </div>
       <button type="submit" class="btn btn-primary btn-block" style="font-size:0.98rem;padding:13px;font-weight:700">
         Create my account →
       </button>
     </form>
+
+    <script>
+      function togglePwd(id, btn) {
+        const input = document.getElementById(id);
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        btn.textContent = showing ? '👁' : '🙈';
+      }
+      (function () {
+        const form = document.querySelector('.auth-form');
+        const pwd = document.getElementById('password');
+        const confirm = document.getElementById('confirm_password');
+        const mismatch = document.getElementById('pwd-mismatch');
+        function checkMatch() {
+          if (confirm.value && pwd.value !== confirm.value) {
+            mismatch.style.display = 'block';
+            confirm.setCustomValidity('Passwords do not match');
+          } else {
+            mismatch.style.display = 'none';
+            confirm.setCustomValidity('');
+          }
+        }
+        pwd.addEventListener('input', checkMatch);
+        confirm.addEventListener('input', checkMatch);
+        form.addEventListener('submit', function (e) {
+          if (pwd.value !== confirm.value) {
+            e.preventDefault();
+            checkMatch();
+          }
+        });
+      })();
+    </script>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for cat, msg in messages %}

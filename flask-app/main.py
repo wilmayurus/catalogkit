@@ -476,11 +476,15 @@ def register():
     if 'user_id' in session:
         return redirect(url_for('index'))
     if request.method == 'POST':
-        name     = request.form.get('name', '').strip()
-        email    = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
-        if not name or not email or not password:
+        name             = request.form.get('name', '').strip()
+        email            = request.form.get('email', '').strip().lower()
+        password         = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        if not name or not email or not password or not confirm_password:
             flash('All fields are required.', 'error')
+            return render_template('register.html')
+        if password != confirm_password:
+            flash('Passwords do not match.', 'error')
             return render_template('register.html')
         if len(password) < 6:
             flash('Password must be at least 6 characters.', 'error')

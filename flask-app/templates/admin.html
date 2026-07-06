@@ -176,7 +176,7 @@
     <div class="admin-tbl-wrap">
       <table class="admin-tbl">
         <thead>
-          <tr><th>User</th><th>Status</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
+          <tr><th>User</th><th>Status</th><th>Plan</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
         </thead>
         <tbody>
           {% for u in all_users %}
@@ -196,6 +196,15 @@
                 <span class="chip chip-blue"><span class="status-dot" style="background:#60a5fa"></span> Moderator</span>
               {% else %}
                 <span class="chip chip-green"><span class="status-dot" style="background:#3ecf8e"></span> User</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if u.plan == 'pro' %}
+                <span class="chip chip-yellow">Pro</span>
+              {% elif u.plan == 'basic' %}
+                <span class="chip chip-blue">Basic</span>
+              {% else %}
+                <span class="chip chip-gray">Free</span>
               {% endif %}
             </td>
             <td style="text-align:center">{{ u.catalog_count }}</td>
