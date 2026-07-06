@@ -79,104 +79,40 @@
     </div>
 
     <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
-      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Payment Methods</h3>
-      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the payment options your business accepts.</p>
+      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Payment & Delivery Options</h3>
+      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">
+        These standard PNG-wide payment and delivery options are shown automatically on the last page of every catalog and PDF — nothing to set up here.
+      </p>
 
-      {% set saved_pay = (user.payment_methods or '[]') | fromjson %}
-
-      {% set payment_groups = [
-        ('Internet Banking', [
-          'BSP Internet Banking / Business Online (Bank South Pacific)',
-          'Kina Personal Online / Corporate Online (Kina Bank)',
-          'Westpac Corporate Online / Internet Banking (Westpac PNG)',
-          'TISA Internet Banking (Tisa Bank)',
-          'NBCL Online Banking (National Banking Corporation)',
-          'CBP Internet Banking (Credit Bank PNG)',
-        ]),
-        ('Mobile Banking', [
-          'BSP Mobile Banking App & USSD (*131#) (Bank South Pacific)',
-          'Kina Mobile Banking App (Kina Bank)',
-          'TISA Bank App (Tisa Bank)',
-          'NBCL Mobile Banking App (National Banking Corporation)',
-          'CBP Mobile Banking App (Credit Bank PNG)',
-          'Westpac PNG Mobile Banking App & USSD (Westpac PNG)',
-          'ANZ goMoney PNG (ANZ Bank)',
-        ]),
-        ('Mobile E-Wallets & QR Networks', [
-          'Wantok Wallet (Bank South Pacific)',
-          'YumiPei Wallet (Tisa Bank)',
-          'Pei Beta Wallet / Kina Pei (Kina Bank)',
-          'SevisWallet / SevisPay (Independent / National Digital ID Network)',
-        ]),
-        ('Cash Payment', [
-          'Cash on Delivery (COD)',
-        ]),
-      ] %}
-
-      {% for group_name, methods in payment_groups %}
-      <div style="margin-bottom:16px">
-        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">{{ group_name }}</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          {% for method in methods %}
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.875rem">
-            <input type="checkbox" name="payment_methods" value="{{ method }}"
-                   {% if method in saved_pay %}checked{% endif %}
-                   style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
-            {{ method }}
-          </label>
-          {% endfor %}
-        </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px">
+        <p style="font-size:0.82rem;font-weight:700;margin:0 0 6px">💳 Payment Options</p>
+        <p class="text-muted" style="font-size:0.78rem;margin:0 0 8px">We accept payments through all major PNG banks and mobile wallets:</p>
+        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+          <li style="font-size:0.8rem;color:var(--text)"><strong>Internet &amp; Corporate Banking:</strong> BSP, Kina Bank, Westpac, TISA Bank, NBCL, Credit Bank PNG</li>
+          <li style="font-size:0.8rem;color:var(--text)"><strong>Mobile Banking Apps &amp; USSD:</strong> BSP *131#, Westpac, and others</li>
+          <li style="font-size:0.8rem;color:var(--text)"><strong>Digital Wallets:</strong> Wantok Wallet (BSP), YumiPei Wallet (TISA)</li>
+          <li style="font-size:0.8rem;color:var(--text)"><strong>Cash on Delivery (COD)</strong></li>
+        </ul>
       </div>
-      {% endfor %}
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <p style="font-size:0.82rem;font-weight:700;margin:0 0 6px">🚚 Delivery &amp; Collection</p>
+        <p class="text-muted" style="font-size:0.78rem;margin:0 0 8px">Choose the most convenient way to receive your items:</p>
+        <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px">
+          <li style="font-size:0.8rem;color:var(--text)"><strong>National Postal Services:</strong> EMS, Post PNG</li>
+          <li style="font-size:0.8rem;color:var(--text)"><strong>Courier &amp; Freight Services:</strong> DHL, TNT, UPS / EFM</li>
+          <li style="font-size:0.8rem;color:var(--text)"><strong>In-Store Pick-Up</strong></li>
+          <li style="font-size:0.8rem;color:var(--text)"><strong>Agent Collection:</strong> local post office / holding agent</li>
+        </ul>
+      </div>
 
       <div class="field" style="margin-top:18px">
         <label>Account Details <span class="text-muted" style="font-weight:400;font-size:0.8rem">(optional)</span></label>
         <textarea name="bank_account_details" rows="3"
                   placeholder="e.g. BSP Account: 1000 1234 5678 — Name: Grace Kila"
                   style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.88rem;resize:vertical">{{ user.bank_account_details or '' }}</textarea>
-        <p class="text-muted" style="font-size:0.78rem;margin:4px 0 0">Shown on your catalog back page so customers know where to transfer payment.</p>
+        <p class="text-muted" style="font-size:0.78rem;margin:4px 0 0">For your own records — not currently shown on the catalog.</p>
       </div>
-    </div>
-
-    <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
-      <h3 style="font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 4px">Delivery & Freight Options</h3>
-      <p class="text-muted" style="font-size:0.8rem;margin:0 0 16px">Tick the delivery methods you offer.</p>
-
-      {% set saved_delv = (user.delivery_methods or '[]') | fromjson %}
-
-      {% set delivery_groups = [
-        ('Local City Delivery (On-Demand / Last-Mile)', [
-          'In-House Merchant Delivery (Seller\'s own fleet/vehicles)',
-          'On-Demand Couriers (Local independent dispatch riders, e.g., Red Dot Services, Dial-A-Delivery)',
-        ]),
-        ('Domestic Inter-Province & Air Freight (National)', [
-          'EMS / Post PNG (Express Mail Service via the national postal network)',
-          'TNT Air Cargo / PNG Air Freight (FedEx ground/air operators)',
-          'DHL Express PNG',
-          'UPS / Express Freight Management (EFM)',
-        ]),
-        ('Local Pick-Up Points (Click & Collect)', [
-          'Store Pick-Up (Direct collection from the seller\'s warehouse, shopfront, or office)',
-          'Post Office / Agent Collection (Holding items at a designated Post PNG branch for customer pickup)',
-          'Depot Pick-Up (Collection from third-party logistics provider hubs at local airports/wharves)',
-        ]),
-      ] %}
-
-      {% for group_name, methods in delivery_groups %}
-      <div style="margin-bottom:16px">
-        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">{{ group_name }}</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          {% for method in methods %}
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.875rem">
-            <input type="checkbox" name="delivery_methods" value="{{ method }}"
-                   {% if method in saved_delv %}checked{% endif %}
-                   style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0">
-            {{ method }}
-          </label>
-          {% endfor %}
-        </div>
-      </div>
-      {% endfor %}
     </div>
 
     {% if not current_user.is_admin %}
