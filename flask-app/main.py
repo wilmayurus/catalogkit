@@ -308,8 +308,18 @@ class AgencyRequest(db.Model):
     market_location    = db.Column(db.String(255), nullable=False)
     whatsapp           = db.Column(db.String(50),  nullable=False)
     preferred_datetime = db.Column(db.String(255), nullable=False)
+    catalog_plan       = db.Column(db.String(20),  default='free')
     status             = db.Column(db.String(30),  default='New Request')
     submitted_at       = db.Column(db.DateTime,    default=datetime.utcnow)
+
+    @property
+    def catalog_plan_label(self):
+        return {'free': 'Free (K0)', 'basic': 'Basic (K20/mo)', 'pro': 'Pro (K50/mo)'}.get(self.catalog_plan, 'Free (K0)')
+
+    @property
+    def total_due(self):
+        extra = {'free': 0, 'basic': 20, 'pro': 50}.get(self.catalog_plan, 0)
+        return 50 + extra
 
 
 class AccessLog(db.Model):
@@ -1539,11 +1549,15 @@ def assisted_setup():
         market_location    = request.form.get('market_location', '').strip()
         whatsapp           = request.form.get('whatsapp', '').strip()
         preferred_datetime = request.form.get('preferred_datetime', '').strip()
+        catalog_plan       = request.form.get('catalog_plan', 'free').strip() or 'free'
+        if catalog_plan not in ('free', 'basic', 'pro'):
+            catalog_plan = 'free'
         if not business_name or not market_location or not whatsapp or not preferred_datetime:
             flash('All fields are required.', 'error')
             return render_template('assisted_setup.html', success=False)
         ar = AgencyRequest(business_name=business_name, market_location=market_location,
-                           whatsapp=whatsapp, preferred_datetime=preferred_datetime)
+                           whatsapp=whatsapp, preferred_datetime=preferred_datetime,
+                           catalog_plan=catalog_plan)
         db.session.add(ar)
         db.session.commit()
         ae = admin_email()
@@ -1552,8 +1566,9 @@ def assisted_setup():
                 f'CatalogKit — New agency setup request: {business_name}',
                 f'New Done-For-You request:\nBusiness: {business_name}\n'
                 f'Location: {market_location}\nWhatsApp: {whatsapp}\n'
-                f'Preferred visit: {preferred_datetime}')
-        return render_template('assisted_setup.html', success=True)
+                f'Preferred visit: {preferred_datetime}\n'
+                f'Catalog plan: {ar.catalog_plan_label}\nTotal due on visit: K{ar.total_due}')
+        return render_template('assisted_setup.html', success=True, ar=ar)
     return render_template('assisted_setup.html', success=False)
 
 
@@ -1906,6 +1921,7 @@ with app.app_context():
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_reset_date DATE',
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_tester BOOLEAN DEFAULT FALSE',
         'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE',
+        "ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS catalog_plan VARCHAR(20) DEFAULT 'free'",
         '''CREATE TABLE IF NOT EXISTS payment_request (
             id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL REFERENCES "user"(id),

@@ -15,7 +15,7 @@
   <!-- Price callout -->
   <div style="background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); border-radius:var(--radius); padding:20px 24px; text-align:center; margin-bottom:32px; color:#fff">
     <div style="font-size:1.7rem; font-weight:800; margin-bottom:4px">K50 cash on site</div>
-    <div style="font-size:0.9rem; opacity:0.9">Paid directly to the agent when they visit you. No upfront payment needed.</div>
+    <div style="font-size:0.9rem; opacity:0.9">Covers the setup visit. Choose a paid plan below and only the plan's cost is added — Free stays at K50 total.</div>
   </div>
 
   {% if success %}
@@ -25,7 +25,11 @@
     <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:10px; color:var(--success)">Request Submitted!</h2>
     <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:20px">
       Thank you! Our agent will message you on <strong>WhatsApp</strong> to confirm your visit date and time.
+      {% if ar %}
+      Please have <strong>K{{ ar.total_due }} cash</strong> ready for when they arrive ({{ ar.catalog_plan_label }} catalog + K50 setup visit).
+      {% else %}
       Please have K50 cash ready for when they arrive.
+      {% endif %}
     </p>
     <div style="background:var(--surface2); border-radius:10px; padding:16px; font-size:0.875rem; color:var(--muted); margin-bottom:24px">
       &#128242; Keep an eye on your WhatsApp — we'll confirm within 24 hours.
@@ -81,6 +85,29 @@
         <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">We'll confirm via WhatsApp — subject to agent availability</div>
       </div>
 
+      <div class="field" style="margin-bottom:24px">
+        <label>Which catalog plan do you need built? <span style="color:var(--danger)">*</span></label>
+        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:10px">Don't choose one and we'll set you up on the Free plan — no extra cost, just the K50 visit fee.</div>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <label style="display:flex; align-items:center; gap:10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer">
+            <input type="radio" name="catalog_plan" value="free" checked>
+            <span style="flex:1; font-size:0.875rem"><strong>Free</strong> — 3 catalog builds/month</span>
+            <span style="font-weight:700; font-size:0.875rem">+K0</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer">
+            <input type="radio" name="catalog_plan" value="basic">
+            <span style="flex:1; font-size:0.875rem"><strong>Basic</strong> — 20 builds/month, logo on cover, more layouts</span>
+            <span style="font-weight:700; font-size:0.875rem">+K20/mo</span>
+          </label>
+          <label style="display:flex; align-items:center; gap:10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer">
+            <input type="radio" name="catalog_plan" value="pro">
+            <span style="flex:1; font-size:0.875rem"><strong>Pro</strong> — unlimited builds &amp; catalogs, dedicated support</span>
+            <span style="font-weight:700; font-size:0.875rem">+K50/mo</span>
+          </label>
+        </div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:8px">Paid plans are billed monthly after your first visit — the amount below is just what you'll owe the agent on setup day.</div>
+      </div>
+
       <!-- What to expect -->
       <div style="background:var(--surface2); border-radius:10px; padding:16px 18px; margin-bottom:24px">
         <div style="font-size:0.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px">What happens next</div>
@@ -95,11 +122,11 @@
           </div>
           <div style="display:flex; gap:10px; font-size:0.875rem">
             <span style="color:var(--accent); font-weight:700; min-width:20px">3</span>
-            <span>Agent arrives at your stall, sets up everything &amp; builds your catalog</span>
+            <span>Agent arrives at your stall, sets up everything &amp; builds your catalog on the plan you chose</span>
           </div>
           <div style="display:flex; gap:10px; font-size:0.875rem">
             <span style="color:var(--accent); font-weight:700; min-width:20px">4</span>
-            <span>You pay K50 cash to the agent — done!</span>
+            <span>You pay K50 cash for the visit — plus your plan's price if you picked Basic or Pro. No selection? You default to the Free plan, so it's just K50, done!</span>
           </div>
         </div>
       </div>
