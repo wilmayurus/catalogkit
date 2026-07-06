@@ -122,7 +122,7 @@
     <div class="admin-tbl-wrap">
       <table class="admin-tbl">
         <thead>
-          <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Plan</th><th>Due on Visit</th><th>Submitted</th><th>Status</th></tr>
+          <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Plan</th><th>Due on Visit</th><th>Submitted</th><th>Linked User</th><th>Status</th></tr>
         </thead>
         <tbody>
           {% for ar in agency_requests %}
@@ -140,10 +140,26 @@
             <td style="font-size:0.83rem;font-weight:700;white-space:nowrap">K{{ ar.total_due }}</td>
             <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
             <td>
-              <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center">
+              {% if ar.user %}
+              <a href="/admin/user/{{ ar.user.id }}/edit" style="text-decoration:none;font-size:0.8rem">
+                <strong>{{ ar.user.name }}</strong><br>
+                <span style="color:var(--muted)">{{ ar.user.email }}</span>
+              </a>
+              {% else %}
+              <span style="color:var(--muted);font-size:0.8rem">Not linked</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
                 <select name="status" class="filter-select" style="padding:5px 8px;font-size:0.8rem">
                   {% for s in ['New Request','Assigned','In Progress','Completed'] %}
                   <option value="{{ s }}" {% if ar.status == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+                <select name="linked_user_id" class="filter-select" style="padding:5px 8px;font-size:0.8rem;max-width:140px" title="Link to the user account created for this business">
+                  <option value="">{{ 'Link user…' if not ar.user else 'Change link…' }}</option>
+                  {% for u in all_users %}
+                  <option value="{{ u.id }}" {% if ar.user_id == u.id %}selected{% endif %}>{{ u.name }} ({{ u.email }})</option>
                   {% endfor %}
                 </select>
                 <button class="btn btn-secondary btn-sm">Save</button>

@@ -311,6 +311,8 @@ class AgencyRequest(db.Model):
     catalog_plan       = db.Column(db.String(20),  default='free')
     status             = db.Column(db.String(30),  default='New Request')
     submitted_at       = db.Column(db.DateTime,    default=datetime.utcnow)
+    user_id            = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    user               = db.relationship('User', backref=db.backref('agency_requests', lazy=True))
 
     @property
     def catalog_plan_label(self):
@@ -1628,8 +1630,18 @@ def update_agency_status(ar_id):
         return redirect(url_for('admin'))
     new_status = request.form.get('status', ar.status)
     allowed = ('New Request', 'Assigned', 'In Progress', 'Completed')
+    linked_user_id = request.form.get('linked_user_id', '').strip()
+
+    if new_status == 'Completed' and not linked_user_id and not ar.user_id:
+        flash('Select the user account created for this business before marking the request as Completed.', 'error')
+        return redirect(url_for('admin'))
+
     if new_status in allowed:
         ar.status = new_status
+        if linked_user_id:
+            linked_user = db.session.get(User, int(linked_user_id))
+            if linked_user:
+                ar.user_id = linked_user.id
         db.session.commit()
     return redirect(url_for('admin'))
 
@@ -2068,6 +2080,7 @@ with app.app_context():
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_tester BOOLEAN DEFAULT FALSE',
         'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE',
         "ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS catalog_plan VARCHAR(20) DEFAULT 'free'",
+        'ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES "user"(id)',
         '''CREATE TABLE IF NOT EXISTS payment_request (
             id SERIAL PRIMARY KEY,
             user_id INTEGER NOT NULL REFERENCES "user"(id),
