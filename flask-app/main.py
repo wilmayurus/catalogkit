@@ -1861,72 +1861,180 @@ def admin_logs():
 @app.route('/admin/reports')
 @admin_required
 def admin_reports():
+    from sqlalchemy import func as sqlfunc
     now   = datetime.utcnow()
     day30 = now - timedelta(days=30)
     day7  = now - timedelta(days=7)
+    tab   = request.args.get('tab', 'overview')
+    if tab not in ('overview', 'finance', 'access', 'catalogs'):
+        tab = 'overview'
 
-    # ── Summary cards
-    total_users    = User.query.count()
-    active_30d     = db.session.query(AccessLog.user_id).filter(
-                         AccessLog.action == 'login',
-                         AccessLog.created_at >= day30).distinct().count()
-    suspended_ct   = User.query.filter_by(is_suspended=True).count()
-    new_users_30d  = User.query.filter(User.created_at >= day30).count()
-    total_catalogs = Catalog.query.count()
-    total_pdfs     = db.session.query(db.func.sum(Catalog.pdf_downloads)).scalar() or 0
+    ctx = dict(now=now, pending_count=0, admin_active='reports', tab=tab)
 
-    # ── New signups per week (last 8 weeks)
-    signup_weeks = []
-    for i in range(7, -1, -1):
-        week_start = now - timedelta(days=(i+1)*7)
-        week_end   = now - timedelta(days=i*7)
-        count = User.query.filter(User.created_at >= week_start,
-                                  User.created_at < week_end).count()
-        label = week_start.strftime('%d %b')
-        signup_weeks.append({'label': label, 'count': count})
+    if tab == 'overview':
+        # ── Summary cards
+        total_users    = User.query.count()
+        active_30d     = db.session.query(AccessLog.user_id).filter(
+                             AccessLog.action == 'login',
+                             AccessLog.created_at >= day30).distinct().count()
+        suspended_ct   = User.query.filter_by(is_suspended=True).count()
+        new_users_30d  = User.query.filter(User.created_at >= day30).count()
+        total_catalogs = Catalog.query.count()
+        total_pdfs     = db.session.query(db.func.sum(Catalog.pdf_downloads)).scalar() or 0
 
-    # ── Activity breakdown (last 30 days)
-    activity_labels = {
-        'catalog_created':   'Catalogs Created',
-        'catalog_published': 'Catalogs Published',
-        'images_uploaded':   'Image Uploads',
-        'pdf_downloaded':    'PDFs Downloaded',
-        'catalog_deleted':   'Catalogs Deleted',
-        'catalog_renamed':   'Catalogs Renamed',
-        'profile_updated':   'Profile Updates',
-    }
-    activity_counts = {}
-    for key, label in activity_labels.items():
-        activity_counts[label] = ActivityLog.query.filter(
-            ActivityLog.action == key,
-            ActivityLog.created_at >= day30).count()
+        # ── New signups per week (last 8 weeks)
+        signup_weeks = []
+        for i in range(7, -1, -1):
+            week_start = now - timedelta(days=(i+1)*7)
+            week_end   = now - timedelta(days=i*7)
+            count = User.query.filter(User.created_at >= week_start,
+                                      User.created_at < week_end).count()
+            label = week_start.strftime('%d %b')
+            signup_weeks.append({'label': label, 'count': count})
 
-    # ── Login activity (last 30 days by day)
-    login_days = []
-    for i in range(29, -1, -1):
-        d = now - timedelta(days=i)
-        d_start = d.replace(hour=0, minute=0, second=0, microsecond=0)
-        d_end   = d_start + timedelta(days=1)
-        count = AccessLog.query.filter(AccessLog.action == 'login',
-                                       AccessLog.created_at >= d_start,
-                                       AccessLog.created_at < d_end).count()
-        login_days.append({'label': d.strftime('%d %b'), 'count': count})
+        # ── Activity breakdown (last 30 days)
+        activity_labels = {
+            'catalog_created':   'Catalogs Created',
+            'catalog_published': 'Catalogs Published',
+            'images_uploaded':   'Image Uploads',
+            'pdf_downloaded':    'PDFs Downloaded',
+            'catalog_deleted':   'Catalogs Deleted',
+            'catalog_renamed':   'Catalogs Renamed',
+            'profile_updated':   'Profile Updates',
+        }
+        activity_counts = {}
+        for key, label in activity_labels.items():
+            activity_counts[label] = ActivityLog.query.filter(
+                ActivityLog.action == key,
+                ActivityLog.created_at >= day30).count()
 
-    # ── Top 10 most active users (by total activity events)
-    from sqlalchemy import func as sqlfunc
-    top_users = db.session.query(
-        User, sqlfunc.count(ActivityLog.id).label('events')
-    ).join(ActivityLog, ActivityLog.user_id == User.id)\
-     .filter(ActivityLog.created_at >= day30)\
-     .group_by(User.id).order_by(sqlfunc.count(ActivityLog.id).desc()).limit(10).all()
+        # ── Login activity (last 30 days by day)
+        login_days = []
+        for i in range(29, -1, -1):
+            d = now - timedelta(days=i)
+            d_start = d.replace(hour=0, minute=0, second=0, microsecond=0)
+            d_end   = d_start + timedelta(days=1)
+            count = AccessLog.query.filter(AccessLog.action == 'login',
+                                           AccessLog.created_at >= d_start,
+                                           AccessLog.created_at < d_end).count()
+            login_days.append({'label': d.strftime('%d %b'), 'count': count})
 
-    return render_template('admin_reports.html',
-        now=now, total_users=total_users, active_30d=active_30d,
-        suspended_ct=suspended_ct, new_users_30d=new_users_30d,
-        total_catalogs=total_catalogs, total_pdfs=total_pdfs,
-        signup_weeks=signup_weeks,
-        activity_counts=activity_counts, login_days=login_days,
-        top_users=top_users, pending_count=0, admin_active='reports')
+        # ── Top 10 most active users (by total activity events)
+        top_users = db.session.query(
+            User, sqlfunc.count(ActivityLog.id).label('events')
+        ).join(ActivityLog, ActivityLog.user_id == User.id)\
+         .filter(ActivityLog.created_at >= day30)\
+         .group_by(User.id).order_by(sqlfunc.count(ActivityLog.id).desc()).limit(10).all()
+
+        ctx.update(total_users=total_users, active_30d=active_30d,
+            suspended_ct=suspended_ct, new_users_30d=new_users_30d,
+            total_catalogs=total_catalogs, total_pdfs=total_pdfs,
+            signup_weeks=signup_weeks,
+            activity_counts=activity_counts, login_days=login_days,
+            top_users=top_users)
+
+    elif tab == 'finance':
+        plan_prices = {'free': 0, 'basic': 20, 'pro': 50}
+
+        # ── Recurring plan revenue (based on current active paid users)
+        plan_counts = {}
+        for plan in ('free', 'basic', 'pro'):
+            plan_counts[plan] = User.query.filter_by(plan=plan, is_admin=False, is_moderator=False).count()
+        mrr = sum(plan_counts.get(p, 0) * price for p, price in plan_prices.items())
+
+        # ── Payment requests (plan upgrades)
+        pr_pending  = PaymentRequest.query.filter_by(status='pending').count()
+        pr_approved = PaymentRequest.query.filter_by(status='approved').all()
+        pr_rejected = PaymentRequest.query.filter_by(status='rejected').count()
+        approved_total = sum(int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0) for p in pr_approved)
+
+        pr_by_method = {}
+        for p in PaymentRequest.query.filter_by(status='approved').all():
+            pr_by_method[p.payment_method] = pr_by_method.get(p.payment_method, 0) + 1
+
+        # ── Approved payments per week (last 8 weeks)
+        revenue_weeks = []
+        for i in range(7, -1, -1):
+            week_start = now - timedelta(days=(i+1)*7)
+            week_end   = now - timedelta(days=i*7)
+            weekly = PaymentRequest.query.filter(
+                PaymentRequest.status == 'approved',
+                PaymentRequest.resolved_at >= week_start,
+                PaymentRequest.resolved_at < week_end).all()
+            total = sum(int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0) for p in weekly)
+            revenue_weeks.append({'label': week_start.strftime('%d %b'), 'count': total})
+
+        # ── Done-For-You (agency) revenue: K50 visit fee + plan add-on
+        agency_all = AgencyRequest.query.all()
+        agency_completed = [a for a in agency_all if a.status == 'Completed']
+        agency_revenue = sum(a.total_due for a in agency_completed)
+        agency_by_plan = {}
+        for a in agency_all:
+            agency_by_plan[a.catalog_plan] = agency_by_plan.get(a.catalog_plan, 0) + 1
+
+        recent_payments = PaymentRequest.query.order_by(PaymentRequest.submitted_at.desc()).limit(15).all()
+
+        ctx.update(plan_counts=plan_counts, plan_prices=plan_prices, mrr=mrr,
+            pr_pending=pr_pending, pr_approved_count=len(pr_approved), pr_rejected=pr_rejected,
+            approved_total=approved_total, pr_by_method=pr_by_method, revenue_weeks=revenue_weeks,
+            agency_total=len(agency_all), agency_completed_count=len(agency_completed),
+            agency_revenue=agency_revenue, agency_by_plan=agency_by_plan,
+            recent_payments=recent_payments)
+
+    elif tab == 'access':
+        total_users   = User.query.count()
+        admins        = User.query.filter_by(is_admin=True).all()
+        moderators    = User.query.filter_by(is_moderator=True).all()
+        regular_users = User.query.filter_by(is_admin=False, is_moderator=False).count()
+        testers       = User.query.filter_by(is_tester=True).count()
+        suspended     = User.query.filter_by(is_suspended=True).all()
+
+        plan_breakdown = {}
+        for plan in ('free', 'basic', 'pro'):
+            plan_breakdown[plan] = User.query.filter_by(plan=plan).count()
+
+        never_logged_in = User.query.outerjoin(
+            AccessLog, db.and_(AccessLog.user_id == User.id, AccessLog.action == 'login')
+        ).filter(AccessLog.id.is_(None)).count()
+
+        active_ids_30d = {uid for (uid,) in db.session.query(AccessLog.user_id).filter(
+            AccessLog.action == 'login', AccessLog.created_at >= day30).distinct()}
+        dormant_30d = max(0, total_users - len(active_ids_30d))
+
+        recent_access = AccessLog.query.order_by(AccessLog.created_at.desc()).limit(20).all()
+
+        ctx.update(total_users=total_users, admins=admins, moderators=moderators,
+            regular_users=regular_users, testers=testers, suspended=suspended,
+            plan_breakdown=plan_breakdown, never_logged_in=never_logged_in,
+            dormant_30d=dormant_30d, recent_access=recent_access)
+
+    elif tab == 'catalogs':
+        total_catalogs     = Catalog.query.count()
+        published_ct       = Catalog.query.filter_by(is_published=True).count()
+        draft_ct           = total_catalogs - published_ct
+        total_pdfs         = db.session.query(db.func.sum(Catalog.pdf_downloads)).scalar() or 0
+        avg_pages          = db.session.query(sqlfunc.avg(Catalog.page_count)).scalar() or 0
+        empty_catalogs     = Catalog.query.filter(Catalog.page_count == 0).count()
+
+        layout_counts = {}
+        for row in db.session.query(User.pdf_layout, sqlfunc.count(Catalog.id))\
+                .join(Catalog, Catalog.user_id == User.id)\
+                .group_by(User.pdf_layout).all():
+            layout_counts[row[0] or 'classic'] = row[1]
+
+        top_catalogs = Catalog.query.filter(Catalog.pdf_downloads > 0)\
+            .order_by(Catalog.pdf_downloads.desc()).limit(10).all()
+
+        agency_by_status = {}
+        for row in db.session.query(AgencyRequest.status, sqlfunc.count(AgencyRequest.id))\
+                .group_by(AgencyRequest.status).all():
+            agency_by_status[row[0] or 'New Request'] = row[1]
+
+        ctx.update(total_catalogs=total_catalogs, published_ct=published_ct, draft_ct=draft_ct,
+            total_pdfs=total_pdfs, avg_pages=round(avg_pages, 1), empty_catalogs=empty_catalogs,
+            layout_counts=layout_counts, top_catalogs=top_catalogs, agency_by_status=agency_by_status)
+
+    return render_template('admin_reports.html', **ctx)
 
 
 # ── Pricing page ──────────────────────────────────────────────────────────────
