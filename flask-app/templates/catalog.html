@@ -162,55 +162,50 @@
   box-shadow: 0 2px 8px rgba(37,211,102,0.4);
   flex-shrink: 0;
 }
-/* Payment & Delivery — takes all remaining space */
-.cb-badges-wrap {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* Payment & Delivery — takes all remaining space, scrolls if it can't fit */
+.cb-info-wrap {
+  display: flex;
+  flex-direction: column;
   gap: 5px;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
 }
-.cb-badge-group {
+.cb-info-block {
   background: #f8f9fb;
   border: 1px solid #e2e8f0;
   border-radius: 7px;
-  padding: 5px 7px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
+  padding: 6px 8px;
+  flex-shrink: 0;
 }
-.cb-badge-label {
-  font-size: 0.44rem;
+.cb-info-title {
+  font-size: 0.5rem;
   font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin: 0 0 3px;
-  flex-shrink: 0;
+  color: #1e293b;
+  margin: 0 0 2px;
 }
-.cb-badges {
+.cb-info-intro {
+  font-size: 0.4rem;
+  color: #64748b;
+  line-height: 1.35;
+  margin: 0 0 4px;
+}
+.cb-info-list {
+  margin: 0;
+  padding-left: 11px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
-  flex: 1;
-  min-height: 0;
+  gap: 3px;
 }
-.cb-badge {
-  font-size: 0.43rem;
-  font-weight: 600;
-  padding: 2px 5px;
-  border-radius: 3px;
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-shrink: 0;
+.cb-info-list li {
+  font-size: 0.4rem;
+  color: #475569;
+  line-height: 1.35;
 }
-.cb-badge-pay { background: #ede9fe; color: #5b21b6; }
-.cb-badge-del { background: #dcfce7; color: #15803d; }
+.cb-info-list li strong {
+  color: #1e293b;
+  font-weight: 700;
+}
 /* Footer */
 .cb-footer {
   border-top: 1px solid #f1f5f9;
@@ -311,27 +306,29 @@
         </a>
         {% endif %}
 
-        <!-- Payment & Delivery Badges -->
-        {% if payment_methods_list or delivery_methods_list %}
-        <div class="cb-badges-wrap">
-          {% if payment_methods_list %}
-          <div class="cb-badge-group">
-            <p class="cb-badge-label">💳 Payment</p>
-            <div class="cb-badges">
-              {% for m in payment_methods_list %}<span class="cb-badge cb-badge-pay">{{ m }}</span>{% endfor %}
-            </div>
+        <!-- Payment & Delivery Info -->
+        <div class="cb-info-wrap">
+          <div class="cb-info-block">
+            <p class="cb-info-title">💳 Payment Options</p>
+            <p class="cb-info-intro">We accept payments through all major PNG banks and mobile wallets:</p>
+            <ul class="cb-info-list">
+              <li><strong>Internet &amp; Corporate Banking:</strong> Online transfers via BSP, Kina Bank, Westpac, TISA Bank, NBCL, and Credit Bank PNG.</li>
+              <li><strong>Mobile Banking Apps &amp; USSD:</strong> Quick payments via all major bank apps or shortcodes (including BSP *131# and Westpac).</li>
+              <li><strong>Digital Wallets:</strong> Wantok Wallet (BSP) and YumiPei Wallet (TISA).</li>
+              <li><strong>Cash on Delivery (COD):</strong> Pay in person upon receiving your order.</li>
+            </ul>
           </div>
-          {% endif %}
-          {% if delivery_methods_list %}
-          <div class="cb-badge-group">
-            <p class="cb-badge-label">🚚 Delivery</p>
-            <div class="cb-badges">
-              {% for d in delivery_methods_list %}<span class="cb-badge cb-badge-del">{{ d }}</span>{% endfor %}
-            </div>
+          <div class="cb-info-block">
+            <p class="cb-info-title">🚚 Delivery &amp; Collection</p>
+            <p class="cb-info-intro">Choose the most convenient way to receive your items:</p>
+            <ul class="cb-info-list">
+              <li><strong>National Postal Services:</strong> Reliable shipping via EMS and Post PNG.</li>
+              <li><strong>Courier &amp; Freight Services:</strong> Fast domestic and international shipping via DHL, TNT, and UPS / EFM.</li>
+              <li><strong>In-Store Pick-Up:</strong> Collect your order directly from our shopfront, warehouse, or office.</li>
+              <li><strong>Agent Collection:</strong> Pick up your items at your designated local post office or holding agent.</li>
+            </ul>
           </div>
-          {% endif %}
         </div>
-        {% endif %}
 
         <!-- Footer Links -->
         <div class="cb-footer">
