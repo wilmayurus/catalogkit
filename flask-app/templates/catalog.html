@@ -229,6 +229,18 @@
   color: #94a3b8;
   margin: 0;
 }
+.cb-made-with {
+  font-size: 0.42rem;
+  color: #cbd5e1;
+  text-align: center;
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+.cb-made-with a {
+  color: #6c63ff;
+  text-decoration: none;
+  font-weight: 700;
+}
 </style>
 {% endblock %}
 
@@ -343,6 +355,7 @@
           {% if user.email %}
           <p class="cb-footer-email">✉ Bulk/Corporate Inquiries: {{ user.email }}</p>
           {% endif %}
+          <p class="cb-made-with">Made with <a href="https://www.catalogkit.org" target="_blank" rel="noopener">CatalogKit</a> · Free digital catalogs for PNG vendors</p>
         </div>
 
       </div>
@@ -365,6 +378,11 @@
   </div>
 
   <div id="toast">Link copied!</div>
+
+  <p style="text-align:center;margin-top:18px;font-size:0.8rem;color:var(--muted)">
+    Made with <a href="https://www.catalogkit.org" target="_blank" rel="noopener" style="color:#6c63ff;font-weight:700;text-decoration:none">CatalogKit</a>
+    &nbsp;·&nbsp; Free digital catalogs for PNG vendors
+  </p>
 
 </div>
 
