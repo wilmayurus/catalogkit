@@ -2131,10 +2131,33 @@ def inject_globals():
 with app.app_context():
     db.create_all()
     _migrations = [
+        # ── user: profile fields ───────────────────────────────────────────────
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS contact_person VARCHAR(255)',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS phone VARCHAR(50)',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS facebook_url VARCHAR(500)',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS payment_methods TEXT',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS bank_account_details TEXT',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS delivery_methods TEXT',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS logo_filename VARCHAR(500)',
+        "ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS brand_color VARCHAR(7)",
+        "ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS pdf_layout VARCHAR(20) DEFAULT 'classic'",
+        # ── user: auth / password reset ────────────────────────────────────────
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS reset_token VARCHAR(100)',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS reset_token_exp TIMESTAMP',
+        # ── user: plan tracking ────────────────────────────────────────────────
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS plan_expires TIMESTAMP',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS plan_start TIMESTAMP',
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_builds_used INTEGER DEFAULT 0',
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS monthly_reset_date DATE',
+        # ── user: access control ───────────────────────────────────────────────
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_moderator BOOLEAN DEFAULT FALSE',
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_tester BOOLEAN DEFAULT FALSE',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT FALSE',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS suspended_at TIMESTAMP',
+        # ── catalog ────────────────────────────────────────────────────────────
+        'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS pdf_downloads INTEGER DEFAULT 0',
         'ALTER TABLE catalog ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT FALSE',
+        # ── agency_request ─────────────────────────────────────────────────────
         "ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS catalog_plan VARCHAR(20) DEFAULT 'free'",
         'ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES "user"(id)',
         'ALTER TABLE agency_request ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP',
