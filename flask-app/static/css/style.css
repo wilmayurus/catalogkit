@@ -576,10 +576,14 @@ nav {
   align-items: center;
   gap: 4px;
   color: #e2e8f0;
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   font-family: 'Inter', 'Helvetica Neue', sans-serif;
   min-width: 0;
   flex: 1 1 0;
+}
+
+.page-footer-biz {
+  flex: 1.8 1 0;
 }
 
 .page-footer-text {
