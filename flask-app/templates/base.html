@@ -4,6 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>{% block title %}CatalogKit{% endblock %}</title>
+
+  {# Social share preview (Facebook/Messenger/WhatsApp link previews) — works
+     automatically, no social media account needed. Pages can override any of
+     these by setting og_title / og_description / og_image before extending,
+     or by overriding the og_tags block directly. #}
+  {% block og_tags %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="CatalogKit">
+  <meta property="og:title" content="{{ og_title if og_title is defined else 'CatalogKit — Digital Catalogs for PNG Businesses' }}">
+  <meta property="og:description" content="{{ og_description if og_description is defined else 'Create a free digital flipbook and PDF catalog for your business and share it instantly on WhatsApp.' }}">
+  <meta property="og:image" content="{{ og_image if og_image is defined else request.url_root.rstrip('/') + '/static/img/og-default.png' }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ og_title if og_title is defined else 'CatalogKit — Digital Catalogs for PNG Businesses' }}">
+  <meta name="twitter:description" content="{{ og_description if og_description is defined else 'Create a free digital flipbook and PDF catalog for your business and share it instantly on WhatsApp.' }}">
+  <meta name="twitter:image" content="{{ og_image if og_image is defined else request.url_root.rstrip('/') + '/static/img/og-default.png' }}">
+  {% endblock %}
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">

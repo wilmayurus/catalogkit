@@ -1,5 +1,13 @@
 {% extends 'base.html' %}
 {% block title %}{{ catalog.name }} — CatalogKit{% endblock %}
+
+{# Social share preview for this catalog link — so it looks good when a
+   vendor pastes it into WhatsApp/Facebook Messenger, with zero setup needed. #}
+{% set _og_raw_image = (storage_url('catalog-images', 'processed/' ~ user.id|string ~ '/' ~ catalog.id|string ~ '/' ~ page_data[0].file) if page_data else (storage_url('logos', user.id|string ~ '/' ~ user.logo_filename) if user.logo_filename else '')) %}
+{% set og_image = _og_raw_image if _og_raw_image.startswith('http') else (request.url_root.rstrip('/') + _og_raw_image if _og_raw_image else request.url_root.rstrip('/') + '/static/img/og-default.png') %}
+{% set og_title = catalog.name ~ (' — ' ~ user.business_name if user.business_name else '') %}
+{% set og_description = (user.business_name ~ "'s" if user.business_name else "A") ~ ' digital catalog on CatalogKit — ' ~ (page_data|length) ~ ' product' ~ ('s' if page_data|length != 1 else '') ~ '. Browse and order via WhatsApp.' %}
+
 {% block head %}
 <style>
 .catalog-container { padding-top: 20px; }
