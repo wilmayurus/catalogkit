@@ -22,11 +22,11 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -523,7 +523,7 @@ nav {
   color: rgba(255,255,255,0.5);
   font-size: 0.5rem;
   font-weight: 500;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: 'Lexend', 'Helvetica Neue', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   white-space: nowrap;
@@ -534,7 +534,7 @@ nav {
   color: #fff;
   font-size: 0.55rem;
   font-weight: 700;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: 'Lexend', 'Helvetica Neue', sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -551,7 +551,7 @@ nav {
 .page-header-cat {
   color: rgba(255,255,255,0.75);
   font-size: 0.55rem;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: 'Lexend', 'Helvetica Neue', sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -594,7 +594,7 @@ nav {
   gap: 4px;
   color: #e2e8f0;
   font-size: 0.52rem;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: 'Lexend', 'Helvetica Neue', sans-serif;
   min-width: 0;
   flex: 0 1 auto;
 }
@@ -1250,7 +1250,7 @@ nav {
   color: #fff;
   font-size: 0.7rem;
   font-weight: 700;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: 'Lexend', 'Helvetica Neue', sans-serif;
   padding: 4px 12px;
   background: rgba(15,15,30,0.82);
   backdrop-filter: blur(4px);
@@ -1272,7 +1272,7 @@ nav {
   color: #fff;
   font-size: 0.78rem;
   font-weight: 800;
-  font-family: 'Inter', 'Helvetica Neue', sans-serif;
+  font-family: 'Lexend', 'Helvetica Neue', sans-serif;
   background: rgba(15,15,30,0.82);
   backdrop-filter: blur(4px);
   padding: 4px 12px;
@@ -1378,7 +1378,6 @@ body.admin-body {
 .admin-sidebar-logo .as-brand {
   font-weight: 800;
   font-size: 1rem;
-  letter-spacing: -0.3px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -1559,8 +1558,7 @@ body.admin-body {
 .admin-stat-val {
   font-size: 2rem;
   font-weight: 800;
-  line-height: 1;
-  letter-spacing: -1px;
+  line-height: 1.15;
 }
 
 .admin-stat-label {

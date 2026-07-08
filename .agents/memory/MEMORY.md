@@ -1,0 +1,1 @@
+- [Lexend variable font with Pillow](lexend-variable-font-pillow.md) — google/fonts only ships Lexend as a variable font; Pillow 6.4+ can select weight directly, no static TTF needed.

@@ -874,14 +874,28 @@ def catalog_view(catalog_id):
                            delivery_methods_list=delv_list,
                            is_owner=is_owner)
 
-_FONT_BOLD = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
-_FONT_REG  = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+_FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'fonts', 'Lexend-Variable.ttf')
+_FONT_BOLD = 700
+_FONT_REG  = 400
+_font_cache = {}
 
-def _font(path, size):
+def _font(weight, size):
+    """Lexend variable font at a given weight — same typeface used sitewide
+    for readability (dyslexia-friendly, clear letterforms)."""
+    key = (weight, size)
+    cached = _font_cache.get(key)
+    if cached is not None:
+        return cached
     try:
-        return ImageFont.truetype(path, size)
+        f = ImageFont.truetype(_FONT_PATH, size)
+        try:
+            f.set_variation_by_axes([weight])
+        except Exception:
+            pass
     except Exception:
-        return ImageFont.load_default()
+        f = ImageFont.load_default()
+    _font_cache[key] = f
+    return f
 
 def _hex_to_rgb(hex_color, fallback=(108, 99, 255)):
     try:
