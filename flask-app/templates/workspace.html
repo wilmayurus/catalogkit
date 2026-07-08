@@ -479,7 +479,8 @@ async function handleFiles(files) {
 
     setStatus('error', `${failedFiles.length} image${failedFiles.length > 1 ? 's' : ''} could not be uploaded (${hint}). Tap "Retry" above.`);
   } else if (imgs.length) {
-    setStatus('success', `All ${imgs.length} image${imgs.length > 1 ? 's' : ''} uploaded. Click "Confirm &amp; Build Catalog" to generate your flipbook.`);
+    const total = grid.querySelectorAll('.thumb-item').length;
+    setStatus('success', `${imgs.length} image${imgs.length > 1 ? 's' : ''} added (${total} total). Upload more, or click "Confirm &amp; Build Catalog" when ready.`);
   }
 
   if (!uploaded.length && !failedFiles.length) {
