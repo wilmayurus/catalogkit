@@ -6,6 +6,7 @@
   --surface2: #22222e;
   --border: #2e2e3e;
   --accent: #C41230;
+  --accent-text: #FF5577;
   --accent-glow: rgba(196,18,48,0.25);
   --accent2: #F5A800;
   --text: #e8e8f0;
@@ -72,7 +73,7 @@ nav {
 }
 
 .nav-links a.active {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* ── LAYOUT ── */
@@ -833,7 +834,7 @@ nav {
   color: var(--muted);
 }
 
-.auth-switch a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.auth-switch a { color: var(--accent-text); text-decoration: none; font-weight: 500; }
 
 /* ── BUTTONS EXTRA ── */
 .btn-block { width: 100%; justify-content: center; }
@@ -1435,7 +1436,7 @@ body.admin-body {
 }
 
 .admin-nav-item.active {
-  color: var(--accent);
+  color: var(--accent-text);
   background: rgba(124,92,252,0.1);
   border-color: rgba(124,92,252,0.22);
   font-weight: 600;
@@ -1822,7 +1823,7 @@ body.admin-body {
 }
 
 .log-tab:hover { color: var(--text); }
-.log-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.log-tab.active { color: var(--accent-text); border-bottom-color: var(--accent); }
 
 /* ── Pagination ── */
 .admin-pagination {

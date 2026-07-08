@@ -48,7 +48,7 @@
         <div style="font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
           {{ item.item_name or ('Item ' ~ loop.index) }}
         </div>
-        <div style="font-size:0.75rem;color:var(--accent);font-weight:700">{{ item.price or '—' }}</div>
+        <div style="font-size:0.75rem;color:var(--accent-text);font-weight:700">{{ item.price or '—' }}</div>
       </div>
     </div>
     {% endfor %}
@@ -73,7 +73,7 @@
       <input type="text" readonly
              onclick="this.select()"
              value="{{ request.host_url.rstrip('/') }}/catalog/{{ catalog.id }}"
-             style="flex:1;background:none;border:none;outline:none;font-size:0.82rem;color:var(--accent);font-family:monospace;cursor:pointer;min-width:0">
+             style="flex:1;background:none;border:none;outline:none;font-size:0.82rem;color:var(--accent-text);font-family:monospace;cursor:pointer;min-width:0">
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:10px">
       <button type="button" class="btn btn-secondary" onclick="openUnlockModal()">&#9998; Edit Catalog</button>
@@ -205,7 +205,7 @@
       <span style="font-size:0.75rem;color:var(--muted);white-space:nowrap">&#128279; Link:</span>
       <input id="share-url-display" type="text" readonly
              onclick="this.select()"
-             style="flex:1;background:none;border:none;outline:none;font-size:0.82rem;color:var(--accent);font-family:monospace;cursor:pointer;min-width:0"
+             style="flex:1;background:none;border:none;outline:none;font-size:0.82rem;color:var(--accent-text);font-family:monospace;cursor:pointer;min-width:0"
              value="">
       <button onclick="copyLinkOnly()" title="Copy link"
               style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px">&#128203;</button>
@@ -512,7 +512,7 @@ async function processImages(msg = 'Building catalog…') {
       if (data.limit_reached) {
         setStatus('error',
           '&#128274; ' + data.error +
-          ' <a href="/pricing" style="color:var(--accent);font-weight:700;margin-left:6px">View Plans &#8594;</a>');
+          ' <a href="/pricing" style="color:var(--accent-text);font-weight:700;margin-left:6px">View Plans &#8594;</a>');
       } else {
         setStatus('error', '&#9888; ' + (data.error || data.message || 'Processing error.'));
       }
