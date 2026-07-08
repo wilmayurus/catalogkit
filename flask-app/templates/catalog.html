@@ -218,42 +218,13 @@
   color: #6c63ff;
   font-weight: 700;
 }
-/* Contact strip */
-.cb-contact-strip {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-  background: #f1f5f9;
-  border-radius: 6px;
-  padding: 5px 8px;
-  flex-shrink: 0;
-}
-.cb-contact-item {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.44rem;
-  color: #334155;
-  white-space: nowrap;
-}
-.cb-contact-item span.icon {
-  font-size: 0.5rem;
-  flex-shrink: 0;
-}
-.cb-contact-sep {
-  color: #cbd5e1;
-  font-size: 0.5rem;
-}
-/* Footer */
+/* Footer: single place for all contact info + branding */
 .cb-footer {
   border-top: 1px solid #f1f5f9;
   padding-top: 5px;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 3px;
@@ -262,7 +233,7 @@
 .cb-footer-left {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 .cb-footer-link {
   font-size: 0.44rem;
@@ -273,10 +244,24 @@
   align-items: center;
   gap: 3px;
 }
-.cb-footer-email {
+.cb-footer-contact {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+}
+.cb-footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
   font-size: 0.42rem;
   color: #94a3b8;
-  margin: 0;
+  white-space: nowrap;
+}
+.cb-footer-contact-item span.icon {
+  font-size: 0.48rem;
+  flex-shrink: 0;
 }
 .cb-made-with {
   font-size: 0.4rem;
@@ -375,23 +360,6 @@
         </a>
         {% endif %}
 
-        <!-- Vendor contact info strip -->
-        {% if user.location or user.phone or user.whatsapp %}
-        <div class="cb-contact-strip">
-          {% if user.location %}
-          <span class="cb-contact-item"><span class="icon">📍</span>{{ user.location }}</span>
-          {% if user.phone or user.whatsapp %}<span class="cb-contact-sep">|</span>{% endif %}
-          {% endif %}
-          {% if user.phone %}
-          <span class="cb-contact-item"><span class="icon">📞</span>{{ user.phone }}</span>
-          {% if user.whatsapp %}<span class="cb-contact-sep">|</span>{% endif %}
-          {% endif %}
-          {% if user.whatsapp %}
-          <span class="cb-contact-item"><span class="icon">💬</span>{{ user.whatsapp }}</span>
-          {% endif %}
-        </div>
-        {% endif %}
-
         <!-- Payment & Delivery — side by side -->
         {% if payment_methods_list or delivery_methods_list %}
         <div class="cb-info-wrap{% if not payment_methods_list or not delivery_methods_list %} single-col{% endif %}">
@@ -418,7 +386,7 @@
         </div>
         {% endif %}
 
-        <!-- Footer -->
+        <!-- Footer: all contact info + branding in one place -->
         <div class="cb-footer">
           <div class="cb-footer-left">
             {% if user.facebook_url %}
@@ -427,8 +395,13 @@
               Follow us on Facebook
             </a>
             {% endif %}
-            {% if user.email %}
-            <p class="cb-footer-email">✉ {{ user.email }}</p>
+            {% if user.location or user.phone or user.whatsapp or user.email %}
+            <div class="cb-footer-contact">
+              {% if user.location %}<span class="cb-footer-contact-item"><span class="icon">📍</span>{{ user.location }}</span>{% endif %}
+              {% if user.phone %}<span class="cb-footer-contact-item"><span class="icon">📞</span>{{ user.phone }}</span>{% endif %}
+              {% if user.whatsapp %}<span class="cb-footer-contact-item"><span class="icon">💬</span>{{ user.whatsapp }}</span>{% endif %}
+              {% if user.email %}<span class="cb-footer-contact-item"><span class="icon">✉</span>{{ user.email }}</span>{% endif %}
+            </div>
             {% endif %}
           </div>
           <p class="cb-made-with">Made with<br><a href="https://www.catalogkit.org" target="_blank" rel="noopener">CatalogKit</a></p>
