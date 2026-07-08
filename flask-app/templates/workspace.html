@@ -186,7 +186,7 @@
   </div>
 
   {# ── Ready card — shown on load if catalog already built, or after build ── #}
-  <div id="catalog-ready-card" class="{% if not catalog.is_published %}hidden{% endif %}"
+  <div id="catalog-ready-card" class="hidden"
        style="background:var(--surface);border:1.5px solid var(--accent);border-radius:16px;padding:24px;margin-top:20px">
 
     {# Header #}
@@ -195,7 +195,7 @@
       <div>
         <div style="font-size:1.1rem;font-weight:700;color:var(--text)">Catalog ready!</div>
         <div id="catalog-ready-meta" style="font-size:0.82rem;color:var(--muted)">
-          {% if catalog.is_published %}{{ catalog.page_count }} page{{ 's' if catalog.page_count != 1 }} · 800×1000px · ready to share{% endif %}
+          
         </div>
       </div>
     </div>
