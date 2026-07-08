@@ -218,6 +218,35 @@
   color: #6c63ff;
   font-weight: 700;
 }
+/* Contact strip */
+.cb-contact-strip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 5px 8px;
+  flex-shrink: 0;
+}
+.cb-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.44rem;
+  color: #334155;
+  white-space: nowrap;
+}
+.cb-contact-item span.icon {
+  font-size: 0.5rem;
+  flex-shrink: 0;
+}
+.cb-contact-sep {
+  color: #cbd5e1;
+  font-size: 0.5rem;
+}
 /* Footer */
 .cb-footer {
   border-top: 1px solid #f1f5f9;
@@ -339,6 +368,27 @@
           </svg>
           Order via WhatsApp Now
         </a>
+        {% endif %}
+
+        <!-- Vendor contact info strip -->
+        {% if user.location or user.phone or user.whatsapp or user.contact_person %}
+        <div class="cb-contact-strip">
+          {% if user.contact_person %}
+          <span class="cb-contact-item"><span class="icon">👤</span>{{ user.contact_person }}</span>
+          {% if user.location or user.phone or user.whatsapp %}<span class="cb-contact-sep">|</span>{% endif %}
+          {% endif %}
+          {% if user.location %}
+          <span class="cb-contact-item"><span class="icon">📍</span>{{ user.location }}</span>
+          {% if user.phone or user.whatsapp %}<span class="cb-contact-sep">|</span>{% endif %}
+          {% endif %}
+          {% if user.phone %}
+          <span class="cb-contact-item"><span class="icon">📞</span>{{ user.phone }}</span>
+          {% if user.whatsapp %}<span class="cb-contact-sep">|</span>{% endif %}
+          {% endif %}
+          {% if user.whatsapp %}
+          <span class="cb-contact-item"><span class="icon">💬</span>{{ user.whatsapp }}</span>
+          {% endif %}
+        </div>
         {% endif %}
 
         <!-- Payment & Delivery — side by side -->
