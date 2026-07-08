@@ -592,7 +592,7 @@ function updateUI() {
   const has = grid.querySelectorAll('.thumb-item').length > 0;
   gridHeader.classList.toggle('hidden', !has);
   priceHint.style.display = has ? '' : 'none';
-  document.getElementById('confirm-wrap').classList.toggle('hidden', !(dirty && has));
+  document.getElementById('confirm-wrap').classList.toggle('hidden', !has);
 }
 
 async function confirmBuild() {
