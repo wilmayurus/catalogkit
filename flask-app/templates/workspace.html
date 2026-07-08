@@ -479,14 +479,14 @@ async function handleFiles(files) {
 
     setStatus('error', `${failedFiles.length} image${failedFiles.length > 1 ? 's' : ''} could not be uploaded (${hint}). Tap "Retry" above.`);
   } else if (imgs.length) {
-    setStatus('info', `All ${imgs.length} image${imgs.length > 1 ? 's' : ''} uploaded. Building your catalog…`);
+    setStatus('success', `All ${imgs.length} image${imgs.length > 1 ? 's' : ''} uploaded. Click "Confirm &amp; Build Catalog" to generate your flipbook.`);
   }
 
-  if (uploaded.length) {
-    await processImages('Building your catalog…');
-  } else if (!failedFiles.length) {
+  if (!uploaded.length && !failedFiles.length) {
     setStatus('error', 'No valid images found.');
   }
+
+  setProgress(0);
 }
 
 async function processImages(msg = 'Building catalog…') {
