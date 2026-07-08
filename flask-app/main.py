@@ -1095,14 +1095,25 @@ def _make_product_page(item, catalog, user):
     iname = (item.get('item_name') or '') if isinstance(item, dict) else ''
     price = (item.get('price') or '')    if isinstance(item, dict) else ''
     raw   = storage_download(BUCKET_IMAGES, f'{catalog.processed_prefix}/{fname}')
-    if raw:
-        pg = Image.open(io.BytesIO(raw)).convert('RGB').resize((W, H), Image.LANCZOS)
-    else:
-        pg = Image.new('RGB', (W, H), (255, 255, 255))
-    draw = ImageDraw.Draw(pg)
     DARK   = (15, 15, 30)
     TXT    = (210, 210, 230)
     accent = _accent_rgb(user)
+    # Reserve space for the bars so the photo is placed *between* them,
+    # never underneath — matches the web flipbook layout.
+    top_h    = 60 if iname else 28
+    bottom_h = 56 if price else 28
+    avail_h  = H - top_h - bottom_h
+    pg = Image.new('RGB', (W, H), (255, 255, 255))
+    if raw:
+        photo = Image.open(io.BytesIO(raw)).convert('RGB')
+        pw, ph = photo.size
+        scale  = min(W / pw, avail_h / ph)
+        new_w, new_h = max(1, int(pw * scale)), max(1, int(ph * scale))
+        photo  = photo.resize((new_w, new_h), Image.LANCZOS)
+        px = (W - new_w) // 2
+        py = top_h + (avail_h - new_h) // 2
+        pg.paste(photo, (px, py))
+    draw = ImageDraw.Draw(pg)
     # header bar
     draw.rectangle([0, 0, W, 28], fill=DARK)
     _brand_stripe(draw, 0, 4, W, accent)
