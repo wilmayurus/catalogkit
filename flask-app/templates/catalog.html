@@ -218,22 +218,17 @@
   color: #6c63ff;
   font-weight: 700;
 }
-/* Footer: single place for all contact info + branding */
+/* Footer: single place for all contact info + branding, centered */
 .cb-footer {
   border-top: 1px solid #f1f5f9;
   padding-top: 5px;
   display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 3px;
   flex-shrink: 0;
-}
-.cb-footer-left {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  text-align: center;
 }
 .cb-footer-link {
   font-size: 0.44rem;
@@ -248,6 +243,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 3px 8px;
 }
@@ -266,7 +262,7 @@
 .cb-made-with {
   font-size: 0.4rem;
   color: #cbd5e1;
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
 }
 .cb-made-with a {
@@ -388,23 +384,21 @@
 
         <!-- Footer: all contact info + branding in one place -->
         <div class="cb-footer">
-          <div class="cb-footer-left">
-            {% if user.facebook_url %}
-            <a href="{{ user.facebook_url }}" class="cb-footer-link" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" width="9" height="9" fill="#1877f2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-              Follow us on Facebook
-            </a>
-            {% endif %}
-            {% if user.location or user.phone or user.whatsapp or user.email %}
-            <div class="cb-footer-contact">
-              {% if user.location %}<span class="cb-footer-contact-item"><span class="icon">📍</span>{{ user.location }}</span>{% endif %}
-              {% if user.phone %}<span class="cb-footer-contact-item"><span class="icon">📞</span>{{ user.phone }}</span>{% endif %}
-              {% if user.whatsapp %}<span class="cb-footer-contact-item"><span class="icon">💬</span>{{ user.whatsapp }}</span>{% endif %}
-              {% if user.email %}<span class="cb-footer-contact-item"><span class="icon">✉</span>{{ user.email }}</span>{% endif %}
-            </div>
-            {% endif %}
+          {% if user.facebook_url %}
+          <a href="{{ user.facebook_url }}" class="cb-footer-link" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="9" height="9" fill="#1877f2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+            Follow us on Facebook
+          </a>
+          {% endif %}
+          {% if user.location or user.phone or user.whatsapp or user.email %}
+          <div class="cb-footer-contact">
+            {% if user.location %}<span class="cb-footer-contact-item"><span class="icon">📍</span>{{ user.location }}</span>{% endif %}
+            {% if user.phone %}<span class="cb-footer-contact-item"><span class="icon">📞</span>{{ user.phone }}</span>{% endif %}
+            {% if user.whatsapp %}<span class="cb-footer-contact-item"><span class="icon">💬</span>{{ user.whatsapp }}</span>{% endif %}
+            {% if user.email %}<span class="cb-footer-contact-item"><span class="icon">✉</span>{{ user.email }}</span>{% endif %}
           </div>
-          <p class="cb-made-with">Made with<br><a href="https://www.catalogkit.org" target="_blank" rel="noopener">CatalogKit</a></p>
+          {% endif %}
+          <p class="cb-made-with">Made with <a href="https://www.catalogkit.org" target="_blank" rel="noopener">CatalogKit</a></p>
         </div>
 
       </div>
