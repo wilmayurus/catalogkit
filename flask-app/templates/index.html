@@ -63,6 +63,7 @@
           &nbsp;·&nbsp; {{ cat.updated_at.strftime('%d %b %Y') }}
         </div>
         <div class="catalog-card-actions" onclick="event.stopPropagation()">
+          <a href="/workspace/{{ cat.id }}" class="btn btn-secondary btn-sm">&#9998; Edit</a>
           {% if cat.page_count > 0 %}
           <a href="/catalog/{{ cat.id }}" class="btn btn-success btn-sm" target="_blank">&#128218; View</a>
           <a href="/catalog/{{ cat.id }}/download" class="btn btn-secondary btn-sm" download>&#128190; PDF</a>
