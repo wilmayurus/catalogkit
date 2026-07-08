@@ -41,6 +41,18 @@
     <a href="/admin/reports" class="admin-nav-item {% if admin_active == 'reports' %}active{% endif %}">
       <span class="admin-nav-icon">📈</span> Reports
     </a>
+    <a href="/admin/audit-log" class="admin-nav-item {% if admin_active == 'audit' %}active{% endif %}">
+      <span class="admin-nav-icon">🛡</span> Audit Log
+    </a>
+
+    <span class="admin-nav-section">Tools</span>
+    <a href="/admin/support" class="admin-nav-item {% if admin_active == 'support' %}active{% endif %}">
+      <span class="admin-nav-icon">💬</span> Support Inbox
+      {% if open_support_count %}<span class="admin-nav-badge">{{ open_support_count }}</span>{% endif %}
+    </a>
+    <a href="/admin/announcements" class="admin-nav-item {% if admin_active == 'announcements' %}active{% endif %}">
+      <span class="admin-nav-icon">📣</span> Announcements
+    </a>
 
     <span class="admin-nav-section">App</span>
     <a href="/" class="admin-nav-item">
@@ -71,6 +83,8 @@
     </div>
     <div class="admin-topbar-right">
       {% block topbar_right %}{% endblock %}
+      <button type="button" id="a11y-toggle" class="a11y-toggle" aria-pressed="false"
+              title="Larger text / simpler view" aria-label="Toggle larger text and simpler view">Aa</button>
       <span style="font-size:0.78rem;color:var(--muted)">{{ now.strftime('%d %b %Y') }}</span>
     </div>
   </header>
@@ -93,6 +107,24 @@
 
 </div>
 
+<script>
+(function () {
+  var KEY = 'catalogkit-a11y-mode';
+  var btn = document.getElementById('a11y-toggle');
+  function apply(on) {
+    document.documentElement.classList.toggle('a11y-mode', on);
+    if (btn) btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  apply(localStorage.getItem(KEY) === '1');
+  if (btn) {
+    btn.addEventListener('click', function () {
+      var isOn = !document.documentElement.classList.contains('a11y-mode');
+      apply(isOn);
+      localStorage.setItem(KEY, isOn ? '1' : '0');
+    });
+  }
+})();
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

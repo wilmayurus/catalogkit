@@ -12,11 +12,17 @@
 {% block admin_body %}
 
 <!-- ── Report type tabs ──────────────────────────────────── -->
-<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
-  <a href="/admin/reports?tab=overview" class="btn btn-sm {{ 'btn-primary' if tab == 'overview' else 'btn-secondary' }}">📊 Overview</a>
-  <a href="/admin/reports?tab=finance" class="btn btn-sm {{ 'btn-primary' if tab == 'finance' else 'btn-secondary' }}">💰 Finance</a>
-  <a href="/admin/reports?tab=access" class="btn btn-sm {{ 'btn-primary' if tab == 'access' else 'btn-secondary' }}">🔑 User Access</a>
-  <a href="/admin/reports?tab=catalogs" class="btn btn-sm {{ 'btn-primary' if tab == 'catalogs' else 'btn-secondary' }}">📁 Catalog Activity</a>
+<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;justify-content:space-between">
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="/admin/reports?tab=overview" class="btn btn-sm {{ 'btn-primary' if tab == 'overview' else 'btn-secondary' }}">📊 Overview</a>
+    <a href="/admin/reports?tab=finance" class="btn btn-sm {{ 'btn-primary' if tab == 'finance' else 'btn-secondary' }}">💰 Finance</a>
+    <a href="/admin/reports?tab=access" class="btn btn-sm {{ 'btn-primary' if tab == 'access' else 'btn-secondary' }}">🔑 User Access</a>
+    <a href="/admin/reports?tab=catalogs" class="btn btn-sm {{ 'btn-primary' if tab == 'catalogs' else 'btn-secondary' }}">📁 Catalog Activity</a>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="/admin/export/users.xlsx" class="btn btn-sm btn-secondary">⬇ Users (Excel)</a>
+    <a href="/admin/export/finance.xlsx" class="btn btn-sm btn-secondary">⬇ Finance (Excel)</a>
+  </div>
 </div>
 
 {% if tab == 'overview' %}

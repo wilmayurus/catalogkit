@@ -22,15 +22,21 @@ Free web app for PNG market vendors and SMEs to create digital product catalogs 
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- The live product is the Flask app in `flask-app/` (not the pnpm workspace artifacts) — `flask-app/main.py` holds all models, routes, and helpers; `flask-app/templates/` holds Jinja templates; `flask-app/static/css/style.css` holds styles.
+- Admin-only pages extend `admin_base.html` (sidebar nav); vendor-facing pages extend `base.html` (top nav + footer).
+- DB tables are created via `db.create_all()` at startup — no manual migration files.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Admin tooling (audit log, bulk announcements, support inbox, Excel export) lives entirely in `flask-app/main.py` + matching templates — see `AdminAuditLog`, `SupportTicket`, `SupportMessage` models and `log_admin_action()` / `build_xlsx_response()` helpers.
+- Bulk announcement emails are sent synchronously in a loop — fine at current PNG vendor scale; would need a background job if the user base grows into the thousands.
+- Accessibility: a persistent "Aa" toggle (top nav) switches a `.a11y-mode` class on `<html>`, stored in `localStorage` (`catalogkit-a11y-mode`), giving larger text/line-height, bigger buttons/inputs, and reduced motion — targeted at vendors with dyslexia/learning disabilities.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Vendors sign up, build a digital flipbook + PDF catalog of their products, and share it via WhatsApp link.
+- Vendor-facing help: `/support` (ticket-based help desk) and `/contact` (WhatsApp + FAQ).
+- Admin tools: `/admin/audit-log` (accountability trail of admin actions), `/admin/announcements` (bulk email by plan audience), `/admin/support` (reply to vendor tickets), `/admin/export/users.xlsx` and `/admin/export/finance.xlsx` (Excel exports, also linked from Reports).
 
 ## User preferences
 

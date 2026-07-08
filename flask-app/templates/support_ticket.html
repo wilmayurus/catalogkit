@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}{{ ticket.subject }} — CatalogKit Support{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:40px;max-width:680px">
+
+  <a href="/support" style="font-size:0.83rem;color:var(--muted);text-decoration:none">&larr; Back to Help &amp; Support</a>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 20px">
+    <h1 style="font-size:1.4rem;font-weight:800;margin:0">{{ ticket.subject }}</h1>
+    <span class="status-pill {{ ticket.status }}">{{ ticket.status_label }}</span>
+  </div>
+
+  <div class="card" style="margin-bottom:20px">
+    {% for m in ticket.messages %}
+    <div class="ticket-msg {{ 'from-admin' if m.from_admin else 'from-user' }}">
+      <div class="ticket-msg-avatar">{{ (m.author_name or '?')[0].upper() }}</div>
+      <div class="ticket-msg-body">
+        <div style="font-size:0.78rem;font-weight:700;margin-bottom:4px">
+          {{ m.author_name or (m.from_admin and 'CatalogKit Team' or 'You') }}
+          <span style="font-weight:500;color:var(--muted)">&middot; {{ m.created_at.strftime('%d %b, %I:%M %p') }}</span>
+        </div>
+        <div class="ticket-msg-bubble">{{ m.body }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if ticket.status != 'resolved' %}
+  <div class="card">
+    <form method="POST" action="/support/{{ ticket.id }}" class="auth-form">
+      <div class="field">
+        <label for="body">Reply</label>
+        <textarea id="body" name="body" rows="4" placeholder="Add more details or ask a follow-up question..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Send reply</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="admin-empty" style="border:1px solid var(--border);border-radius:12px">
+    <div class="ae-icon">&#9989;</div>
+    <p>This message was marked resolved. Send a new message from Help &amp; Support if you need anything else.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

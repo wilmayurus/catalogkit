@@ -1,0 +1,54 @@
+{% extends 'admin_base.html' %}
+{% block admin_title %}Support Inbox{% endblock %}
+{% block page_title %}Support Inbox{% endblock %}
+{% block page_crumb %}Vendor messages — no more digging through WhatsApp{% endblock %}
+
+{% block admin_body %}
+<div class="admin-section">
+  <div class="log-tabs">
+    <a href="/admin/support?status=open" class="log-tab {% if status_f == 'open' %}active{% endif %}">
+      &#9888; Open {% if open_count %}<span class="chip chip-yellow">{{ open_count }}</span>{% endif %}
+    </a>
+    <a href="/admin/support?status=in_progress" class="log-tab {% if status_f == 'in_progress' %}active{% endif %}">
+      &#128172; In Progress
+    </a>
+    <a href="/admin/support?status=resolved" class="log-tab {% if status_f == 'resolved' %}active{% endif %}">
+      &#9989; Resolved
+    </a>
+    <a href="/admin/support?status=all" class="log-tab {% if status_f == 'all' %}active{% endif %}">
+      All
+    </a>
+  </div>
+
+  {% if tickets %}
+  <div class="admin-tbl-wrap">
+    <table class="admin-tbl">
+      <thead>
+        <tr><th>Vendor</th><th>Subject</th><th>Status</th><th>Last update</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td>
+            <div class="user-cell">
+              <strong>{{ t.user.name }}</strong>
+              <span>{{ t.user.email }}</span>
+            </div>
+          </td>
+          <td style="font-size:0.85rem">{{ t.subject }}</td>
+          <td><span class="status-pill {{ t.status }}">{{ t.status_label }}</span></td>
+          <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ t.updated_at.strftime('%d %b %Y %I:%M %p') }}</td>
+          <td><a href="/admin/support/{{ t.id }}" class="btn btn-secondary btn-sm">Open</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="admin-empty">
+    <div class="ae-icon">&#128172;</div>
+    <p>No messages here right now.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

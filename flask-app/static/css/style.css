@@ -1845,3 +1845,109 @@ body.admin-body {
   .admin-sidebar { display: none; }
   .admin-main { margin-left: 0; }
 }
+
+/* ── Accessibility: larger text / simpler view toggle ────────────────────── */
+.a11y-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.a11y-toggle:hover { border-color: var(--accent); color: var(--accent-text); }
+.a11y-toggle[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+html.a11y-mode { font-size: 113%; }
+html.a11y-mode body { line-height: 1.75; letter-spacing: 0.01em; }
+html.a11y-mode p, html.a11y-mode li, html.a11y-mode label, html.a11y-mode td, html.a11y-mode th,
+html.a11y-mode .faq-a, html.a11y-mode .admin-tbl td {
+  font-size: 1.08em;
+  line-height: 1.8;
+}
+html.a11y-mode .btn { padding-top: 13px; padding-bottom: 13px; font-size: 1.05rem; }
+html.a11y-mode input, html.a11y-mode select, html.a11y-mode textarea { font-size: 1.05rem; padding: 12px 14px; }
+html.a11y-mode .card, html.a11y-mode .contact-card, html.a11y-mode .faq-item,
+html.a11y-mode .admin-section-body, html.a11y-mode .ticket-msg {
+  padding-top: calc(1em + 8px);
+  padding-bottom: calc(1em + 8px);
+}
+html.a11y-mode *, html.a11y-mode *::before, html.a11y-mode *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* ── Generic content card (vendor-facing pages) ──────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 24px;
+}
+
+/* ── Support inbox ─────────────────────────────────────────────────────────── */
+.ticket-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+}
+.ticket-list-item:last-child { border-bottom: none; }
+.ticket-list-item:hover { background: var(--surface2); }
+.ticket-msg {
+  display: flex;
+  gap: 12px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.ticket-msg:last-child { border-bottom: none; }
+.ticket-msg-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.ticket-msg.from-admin .ticket-msg-avatar { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+.ticket-msg.from-user .ticket-msg-avatar { background: var(--muted); }
+.ticket-msg-body { flex: 1; }
+.ticket-msg-bubble {
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ticket-msg.from-admin .ticket-msg-bubble { background: rgba(124,92,252,0.08); }
+
+.status-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.status-pill.open        { background: rgba(245,158,11,0.15); color: #d97706; }
+.status-pill.in_progress { background: rgba(14,165,233,0.15); color: #0ea5e9; }
+.status-pill.resolved    { background: rgba(34,197,94,0.15);  color: #16a34a; }

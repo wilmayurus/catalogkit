@@ -1,1 +1,2 @@
 - [Lexend variable font with Pillow](lexend-variable-font-pillow.md) — google/fonts only ships Lexend as a variable font; Pillow 6.4+ can select weight directly, no static TTF needed.
+- [CatalogKit is a Flask app, not the pnpm monorepo product](catalogkit-flask-app.md) — real app lives in `flask-app/`, unrelated to the pnpm workspace artifacts scaffolding; no artifact/screenshot tooling covers it.

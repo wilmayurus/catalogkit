@@ -361,6 +361,45 @@ class PaymentRequest(db.Model):
     user           = db.relationship('User', backref=db.backref('payment_requests', lazy=True))
 
 
+class AdminAuditLog(db.Model):
+    """Records every change an admin/moderator makes — who did what, and when."""
+    id          = db.Column(db.Integer, primary_key=True)
+    admin_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    action      = db.Column(db.String(50))            # role_changed, user_suspended, announcement_sent, ...
+    target_type = db.Column(db.String(30), nullable=True)   # 'user' | 'payment_request' | 'support_ticket' | 'broadcast'
+    target_id   = db.Column(db.Integer, nullable=True)
+    detail      = db.Column(db.String(500), nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    admin       = db.relationship('User', foreign_keys=[admin_id])
+
+
+class SupportTicket(db.Model):
+    """A vendor's support conversation with the CatalogKit team, without needing WhatsApp/email."""
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    subject    = db.Column(db.String(255), nullable=False)
+    status     = db.Column(db.String(20), default='open')   # 'open' | 'in_progress' | 'resolved'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user       = db.relationship('User', backref=db.backref('support_tickets', lazy=True))
+
+    @property
+    def status_label(self):
+        return {'open': 'Open', 'in_progress': 'In Progress', 'resolved': 'Resolved'}.get(self.status, 'Open')
+
+
+class SupportMessage(db.Model):
+    """A single message within a support ticket thread."""
+    id          = db.Column(db.Integer, primary_key=True)
+    ticket_id   = db.Column(db.Integer, db.ForeignKey('support_ticket.id'), nullable=False)
+    from_admin  = db.Column(db.Boolean, default=False)
+    author_name = db.Column(db.String(255), nullable=True)
+    body        = db.Column(db.Text, nullable=False)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    ticket      = db.relationship('SupportTicket',
+                                  backref=db.backref('messages', lazy=True, order_by='SupportMessage.created_at'))
+
+
 # ── Email ─────────────────────────────────────────────────────────────────────
 
 def send_email(to, subject, body):
@@ -395,6 +434,16 @@ def log_activity(user_id, action, detail=None):
     try:
         db.session.add(ActivityLog(user_id=user_id, action=action,
                                    detail=(detail or '')[:500]))
+        db.session.commit()
+    except Exception:
+        pass
+
+def log_admin_action(admin_id, action, target_type=None, target_id=None, detail=None):
+    """Record an admin/moderator action for the security audit log."""
+    try:
+        db.session.add(AdminAuditLog(admin_id=admin_id, action=action,
+                                     target_type=target_type, target_id=target_id,
+                                     detail=(detail or '')[:500]))
         db.session.commit()
     except Exception:
         pass
@@ -1556,6 +1605,8 @@ def admin_approve_payment(pr_id):
             db.session.add(catalog)
         db.session.commit()
         log_activity(user.id, 'plan_upgraded', f'Plan set to {pr.plan} (payment #{pr.id} approved)')
+        log_admin_action(session['user_id'], 'payment_approved', 'payment_request', pr.id,
+                         f'Approved {pr.plan} plan for {user.name} ({user.email})')
         # Notify user by email
         send_email(
             user.email,
@@ -1584,6 +1635,8 @@ def admin_reject_payment(pr_id):
     pr.notes       = request.form.get('notes', '').strip() or None
     db.session.commit()
     user = db.session.get(User, pr.user_id)
+    log_admin_action(session['user_id'], 'payment_rejected', 'payment_request', pr.id,
+                     f'Rejected payment #{pr.id}' + (f' for {user.name}' if user else ''))
     if user:
         log_activity(user.id, 'payment_rejected', f'Payment #{pr.id} rejected')
         send_email(
@@ -1673,6 +1726,8 @@ def update_agency_status(ar_id):
             if linked_user:
                 ar.user_id = linked_user.id
         db.session.commit()
+        log_admin_action(session['user_id'], 'agency_status_changed', 'agency_request', ar.id,
+                         f'{ar.business_name} → {new_status}')
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/<int:user_id>/suspend', methods=['POST'])
@@ -1683,6 +1738,7 @@ def suspend_user(user_id):
         user.is_suspended = True
         user.suspended_at = datetime.utcnow()
         db.session.commit()
+        log_admin_action(session['user_id'], 'user_suspended', 'user', user.id, f'{user.name} ({user.email})')
         # Log them out immediately if active
         flash(f'{user.name}\'s account has been suspended.', 'success')
         send_email(user.email,
@@ -1700,6 +1756,7 @@ def unsuspend_user(user_id):
         user.is_suspended = False
         user.suspended_at = None
         db.session.commit()
+        log_admin_action(session['user_id'], 'user_reinstated', 'user', user.id, f'{user.name} ({user.email})')
         flash(f'{user.name}\'s account has been reinstated.', 'success')
         send_email(user.email,
             'CatalogKit — Your account has been reinstated',
@@ -1722,6 +1779,7 @@ def set_user_role(user_id):
     target.is_moderator = (role == 'moderator')
     db.session.commit()
     log_activity(target.id, 'role_changed', f'Role set to {role} by admin {me.email}')
+    log_admin_action(me.id, 'role_changed', 'user', target.id, f'{target.name} → {role}')
     flash(f'{target.name}\'s role updated to {role.title()}.', 'success')
     return redirect(url_for('admin'))
 
@@ -1751,6 +1809,7 @@ def admin_create_user():
     db.session.add(user)
     db.session.commit()
     log_activity(user.id, 'user_created_by_admin', f'Account created by admin {me.email}')
+    log_admin_action(me.id, 'user_created', 'user', user.id, f'{user.name} ({user.email}) as {access_level}')
     flash(f'{user.name}\'s account has been created.', 'success')
     return redirect(url_for('admin'))
 
@@ -1803,6 +1862,7 @@ def admin_edit_user(user_id):
                          f'Plan changed from {old_plan} to {new_plan} by admin {me.email}')
         db.session.commit()
         log_activity(target.id, 'profile_edited_by_admin', f'Profile edited by admin {me.email}')
+        log_admin_action(me.id, 'user_edited', 'user', target.id, f'{target.name} ({target.email})')
         if plan_changed:
             send_email(
                 target.email,
@@ -1835,11 +1895,16 @@ def admin_delete_user(user_id):
         flash('Cannot delete another admin account.', 'error')
         return redirect(url_for('admin'))
     name = target.name
+    email = target.email
     # Delete logs first to avoid NOT NULL constraint on user_id
     AccessLog.query.filter_by(user_id=target.id).delete()
     ActivityLog.query.filter_by(user_id=target.id).delete()
+    SupportMessage.query.filter(SupportMessage.ticket_id.in_(
+        db.session.query(SupportTicket.id).filter_by(user_id=target.id))).delete(synchronize_session=False)
+    SupportTicket.query.filter_by(user_id=target.id).delete()
     db.session.delete(target)
     db.session.commit()
+    log_admin_action(me.id, 'user_deleted', 'user', user_id, f'{name} ({email}) permanently deleted')
     flash(f'{name}\'s account and all their catalogs have been permanently deleted.', 'success')
     return redirect(url_for('admin'))
 
@@ -2130,6 +2195,180 @@ def admin_reports():
     return render_template('admin_reports.html', **ctx)
 
 
+# ── Admin — Audit Log (who changed what) ────────────────────────────────────────
+
+@app.route('/admin/audit-log')
+@full_admin_required
+def admin_audit_log():
+    page      = int(request.args.get('page', 1))
+    per_page  = 40
+    admin_id  = request.args.get('admin_id', '', type=str)
+    action_f  = request.args.get('action', '')
+
+    q = AdminAuditLog.query
+    if admin_id:
+        q = q.filter(AdminAuditLog.admin_id == int(admin_id))
+    if action_f:
+        q = q.filter(AdminAuditLog.action == action_f)
+
+    total       = q.count()
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    entries     = q.order_by(AdminAuditLog.created_at.desc()).offset((page-1)*per_page).limit(per_page).all()
+    admins      = User.query.filter(db.or_(User.is_admin == True, User.is_moderator == True)).order_by(User.name).all()
+    distinct_actions = [r[0] for r in db.session.query(AdminAuditLog.action).distinct().order_by(AdminAuditLog.action).all()]
+
+    return render_template('admin_audit_log.html', entries=entries, page=page, total=total,
+                           total_pages=total_pages, admins=admins, admin_id=admin_id,
+                           action_f=action_f, distinct_actions=distinct_actions,
+                           pending_count=0, now=datetime.utcnow(), admin_active='audit')
+
+
+# ── Admin — Announcements (bulk vendor notifications) ───────────────────────────
+
+@app.route('/admin/announcements', methods=['GET', 'POST'])
+@full_admin_required
+def admin_announcements():
+    me = db.session.get(User, session['user_id'])
+    if request.method == 'POST':
+        subject  = request.form.get('subject', '').strip()
+        message  = request.form.get('message', '').strip()
+        audience = request.form.get('audience', 'all')
+        if not subject or not message:
+            flash('Please fill in both a subject and a message.', 'error')
+            return redirect(url_for('admin_announcements'))
+
+        q = User.query.filter_by(is_suspended=False)
+        if audience == 'free':
+            q = q.filter_by(plan='free', is_admin=False, is_moderator=False)
+        elif audience == 'basic':
+            q = q.filter_by(plan='basic')
+        elif audience == 'pro':
+            q = q.filter_by(plan='pro')
+        elif audience == 'paid':
+            q = q.filter(User.plan.in_(['basic', 'pro']))
+        else:
+            q = q.filter_by(is_admin=False, is_moderator=False)
+        recipients = q.all()
+
+        sent = 0
+        for u in recipients:
+            body = f"Hi {u.name},\n\n{message}\n\n— The CatalogKit Team"
+            if send_email(u.email, f'[CatalogKit] {subject}', body):
+                sent += 1
+
+        log_admin_action(me.id, 'announcement_sent', 'broadcast', None,
+                         f'"{subject}" to {audience} ({sent}/{len(recipients)} delivered)')
+        if sent == 0 and recipients:
+            flash('Message could not be sent — check that email sending (MAIL_USERNAME/MAIL_PASSWORD) is configured.', 'error')
+        else:
+            flash(f'Announcement sent to {sent} of {len(recipients)} vendor(s).', 'success')
+        return redirect(url_for('admin_announcements'))
+
+    recent = AdminAuditLog.query.filter_by(action='announcement_sent')\
+                                 .order_by(AdminAuditLog.created_at.desc()).limit(10).all()
+    audience_counts = {
+        'all':   User.query.filter_by(is_suspended=False, is_admin=False, is_moderator=False).count(),
+        'free':  User.query.filter_by(is_suspended=False, plan='free', is_admin=False, is_moderator=False).count(),
+        'basic': User.query.filter_by(is_suspended=False, plan='basic').count(),
+        'pro':   User.query.filter_by(is_suspended=False, plan='pro').count(),
+        'paid':  User.query.filter(User.is_suspended == False, User.plan.in_(['basic', 'pro'])).count(),
+    }
+    return render_template('admin_announcements.html', me=me, recent=recent, audience_counts=audience_counts,
+                           pending_count=0, now=datetime.utcnow(), admin_active='announcements')
+
+
+# ── Admin — Support inbox ────────────────────────────────────────────────────────
+
+@app.route('/admin/support')
+@admin_required
+def admin_support():
+    status_f = request.args.get('status', 'open')
+    q = SupportTicket.query
+    if status_f in ('open', 'in_progress', 'resolved'):
+        q = q.filter_by(status=status_f)
+    tickets    = q.order_by(SupportTicket.updated_at.desc()).all()
+    open_count = SupportTicket.query.filter_by(status='open').count()
+    return render_template('admin_support.html', tickets=tickets, status_f=status_f,
+                           open_count=open_count, pending_count=0, now=datetime.utcnow(),
+                           admin_active='support')
+
+@app.route('/admin/support/<int:ticket_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_support_ticket(ticket_id):
+    me     = db.session.get(User, session['user_id'])
+    ticket = db.session.get(SupportTicket, ticket_id)
+    if not ticket:
+        flash('Ticket not found.', 'error')
+        return redirect(url_for('admin_support'))
+    if request.method == 'POST':
+        reply      = request.form.get('reply', '').strip()
+        new_status = request.form.get('status', ticket.status)
+        if reply:
+            db.session.add(SupportMessage(ticket_id=ticket.id, from_admin=True,
+                                          author_name=me.name, body=reply))
+            send_email(ticket.user.email, f'[CatalogKit Support] Re: {ticket.subject}',
+                      f"Hi {ticket.user.name},\n\n{reply}\n\n— The CatalogKit Team\n\n"
+                      f"View this conversation any time at: https://www.catalogkit.org/support/{ticket.id}")
+        if new_status in ('open', 'in_progress', 'resolved'):
+            ticket.status = new_status
+        ticket.updated_at = datetime.utcnow()
+        db.session.commit()
+        log_admin_action(me.id, 'support_replied', 'support_ticket', ticket.id,
+                         f'Re: {ticket.subject} (status: {ticket.status})')
+        flash('Reply sent.', 'success')
+        return redirect(url_for('admin_support_ticket', ticket_id=ticket.id))
+    return render_template('admin_support_ticket.html', ticket=ticket, pending_count=0,
+                           now=datetime.utcnow(), admin_active='support')
+
+
+# ── Admin — Excel exports ─────────────────────────────────────────────────────────
+
+def build_xlsx_response(filename, headers, rows):
+    from openpyxl import Workbook
+    from openpyxl.utils import get_column_letter
+    wb = Workbook()
+    ws = wb.active
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = cell.font.copy(bold=True)
+    for row in rows:
+        ws.append(row)
+    for idx, header in enumerate(headers, 1):
+        ws.column_dimensions[get_column_letter(idx)].width = max(14, len(str(header)) + 4)
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return send_file(buf, as_attachment=True, download_name=filename,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+@app.route('/admin/export/users.xlsx')
+@admin_required
+def export_users_xlsx():
+    headers = ['Name', 'Email', 'Business', 'WhatsApp', 'Role', 'Plan', 'Catalogs', 'Status', 'Joined']
+    rows = []
+    for u in User.query.order_by(User.created_at.desc()).all():
+        role = 'Admin' if u.is_admin else ('Moderator' if u.is_moderator else 'User')
+        rows.append([u.name, u.email, u.business_name or '', u.whatsapp or '', role,
+                    u.plan_label, u.catalog_count, 'Suspended' if u.is_suspended else 'Active',
+                    u.created_at.strftime('%Y-%m-%d')])
+    log_admin_action(session['user_id'], 'export_users', detail=f'{len(rows)} users exported to Excel')
+    return build_xlsx_response('catalogkit-users.xlsx', headers, rows)
+
+@app.route('/admin/export/finance.xlsx')
+@admin_required
+def export_finance_xlsx():
+    headers = ['Date', 'Type', 'User / Business', 'Plan', 'Amount (K)', 'Method', 'Status']
+    rows = []
+    for p in PaymentRequest.query.order_by(PaymentRequest.submitted_at.desc()).all():
+        rows.append([p.submitted_at.strftime('%Y-%m-%d'), 'Plan Payment',
+                    p.user.name if p.user else '', p.plan, p.amount, p.payment_method, p.status])
+    for a in AgencyRequest.query.order_by(AgencyRequest.submitted_at.desc()).all():
+        rows.append([a.submitted_at.strftime('%Y-%m-%d'), 'Done-For-You', a.business_name,
+                    a.catalog_plan, a.total_due, 'Agent visit', a.status])
+    log_admin_action(session['user_id'], 'export_finance', detail=f'{len(rows)} rows exported to Excel')
+    return build_xlsx_response('catalogkit-finance.xlsx', headers, rows)
+
+
 # ── Pricing page ──────────────────────────────────────────────────────────────
 
 @app.route('/pricing')
@@ -2144,11 +2383,75 @@ def contact():
     return render_template('contact.html')
 
 
+# ── Support inbox (vendor-facing) ────────────────────────────────────────────────
+
+def admin_email():
+    admin = User.query.filter_by(is_admin=True).order_by(User.id).first()
+    return admin.email if admin else None
+
+@app.route('/support', methods=['GET', 'POST'])
+@login_required
+def support():
+    user = current_user()
+    if request.method == 'POST':
+        subject = request.form.get('subject', '').strip()
+        message = request.form.get('message', '').strip()
+        if not subject or not message:
+            flash('Please fill in both a subject and your message.', 'error')
+            return redirect(url_for('support'))
+        ticket = SupportTicket(user_id=user.id, subject=subject)
+        db.session.add(ticket)
+        db.session.commit()
+        db.session.add(SupportMessage(ticket_id=ticket.id, from_admin=False,
+                                      author_name=user.name, body=message))
+        db.session.commit()
+        log_activity(user.id, 'support_ticket_created', subject[:200])
+        ae = admin_email()
+        if ae:
+            send_email(ae, f'[CatalogKit Support] New message from {user.name}: {subject}',
+                      f"{user.name} ({user.email}) sent a support message:\n\n"
+                      f"Subject: {subject}\n\n{message}\n\n"
+                      f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
+        flash("Your message has been sent — we'll reply here and by email.", 'success')
+        return redirect(url_for('support_ticket', ticket_id=ticket.id))
+    tickets = SupportTicket.query.filter_by(user_id=user.id).order_by(SupportTicket.created_at.desc()).all()
+    return render_template('support.html', user=user, tickets=tickets)
+
+@app.route('/support/<int:ticket_id>', methods=['GET', 'POST'])
+@login_required
+def support_ticket(ticket_id):
+    user = current_user()
+    ticket = db.session.get(SupportTicket, ticket_id)
+    if not ticket or ticket.user_id != user.id:
+        flash('That message thread was not found.', 'error')
+        return redirect(url_for('support'))
+    if request.method == 'POST':
+        body = request.form.get('body', '').strip()
+        if body:
+            db.session.add(SupportMessage(ticket_id=ticket.id, from_admin=False,
+                                          author_name=user.name, body=body))
+            if ticket.status == 'resolved':
+                ticket.status = 'open'
+            ticket.updated_at = datetime.utcnow()
+            db.session.commit()
+            ae = admin_email()
+            if ae:
+                send_email(ae, f'[CatalogKit Support] {user.name} replied: {ticket.subject}',
+                          f"{user.name} ({user.email}) replied:\n\n{body}\n\n"
+                          f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
+        return redirect(url_for('support_ticket', ticket_id=ticket.id))
+    return render_template('support_ticket.html', user=user, ticket=ticket)
+
+
 # ── Context processor ─────────────────────────────────────────────────────────
 
 @app.context_processor
 def inject_globals():
-    return dict(current_user=current_user(), now=datetime.utcnow())
+    cu = current_user()
+    ctx = dict(current_user=cu, now=datetime.utcnow())
+    if cu and (cu.is_admin or cu.is_moderator):
+        ctx['open_support_count'] = SupportTicket.query.filter_by(status='open').count()
+    return ctx
 
 
 # ── Startup: create tables + run column migrations ────────────────────────────

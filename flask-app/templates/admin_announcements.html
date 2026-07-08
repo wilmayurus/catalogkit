@@ -1,0 +1,62 @@
+{% extends 'admin_base.html' %}
+{% block admin_title %}Announcements{% endblock %}
+{% block page_title %}Announcements{% endblock %}
+{% block page_crumb %}Send one message to many vendors at once{% endblock %}
+
+{% block admin_body %}
+<div class="admin-section">
+  <div class="admin-section-head">
+    <div class="admin-section-title">&#128227; New announcement</div>
+  </div>
+  <div class="admin-section-body">
+    <form method="POST" action="/admin/announcements">
+      <div class="field" style="margin-bottom:14px">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" maxlength="255" placeholder="e.g. New feature: PDF cover layouts" required>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="6" placeholder="Write your announcement here. It will be sent as a plain, friendly email." required></textarea>
+      </div>
+      <div class="field" style="margin-bottom:18px;max-width:320px">
+        <label for="audience">Send to</label>
+        <select id="audience" name="audience">
+          <option value="all">All active vendors ({{ audience_counts.all }})</option>
+          <option value="free">Free plan only ({{ audience_counts.free }})</option>
+          <option value="basic">Basic plan only ({{ audience_counts.basic }})</option>
+          <option value="pro">Pro plan only ({{ audience_counts.pro }})</option>
+          <option value="paid">All paid plans ({{ audience_counts.paid }})</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="return confirm('Send this announcement now? This cannot be undone.')">Send announcement</button>
+    </form>
+  </div>
+</div>
+
+<div class="admin-section" style="margin-top:20px">
+  <div class="admin-section-head">
+    <div class="admin-section-title">Recently sent</div>
+  </div>
+  {% if recent %}
+  <div class="admin-tbl-wrap">
+    <table class="admin-tbl">
+      <thead><tr><th>When</th><th>Sent by</th><th>Detail</th></tr></thead>
+      <tbody>
+        {% for r in recent %}
+        <tr>
+          <td style="font-size:0.8rem;white-space:nowrap">{{ r.created_at.strftime('%d %b %Y %I:%M %p') }}</td>
+          <td style="font-size:0.85rem">{{ r.admin.name if r.admin else '—' }}</td>
+          <td style="font-size:0.83rem;color:var(--muted)">{{ r.detail }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="admin-empty">
+    <div class="ae-icon">&#128227;</div>
+    <p>No announcements sent yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

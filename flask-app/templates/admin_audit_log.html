@@ -1,0 +1,80 @@
+{% extends 'admin_base.html' %}
+{% block admin_title %}Audit Log{% endblock %}
+{% block page_title %}Audit Log{% endblock %}
+{% block page_crumb %}Every action admins and moderators take, for accountability{% endblock %}
+
+{% block admin_body %}
+<div class="admin-section">
+  <form method="GET" action="/admin/audit-log">
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="filter-label">Admin</label>
+        <select name="admin_id" class="filter-select">
+          <option value="">All admins</option>
+          {% for a in admins %}
+          <option value="{{ a.id }}" {% if admin_id == a.id|string %}selected{% endif %}>{{ a.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">Action</label>
+        <select name="action" class="filter-select">
+          <option value="">All actions</option>
+          {% for a in distinct_actions %}
+          <option value="{{ a }}" {% if action_f == a %}selected{% endif %}>{{ a | replace('_',' ') | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filter-group" style="justify-content:flex-end">
+        <label class="filter-label">&nbsp;</label>
+        <div style="display:flex;gap:6px">
+          <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+          <a href="/admin/audit-log" class="btn btn-secondary btn-sm">Clear</a>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div style="padding:10px 20px;font-size:0.78rem;color:var(--muted);border-bottom:1px solid var(--border)">
+    Showing <strong style="color:var(--text)">{{ entries|length }}</strong> of <strong style="color:var(--text)">{{ total }}</strong> actions
+    &nbsp;&middot;&nbsp; Page {{ page }} / {{ total_pages }}
+  </div>
+
+  {% if entries %}
+  <div class="admin-tbl-wrap">
+    <table class="admin-tbl">
+      <thead><tr><th>When</th><th>Admin</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td style="white-space:nowrap;font-size:0.8rem">{{ e.created_at.strftime('%d %b %Y %I:%M %p') }}</td>
+          <td style="font-size:0.85rem;font-weight:600">{{ e.admin.name if e.admin else '—' }}</td>
+          <td><span class="chip chip-purple">{{ e.action | replace('_',' ') | title }}</span></td>
+          <td style="font-size:0.8rem;color:var(--muted)">{{ e.target_type or '—' }}{% if e.target_id %} #{{ e.target_id }}{% endif %}</td>
+          <td style="font-size:0.82rem;color:var(--muted)">{{ e.detail or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if total_pages > 1 %}
+  <div class="admin-pagination">
+    {% if page > 1 %}
+    <a href="/admin/audit-log?admin_id={{ admin_id }}&action={{ action_f }}&page={{ page - 1 }}" class="btn btn-secondary btn-sm">&larr; Prev</a>
+    {% endif %}
+    <span style="font-size:0.83rem;color:var(--muted)">Page {{ page }} of {{ total_pages }}</span>
+    {% if page < total_pages %}
+    <a href="/admin/audit-log?admin_id={{ admin_id }}&action={{ action_f }}&page={{ page + 1 }}" class="btn btn-secondary btn-sm">Next &rarr;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="admin-empty">
+    <div class="ae-icon">&#128737;</div>
+    <p>No admin actions match your filters</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

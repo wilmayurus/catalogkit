@@ -39,16 +39,21 @@
       <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Catalogs</a>
       {% if not current_user.is_admin %}<a href="/assisted-setup" {% if request.endpoint == 'assisted_setup' %}class="active"{% endif %}>Done For You</a>{% endif %}
       <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>Profile</a>
+      <a href="/support" {% if request.endpoint in ['support','support_ticket'] %}class="active"{% endif %}>Help</a>
       <a href="/contact" {% if request.endpoint == 'contact' %}class="active"{% endif %}>Contact</a>
       {% if current_user.is_admin %}
         <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
       {% endif %}
+      <button type="button" id="a11y-toggle" class="a11y-toggle" aria-pressed="false"
+              title="Larger text / simpler view" aria-label="Toggle larger text and simpler view">Aa</button>
       <div class="nav-user">
         <a href="/logout" class="btn btn-ghost btn-sm">Sign out</a>
       </div>
     {% else %}
       <a href="/pricing" {% if request.endpoint == 'pricing' %}class="active"{% endif %}>Pricing</a>
       <a href="/contact" {% if request.endpoint == 'contact' %}class="active"{% endif %}>Contact</a>
+      <button type="button" id="a11y-toggle" class="a11y-toggle" aria-pressed="false"
+              title="Larger text / simpler view" aria-label="Toggle larger text and simpler view">Aa</button>
       <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
       <a href="/register" class="btn btn-primary btn-sm">Sign up</a>
     {% endif %}
@@ -71,6 +76,8 @@
   <p style="font-size:0.78rem;color:var(--muted);margin:0">
     <a href="/pricing" style="color:var(--muted);text-decoration:none">Pricing</a>
     &nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="/support" style="color:var(--muted);text-decoration:none">Help &amp; Support</a>
+    &nbsp;&nbsp;|&nbsp;&nbsp;
     <a href="/contact" style="color:var(--muted);text-decoration:none">Contact &amp; FAQ</a>
     &nbsp;&nbsp;|&nbsp;&nbsp;
     <a href="/assisted-setup" style="color:var(--muted);text-decoration:none">Done For You</a>
@@ -81,6 +88,24 @@
   </p>
 </footer>
 
+<script>
+(function () {
+  var KEY = 'catalogkit-a11y-mode';
+  var btns = document.querySelectorAll('#a11y-toggle');
+  function apply(on) {
+    document.documentElement.classList.toggle('a11y-mode', on);
+    btns.forEach(function (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  }
+  apply(localStorage.getItem(KEY) === '1');
+  btns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var isOn = !document.documentElement.classList.contains('a11y-mode');
+      apply(isOn);
+      localStorage.setItem(KEY, isOn ? '1' : '0');
+    });
+  });
+})();
+</script>
 {% block scripts %}{% endblock %}
 </body>
 </html>
