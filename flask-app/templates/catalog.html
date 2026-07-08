@@ -103,44 +103,51 @@
   background: #ffffff;
   display: flex !important;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: stretch;
-  padding: 18px 14px 12px;
+  padding: 14px 16px 10px;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
-  gap: 10px;
+  gap: 7px;
 }
 .cover-back::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 4px;
+  height: 3px;
   background: linear-gradient(90deg, #6c63ff 0%, #f50057 55%, #ff6d00 100%);
 }
 /* Header */
-.cb-brand {
-  font-size: 0.5rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #9ca3af;
-  margin: 4px 0 0;
+.cb-header {
   text-align: center;
+  padding-top: 2px;
+}
+.cb-brand {
+  font-size: 0.48rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 4px;
 }
 .cb-headline {
   font-family: 'Montserrat', 'Inter', sans-serif;
-  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  font-size: clamp(0.7rem, 2.2vw, 0.95rem);
   font-weight: 800;
   color: #0f172a;
-  text-align: center;
-  margin: 0;
-  line-height: 1.3;
+  margin: 0 0 3px;
+  line-height: 1.25;
+}
+.cb-rule {
+  width: 28px; height: 2px;
+  background: linear-gradient(90deg, #6c63ff, #f50057);
+  border-radius: 2px;
+  margin: 0 auto 3px;
 }
 .cb-sub {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   color: #64748b;
-  text-align: center;
   margin: 0;
   line-height: 1.5;
 }
@@ -153,88 +160,100 @@
   background: #25D366;
   color: #fff !important;
   font-family: 'Inter', sans-serif;
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  padding: 6px 12px;
-  border-radius: 7px;
+  letter-spacing: 0.2px;
+  padding: 7px 10px;
+  border-radius: 8px;
   text-decoration: none !important;
-  box-shadow: 0 2px 8px rgba(37,211,102,0.4);
+  box-shadow: 0 2px 8px rgba(37,211,102,0.35);
   flex-shrink: 0;
 }
-/* Payment & Delivery — takes all remaining space, scrolls if it can't fit */
+/* Payment & Delivery — 2-column grid */
 .cb-info-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+}
+.cb-info-wrap.single-col {
+  grid-template-columns: 1fr;
 }
 .cb-info-block {
-  background: #f8f9fb;
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 7px;
   padding: 6px 8px;
-  flex-shrink: 0;
+  overflow: hidden;
 }
 .cb-info-title {
-  font-size: 0.5rem;
+  font-size: 0.52rem;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 2px;
-}
-.cb-info-intro {
-  font-size: 0.4rem;
-  color: #64748b;
-  line-height: 1.35;
   margin: 0 0 4px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 .cb-info-list {
   margin: 0;
-  padding-left: 11px;
+  padding: 0;
+  list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 .cb-info-list li {
-  font-size: 0.4rem;
+  font-size: 0.42rem;
   color: #475569;
-  line-height: 1.35;
+  line-height: 1.4;
+  padding-left: 8px;
+  position: relative;
 }
-.cb-info-list li strong {
-  color: #1e293b;
+.cb-info-list li::before {
+  content: '·';
+  position: absolute;
+  left: 1px;
+  color: #6c63ff;
   font-weight: 700;
 }
 /* Footer */
 .cb-footer {
   border-top: 1px solid #f1f5f9;
-  padding-top: 4px;
+  padding-top: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.cb-footer-left {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex-shrink: 0;
 }
 .cb-footer-link {
-  font-size: 0.46rem;
+  font-size: 0.44rem;
   color: #1877f2;
   text-decoration: none;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 .cb-footer-email {
-  font-size: 0.44rem;
+  font-size: 0.42rem;
   color: #94a3b8;
   margin: 0;
 }
 .cb-made-with {
-  font-size: 0.42rem;
+  font-size: 0.4rem;
   color: #cbd5e1;
-  text-align: center;
-  margin-top: 2px;
-  letter-spacing: 0.3px;
+  text-align: right;
+  white-space: nowrap;
 }
 .cb-made-with a {
   color: #6c63ff;
@@ -304,26 +323,30 @@
       {% endfor %}
       <div class="hard cover-back">
 
-        {% if user.business_name %}<p class="cb-brand">{{ user.business_name }}</p>{% endif %}
-        <h2 class="cb-headline">Thank you for supporting<br>a local PNG SME!</h2>
-        <p class="cb-sub">Got questions or ready to order? Tap the button below to message us on WhatsApp.</p>
+        <!-- Header -->
+        <div class="cb-header">
+          {% if user.business_name %}<p class="cb-brand">{{ user.business_name }}</p>{% endif %}
+          <h2 class="cb-headline">Thank you for supporting<br>a local PNG SME!</h2>
+          <div class="cb-rule"></div>
+          <p class="cb-sub">Questions or ready to order? Message us on WhatsApp.</p>
+        </div>
 
         <!-- WhatsApp CTA -->
         {% if wa_link %}
         <a href="{{ wa_link }}" class="cb-wa-btn" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="white" xmlns="http://www.w3.org/2000/svg">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="white" xmlns="http://www.w3.org/2000/svg">
             <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.38 1.26 4.8L2.05 22l5.39-1.41c1.37.74 2.92 1.16 4.6 1.16 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01C17.18 3.03 14.69 2 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42 1.56 1.56 2.41 3.63 2.41 5.83 0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.41-4.19-1.18l-.3-.17-3.12.82.83-3.04-.2-.32c-.84-1.32-1.28-2.85-1.28-4.42 0-4.54 3.7-8.17 8.27-8.17M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.86-.87 2.07s.89 2.39 1.01 2.56c.14.17 1.76 2.67 4.25 3.73.59.27 1.05.42 1.41.53.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.16-.48-.27-.25-.14-1.47-.74-1.69-.82-.23-.08-.37-.12-.56.12-.16.25-.64.81-.78.97-.15.17-.29.19-.53.07-.26-.13-1.06-.39-2.02-1.25-.74-.66-1.23-1.47-1.38-1.72-.14-.24-.01-.39.11-.5.11-.11.27-.29.37-.44.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.11-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.43-.14 0-.3-.01-.47-.01z"/>
           </svg>
           Order via WhatsApp Now
         </a>
         {% endif %}
 
-        <!-- Payment & Delivery Info -->
+        <!-- Payment & Delivery — side by side -->
         {% if payment_methods_list or delivery_methods_list %}
-        <div class="cb-info-wrap">
+        <div class="cb-info-wrap{% if not payment_methods_list or not delivery_methods_list %} single-col{% endif %}">
           {% if payment_methods_list %}
           <div class="cb-info-block">
-            <p class="cb-info-title">💳 Payment Options</p>
+            <p class="cb-info-title">💳 Payment</p>
             <ul class="cb-info-list">
               {% for method in payment_methods_list %}
               <li>{{ method }}</li>
@@ -333,7 +356,7 @@
           {% endif %}
           {% if delivery_methods_list %}
           <div class="cb-info-block">
-            <p class="cb-info-title">🚚 Delivery &amp; Collection</p>
+            <p class="cb-info-title">🚚 Delivery</p>
             <ul class="cb-info-list">
               {% for method in delivery_methods_list %}
               <li>{{ method }}</li>
@@ -344,18 +367,20 @@
         </div>
         {% endif %}
 
-        <!-- Footer Links -->
+        <!-- Footer -->
         <div class="cb-footer">
-          {% if user.facebook_url %}
-          <a href="{{ user.facebook_url }}" class="cb-footer-link" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="11" height="11" fill="#1877f2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-            Follow our Facebook Page for Daily Updates
-          </a>
-          {% endif %}
-          {% if user.email %}
-          <p class="cb-footer-email">✉ Bulk/Corporate Inquiries: {{ user.email }}</p>
-          {% endif %}
-          <p class="cb-made-with">Made with <a href="https://www.catalogkit.org" target="_blank" rel="noopener">CatalogKit</a> · Free digital catalogs for PNG vendors</p>
+          <div class="cb-footer-left">
+            {% if user.facebook_url %}
+            <a href="{{ user.facebook_url }}" class="cb-footer-link" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" width="9" height="9" fill="#1877f2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+              Follow us on Facebook
+            </a>
+            {% endif %}
+            {% if user.email %}
+            <p class="cb-footer-email">✉ {{ user.email }}</p>
+            {% endif %}
+          </div>
+          <p class="cb-made-with">Made with<br><a href="https://www.catalogkit.org" target="_blank" rel="noopener">CatalogKit</a></p>
         </div>
 
       </div>

@@ -865,8 +865,8 @@ def catalog_view(catalog_id):
             digits = '675' + digits[1:]
         msg = "Hi! I just viewed your flipbook catalog and would like to make an order."
         wa_link = f"https://wa.me/{digits}?text={url_quote(msg)}"
-    pay_list  = json.loads(owner.payment_methods  or '[]')
-    delv_list = json.loads(owner.delivery_methods or '[]')
+    pay_list  = list(dict.fromkeys(json.loads(owner.payment_methods  or '[]')))
+    delv_list = list(dict.fromkeys(json.loads(owner.delivery_methods or '[]')))
     return render_template('catalog.html', user=owner, catalog=catalog,
                            page_data=catalog.get_page_data(),
                            wa_link=wa_link,
