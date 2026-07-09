@@ -1,0 +1,46 @@
+{
+  "name": "CatalogKit",
+  "short_name": "CatalogKit",
+  "description": "Create digital product catalogs and share them on WhatsApp — free for PNG market vendors and small businesses.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e0e1a",
+  "theme_color": "#C41230",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/static/img/catalogkit-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/img/catalogkit-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/img/og-default.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "label": "CatalogKit — Digital Catalogs for PNG Businesses"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "My Catalogs",
+      "url": "/",
+      "description": "View and manage your catalogs"
+    },
+    {
+      "name": "New Catalog",
+      "url": "/catalog/new",
+      "description": "Start building a new catalog"
+    }
+  ]
+}

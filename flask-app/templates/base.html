@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>{% block title %}CatalogKit{% endblock %}</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#C41230">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CatalogKit">
+  <link rel="apple-touch-icon" href="/static/img/catalogkit-logo.png">
 
   {# Social share preview (Facebook/Messenger/WhatsApp link previews) — works
      automatically, no social media account needed. Pages can override any of
@@ -139,5 +146,12 @@
 })();
 </script>
 {% block scripts %}{% endblock %}
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/static/sw.js');
+  });
+}
+</script>
 </body>
 </html>
