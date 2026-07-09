@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 const FEATURES = [
   { icon: '📸', text: 'Upload photos in seconds' },
   { icon: '💰', text: 'Add name & price per item' },
-  { icon: '🔗', text: 'Share one link — anywhere' },
-  { icon: '📄', text: 'Download as PDF' },
+  { icon: '🔗', text: 'Share your catalog link' },
+  { icon: '📄', text: 'Or send as a PDF — your choice' },
 ];
 
 export function Scene5() {

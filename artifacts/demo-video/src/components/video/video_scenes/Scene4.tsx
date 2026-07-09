@@ -31,7 +31,7 @@ export function Scene4() {
         transition={{ duration: 0.7 }}
       >
         <h2 className="text-[5cqw] font-black text-[#f97316] font-display leading-tight">
-          Download as PDF. Share anywhere.
+          Share a link. Or send the PDF.
         </h2>
         <p className="text-[2.4cqw] text-[#0D0D0D]/65 font-semibold mt-[0.8cqh]">
           Plus — a <span className="text-[#25D366] font-bold">WhatsApp button</span> at the end of every catalog.
