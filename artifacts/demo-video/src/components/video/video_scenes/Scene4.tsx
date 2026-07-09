@@ -39,7 +39,7 @@ export function Scene4() {
       </motion.div>
 
       {/* Two columns */}
-      <div className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]">
+      <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]">
 
         {/* Left — PDF */}
         <motion.div

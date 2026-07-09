@@ -59,7 +59,7 @@ export function Scene3() {
         </p>
       </motion.div>
 
-      <div className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]">
+      <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]">
 
         {/* Share card */}
         <motion.div

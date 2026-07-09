@@ -51,7 +51,7 @@ export function Scene2() {
       </motion.div>
 
       <div
-        className="flex-1 flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]"
+        className="flex-1 min-h-0 overflow-hidden flex items-center justify-center gap-[4cqw] px-[5cqw] pb-[2cqh]"
       >
         {/* Phone */}
         <motion.div
