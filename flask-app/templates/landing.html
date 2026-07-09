@@ -1537,62 +1537,118 @@
 <!-- ══════════════════════════════════════════════════════════
      FOOTER
 ════════════════════════════════════════════════════════════ -->
-<footer class="bg-slate-900 text-slate-300 py-16 px-4 sm:px-6 lg:px-8" aria-label="Site footer">
+<footer class="bg-slate-900 text-slate-400 pt-16 pb-10 px-4 sm:px-6 lg:px-8" aria-label="Site footer">
   <div class="max-w-6xl mx-auto">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
 
-      <!-- Brand + contact -->
-      <div class="md:col-span-2">
-        <a href="/" aria-label="CatalogKit home" class="inline-block mb-5">
-          <img src="/static/img/catalogkit-logo.png" alt="CatalogKit" class="h-10 w-auto">
+    <!-- Top grid: brand col + three nav cols -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+
+      <!-- ── Brand column (2 of 5) ── -->
+      <div class="lg:col-span-2">
+        <!-- Logo / wordmark -->
+        <a href="/" aria-label="CatalogKit — go to homepage" class="inline-flex items-center gap-2 mb-5 group">
+          <span class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-orange-400 transition-colors" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="white"/><rect x="9" y="2" width="5" height="5" rx="1" fill="white" opacity="0.7"/><rect x="2" y="9" width="5" height="5" rx="1" fill="white" opacity="0.7"/><rect x="9" y="9" width="5" height="5" rx="1" fill="white"/></svg>
+          </span>
+          <span class="text-white font-extrabold text-lg tracking-tight">CatalogKit</span>
         </a>
-        <p class="text-slate-400 text-sm leading-relaxed max-w-sm mb-6">
-          Digital catalogs for PNG market vendors &amp; small businesses. Share your products on WhatsApp in minutes. Built in Port Moresby by Sapphire Consulting Services.
+
+        <p class="text-slate-400 text-sm leading-relaxed mb-6 max-w-xs">
+          Turn your phone photos into a beautiful digital catalogue — and share it on WhatsApp in minutes. Free for PNG vendors.
         </p>
-        <address style="font-style:normal" class="flex flex-col gap-1">
-          <a href="https://wa.me/67573817000?text={{ 'Hi! I have a question about CatalogKit.' | urlencode }}"
+
+        <!-- Contact -->
+        <address style="font-style:normal" class="flex flex-col gap-0.5">
+          <a href="https://wa.me/6757381700?text={{ 'Hi! I have a question about CatalogKit.' | urlencode }}"
              target="_blank" rel="noopener noreferrer"
-             aria-label="WhatsApp us on +675 7381 7000 (opens WhatsApp)"
-             class="flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors min-h-[44px]">
-            <span aria-hidden="true">📱</span>
-            <span>+675 7381 7000</span>
-            <span aria-hidden="true" class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">WhatsApp</span>
+             aria-label="WhatsApp CatalogKit on +675 7381 7000"
+             class="inline-flex items-center gap-2.5 text-sm text-slate-300 hover:text-white transition-colors min-h-[44px]">
+            <!-- WhatsApp icon -->
+            <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M12 0C5.373 0 0 5.373 0 12c0 2.136.558 4.139 1.535 5.878L.057 23.5l5.797-1.52A11.93 11.93 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.87 0-3.63-.5-5.15-1.37L3 21.5l.9-3.74A9.97 9.97 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+            </svg>
+            +675 7381 7000
+            <span class="bg-green-500/20 text-green-400 text-xs px-2 py-0.5 rounded-full font-semibold border border-green-500/30">WhatsApp</span>
           </a>
+
           <a href="mailto:info@catalogkit.org"
-             aria-label="Email us at info@catalogkit.org"
-             class="flex items-center gap-2 text-sm text-slate-300 hover:text-white transition-colors min-h-[44px]">
-            <span aria-hidden="true">✉️</span>
-            <span>info@catalogkit.org</span>
+             aria-label="Email CatalogKit at info@catalogkit.org"
+             class="inline-flex items-center gap-2.5 text-sm text-slate-300 hover:text-white transition-colors min-h-[44px]">
+            <!-- Envelope icon -->
+            <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            info@catalogkit.org
           </a>
         </address>
       </div>
 
-      <!-- Product links -->
-      <nav aria-label="Product navigation">
-        <h3 class="text-white font-semibold text-sm mb-5">Product</h3>
-        <ul class="flex flex-col gap-1 list-none" role="list">
-          <li><a href="#features"       class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Features</a></li>
-          <li><a href="#pricing"        class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Pricing</a></li>
+      <!-- ── Product nav ── -->
+      <nav aria-label="Product links">
+        <h3 class="text-white font-semibold text-sm mb-5 tracking-wide">Product</h3>
+        <ul class="flex flex-col gap-0.5 list-none" role="list">
+          <li><a href="/about"       class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">About</a></li>
+          <li><a href="#how-it-works" class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">How It Works</a></li>
+          <li><a href="#pricing"     class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Pricing</a></li>
           <li><a href="/assisted-setup" class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Done For You</a></li>
         </ul>
       </nav>
 
-      <!-- Support links -->
-      <nav aria-label="Support navigation">
-        <h3 class="text-white font-semibold text-sm mb-5">Support</h3>
-        <ul class="flex flex-col gap-1 list-none" role="list">
-          <li><a href="/support" class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Help Centre</a></li>
-          <li><a href="/contact" class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Contact &amp; FAQ</a></li>
-          <li><a href="/pricing" class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Plans &amp; Pricing</a></li>
+      <!-- ── Help & Support nav ── -->
+      <nav aria-label="Help and support links">
+        <h3 class="text-white font-semibold text-sm mb-5 tracking-wide">Support</h3>
+        <ul class="flex flex-col gap-0.5 list-none" role="list">
+          <li><a href="/support"     class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Help</a></li>
+          <li><a href="/support"     class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Support Tickets</a></li>
+          <li><a href="/contact"     class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Contact</a></li>
+          <li>
+            <a href="https://wa.me/6757381700" target="_blank" rel="noopener noreferrer"
+               class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center gap-1.5">
+              WhatsApp Us
+              <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- ── Legal nav ── -->
+      <nav aria-label="Legal links">
+        <h3 class="text-white font-semibold text-sm mb-5 tracking-wide">Legal</h3>
+        <ul class="flex flex-col gap-0.5 list-none" role="list">
+          <li><a href="/privacy"     class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Privacy Policy</a></li>
+          <li><a href="/terms"       class="text-sm text-slate-400 hover:text-white transition-colors min-h-[44px] flex items-center">Terms of Service</a></li>
         </ul>
       </nav>
 
     </div>
 
-    <div class="border-t border-slate-700 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-      <p>&copy; {{ now.year if now is defined else 2026 }} <strong class="text-slate-400">CatalogKit</strong> &nbsp;&middot;&nbsp; A product of Sapphire Consulting Services</p>
-      <p>Made with <span aria-hidden="true">❤️</span><span class="sr-only">love</span> in Port Moresby, Papua New Guinea</p>
+    <!-- Divider -->
+    <div class="border-t border-slate-800 pt-8">
+
+      <!-- Built in PNG strip -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+
+        <!-- Company info -->
+        <div>
+          <p class="text-sm text-slate-300 font-semibold mb-1 flex items-center gap-2">
+            <span aria-hidden="true">🇵🇬</span> Built proudly in Papua New Guinea
+          </p>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Created by <span class="text-slate-400 font-medium">Sapphire Consulting Services</span>,
+            a subsidiary of <span class="text-slate-400 font-medium">Trey Holdings Limited</span>
+            &nbsp;·&nbsp; Port Moresby, PNG
+          </p>
+        </div>
+
+        <!-- Copyright -->
+        <p class="text-xs text-slate-600 whitespace-nowrap">
+          &copy; {{ now.year if now is defined else 2026 }} CatalogKit &nbsp;·&nbsp; All rights reserved
+        </p>
+
+      </div>
     </div>
+
   </div>
 </footer>
 
