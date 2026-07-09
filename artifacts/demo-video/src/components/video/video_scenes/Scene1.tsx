@@ -19,18 +19,152 @@ const NOTIFICATION_DOTS = [
   { delay: 2.4,  right: '9cqw',  top: '18cqh' },
 ];
 
-export function Scene1() {
+export function Scene1({ portrait }: { portrait?: boolean }) {
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 300),    // chat starts flooding
-      setTimeout(() => setPhase(2), 1800),   // notification overlay
-      setTimeout(() => setPhase(3), 3200),   // mute button highlight
-      setTimeout(() => setPhase(4), 4200),   // problem statement text
+      setTimeout(() => setPhase(1), 300),
+      setTimeout(() => setPhase(2), 1800),
+      setTimeout(() => setPhase(3), 3200),
+      setTimeout(() => setPhase(4), 4200),
     ];
     return () => timers.forEach(t => clearTimeout(t));
   }, []);
+
+  const chatPanel = (
+    <div className={`${portrait ? 'w-full' : 'w-[48%]'} h-full flex flex-col relative overflow-hidden ${!portrait ? 'border-r border-white/10' : ''}`}>
+      {/* Chat header */}
+      <div className="flex-shrink-0 bg-[#1a1a2e] px-[2cqw] py-[1.5cqh] flex items-center gap-[1.5cqw] border-b border-white/10">
+        <div className="w-[4cqw] h-[4cqw] rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
+          <svg viewBox="0 0 24 24" fill="white" className="w-[2.5cqw] h-[2.5cqw]">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.405-.883-.733-1.48-1.639-1.653-1.935-.173-.299-.018-.461.13-.611.134-.135.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-white text-[1.6cqw] font-bold flex items-center gap-[0.6cqw]">SME Vendors POM <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG flag" className="h-[1.4cqw] w-auto inline-block" /></div>
+          <div className="text-white/50 text-[1.1cqw]">247 members</div>
+        </div>
+        <motion.div
+          className="flex-shrink-0 flex flex-col items-center"
+          animate={phase >= 3 ? { scale: [1, 1.4, 1.2], filter: ['brightness(1)', 'brightness(2)', 'brightness(1.5)'] } : {}}
+          transition={{ duration: 0.5 }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" className="w-[2.8cqw] h-[2.8cqw]" stroke={phase >= 3 ? '#F5A800' : 'rgba(255,255,255,0.4)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            <path d="M18.63 13A17.89 17.89 0 0 1 18 8"/>
+            <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/>
+            <path d="M18 8a6 6 0 0 0-9.33-5"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+          {phase >= 3 && (
+            <motion.div className="text-[#F5A800] text-[1cqw] font-bold mt-[0.2cqh]" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              MUTED
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
+
+      <div className="text-center py-[0.8cqh] flex-shrink-0">
+        <span className="text-white/30 text-[1.1cqw] bg-white/5 px-[1.5cqw] py-[0.3cqh] rounded-full">Today</span>
+      </div>
+
+      <div className="flex-1 overflow-hidden relative px-[1.5cqw] pb-[1cqh]">
+        <div className="flex flex-col gap-[1cqh]">
+          {CHAT_MESSAGES.map((msg) => (
+            <motion.div
+              key={msg.id}
+              className="flex gap-[1cqw] items-end"
+              initial={{ x: -30, opacity: 0 }}
+              animate={phase >= 1 ? { x: 0, opacity: 1 } : {}}
+              transition={{ delay: msg.delay, duration: 0.3 }}
+            >
+              <div className="w-[2.5cqw] h-[2.5cqw] rounded-full bg-gradient-to-br from-[#f97316] to-[#ea580c] flex-shrink-0 flex items-center justify-center">
+                <span className="text-white text-[1cqw] font-bold">{msg.id % 3 === 0 ? 'M' : msg.id % 2 === 0 ? 'S' : 'R'}</span>
+              </div>
+              <div className={`bg-white/10 rounded-2xl rounded-bl-none overflow-hidden flex-shrink-0 ${portrait ? 'w-[18cqw]' : 'w-[13cqw]'}`}>
+                <img
+                  src={`${import.meta.env.BASE_URL}images/${msg.img}`}
+                  className="w-full aspect-square object-cover opacity-80"
+                  alt=""
+                />
+                <div className="px-[0.8cqw] py-[0.5cqh] text-white/40 text-[0.9cqw]">
+                  {msg.id % 3 === 0 ? 'Mary K' : msg.id % 2 === 0 ? 'Sarah T' : 'Rose M'}
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-[8cqh] bg-gradient-to-t from-[#111111] to-transparent pointer-events-none" />
+      </div>
+
+      <AnimatePresence>
+        {phase >= 2 && (
+          <motion.div
+            className="absolute top-[7cqh] right-[2cqw] bg-[#f97316] text-white text-[1.4cqw] font-black px-[1.2cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: [0, 1.2, 1], opacity: 1, rotate: [0, -10, 10, 0] }}
+            transition={{ type: 'spring', bounce: 0.6, duration: 0.8 }}
+          >
+            20+ 📸
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  const painPoint = (
+    <>
+      {NOTIFICATION_DOTS.map((n, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-[2cqw] h-[2cqw] rounded-full bg-[#f97316]"
+          style={{ right: n.right, top: n.top }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={phase >= 2 ? { scale: [0, 1.2, 1, 0], opacity: [0, 1, 0.8, 0] } : {}}
+          transition={{ delay: i * 0.3 + 0.2, duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
+        />
+      ))}
+
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: 30 }}
+        animate={phase >= 2 ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7 }}
+      >
+        <div className={`${portrait ? 'text-[8cqw]' : 'text-[5cqw]'} mb-[2cqh]`}>😩</div>
+        <h2 className={`${portrait ? 'text-[5cqw]' : 'text-[3.8cqw]'} font-black text-white leading-tight font-display`}>
+          20 images dropped<br/>in the group.
+        </h2>
+        <p className={`${portrait ? 'text-[3cqw]' : 'text-[2.2cqw]'} text-white/50 font-medium mt-[1.5cqh]`}>
+          No prices. No contact.<br/>Just… photos.
+        </p>
+      </motion.div>
+
+      <motion.div
+        className="flex flex-col items-center gap-[1.5cqh]"
+        initial={{ opacity: 0, y: 20 }}
+        animate={phase >= 3 ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.7 }}
+      >
+        <div className="w-[80%] h-[0.15cqh] bg-white/10" />
+        <p className={`${portrait ? 'text-[3cqw]' : 'text-[2.2cqw]'} text-white/50 font-medium text-center italic`}>
+          You mute the group.<br/>Good products — never seen.
+        </p>
+      </motion.div>
+
+      <motion.div
+        className={`bg-[#f97316] text-white ${portrait ? 'px-[6cqw] py-[2.5cqh]' : 'px-[4cqw] py-[1.8cqh]'} rounded-2xl shadow-2xl text-center`}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={phase >= 4 ? { opacity: 1, scale: 1 } : {}}
+        transition={{ type: 'spring', damping: 18 }}
+      >
+        <p className={`${portrait ? 'text-[4cqw]' : 'text-[2.8cqw]'} font-black font-display leading-tight`}>
+          There's a better way.
+        </p>
+      </motion.div>
+    </>
+  );
 
   return (
     <motion.div
@@ -40,152 +174,27 @@ export function Scene1() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Left side — WhatsApp group chat simulation */}
-      <div className="w-[48%] h-full flex flex-col relative overflow-hidden border-r border-white/10">
-        {/* Chat header */}
-        <div className="flex-shrink-0 bg-[#1a1a2e] px-[2cqw] py-[1.5cqh] flex items-center gap-[1.5cqw] border-b border-white/10">
-          <div className="w-[4cqw] h-[4cqw] rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="white" className="w-[2.5cqw] h-[2.5cqw]">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.405-.883-.733-1.48-1.639-1.653-1.935-.173-.299-.018-.461.13-.611.134-.135.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-            </svg>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-white text-[1.6cqw] font-bold flex items-center gap-[0.6cqw]">SME Vendors POM <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG flag" className="h-[1.4cqw] w-auto inline-block" /></div>
-            <div className="text-white/50 text-[1.1cqw]">247 members</div>
-          </div>
-          {/* Mute icon — lights up in phase 3 */}
+      {portrait ? (
+        <>
+          {chatPanel}
+          {/* Portrait: pain point slides up from bottom */}
           <motion.div
-            className="flex-shrink-0 flex flex-col items-center"
-            animate={phase >= 3 ? { scale: [1, 1.4, 1.2], filter: ['brightness(1)', 'brightness(2)', 'brightness(1.5)'] } : {}}
-            transition={{ duration: 0.5 }}
+            className="absolute bottom-0 left-0 right-0 bg-[#0D0D0D]/93 backdrop-blur-sm px-[6cqw] py-[5cqh] flex flex-col items-center gap-[3cqh] z-10"
+            initial={{ y: '100%', opacity: 0 }}
+            animate={phase >= 2 ? { y: 0, opacity: 1 } : { y: '100%', opacity: 0 }}
+            transition={{ duration: 0.6, type: 'spring', damping: 25 }}
           >
-            <svg viewBox="0 0 24 24" fill="none" className="w-[2.8cqw] h-[2.8cqw]" stroke={phase >= 3 ? '#F5A800' : 'rgba(255,255,255,0.4)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              <path d="M18.63 13A17.89 17.89 0 0 1 18 8"/>
-              <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/>
-              <path d="M18 8a6 6 0 0 0-9.33-5"/>
-              <line x1="1" y1="1" x2="23" y2="23"/>
-            </svg>
-            {phase >= 3 && (
-              <motion.div
-                className="text-[#F5A800] text-[1cqw] font-bold mt-[0.2cqh]"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                MUTED
-              </motion.div>
-            )}
+            {painPoint}
           </motion.div>
-        </div>
-
-        {/* Date divider */}
-        <div className="text-center py-[0.8cqh] flex-shrink-0">
-          <span className="text-white/30 text-[1.1cqw] bg-white/5 px-[1.5cqw] py-[0.3cqh] rounded-full">Today</span>
-        </div>
-
-        {/* Scrolling image flood */}
-        <div className="flex-1 overflow-hidden relative px-[1.5cqw] pb-[1cqh]">
-          <div className="flex flex-col gap-[1cqh]">
-            {CHAT_MESSAGES.map((msg) => (
-              <motion.div
-                key={msg.id}
-                className="flex gap-[1cqw] items-end"
-                initial={{ x: -30, opacity: 0 }}
-                animate={phase >= 1 ? { x: 0, opacity: 1 } : {}}
-                transition={{ delay: msg.delay, duration: 0.3 }}
-              >
-                <div className="w-[2.5cqw] h-[2.5cqw] rounded-full bg-gradient-to-br from-[#f97316] to-[#ea580c] flex-shrink-0 flex items-center justify-center">
-                  <span className="text-white text-[1cqw] font-bold">{msg.id % 3 === 0 ? 'M' : msg.id % 2 === 0 ? 'S' : 'R'}</span>
-                </div>
-                <div className="bg-white/10 rounded-2xl rounded-bl-none overflow-hidden w-[13cqw] flex-shrink-0">
-                  <img
-                    src={`${import.meta.env.BASE_URL}images/${msg.img}`}
-                    className="w-full aspect-square object-cover opacity-80"
-                    alt=""
-                  />
-                  <div className="px-[0.8cqw] py-[0.5cqh] text-white/40 text-[0.9cqw]">
-                    {msg.id % 3 === 0 ? 'Mary K' : msg.id % 2 === 0 ? 'Sarah T' : 'Rose M'}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+        </>
+      ) : (
+        <>
+          {chatPanel}
+          <div className="w-[52%] h-full flex flex-col items-center justify-center px-[4cqw] gap-[3cqh]">
+            {painPoint}
           </div>
-
-          {/* Scroll blur at bottom — suggests infinite feed */}
-          <div className="absolute bottom-0 left-0 right-0 h-[8cqh] bg-gradient-to-t from-[#111111] to-transparent pointer-events-none" />
-        </div>
-
-        {/* Notification count badge */}
-        <AnimatePresence>
-          {phase >= 2 && (
-            <motion.div
-              className="absolute top-[7cqh] right-[2cqw] bg-[#f97316] text-white text-[1.4cqw] font-black px-[1.2cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: [0, 1.2, 1], opacity: 1, rotate: [0, -10, 10, 0] }}
-              transition={{ type: 'spring', bounce: 0.6, duration: 0.8 }}
-            >
-              20+ 📸
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Right side — the pain point message */}
-      <div className="w-[52%] h-full flex flex-col items-center justify-center px-[4cqw] gap-[3cqh]">
-
-        {/* Notification dots floating */}
-        {NOTIFICATION_DOTS.map((n, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-[2cqw] h-[2cqw] rounded-full bg-[#f97316]"
-            style={{ right: n.right, top: n.top }}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={phase >= 2 ? {
-              scale: [0, 1.2, 1, 0],
-              opacity: [0, 1, 0.8, 0],
-            } : {}}
-            transition={{ delay: i * 0.3 + 0.2, duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
-          />
-        ))}
-
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 30 }}
-          animate={phase >= 2 ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="text-[5cqw] mb-[2cqh]">😩</div>
-          <h2 className="text-[3.8cqw] font-black text-white leading-tight font-display">
-            20 images dropped<br/>in the group.
-          </h2>
-          <p className="text-[2.2cqw] text-white/50 font-medium mt-[1.5cqh]">
-            No prices. No contact.<br/>Just… photos.
-          </p>
-        </motion.div>
-
-        <motion.div
-          className="flex flex-col items-center gap-[1.5cqh]"
-          initial={{ opacity: 0, y: 20 }}
-          animate={phase >= 3 ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="w-[80%] h-[0.15cqh] bg-white/10" />
-          <p className="text-[2.2cqw] text-white/50 font-medium text-center italic">
-            You mute the group.<br/>Good products — never seen.
-          </p>
-        </motion.div>
-
-        <motion.div
-          className="bg-[#f97316] text-white px-[4cqw] py-[1.8cqh] rounded-2xl shadow-2xl text-center"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={phase >= 4 ? { opacity: 1, scale: 1 } : {}}
-          transition={{ type: 'spring', damping: 18 }}
-        >
-          <p className="text-[2.8cqw] font-black font-display leading-tight">
-            There's a better way.
-          </p>
-        </motion.div>
-      </div>
+        </>
+      )}
     </motion.div>
   );
 }

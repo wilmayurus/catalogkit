@@ -6,14 +6,15 @@ import { Scene2 } from './video_scenes/Scene2';
 import { Scene3 } from './video_scenes/Scene3';
 import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
+import { usePortrait } from '@/contexts/VideoModeContext';
 
 // Total: 7000 + 9000 + 10000 + 11000 + 12000 = 49s
 const SCENE_DURATIONS = {
-  problem:  7000,   // WhatsApp flood, mute, pain point
-  build:    9000,   // Upload, add details, catalog built
-  catalog: 10000,   // Link, share icons, customer flipbook
-  share:   11000,   // PDF + WhatsApp button, order comes in
-  closing: 12000,   // Logo, tagline, FREE, URL, credit
+  problem:  7000,
+  build:    9000,
+  catalog: 10000,
+  share:   11000,
+  closing: 12000,
 };
 
 const PRELOAD_IMAGES = [
@@ -25,6 +26,7 @@ const PRELOAD_IMAGES = [
 
 export default function VideoTemplate() {
   const { currentScene } = useVideoPlayer({ durations: SCENE_DURATIONS });
+  const portrait = usePortrait();
   const base = import.meta.env.BASE_URL;
   const audioRef = useRef<HTMLAudioElement>(null);
   const [muted, setMuted] = useState(false);
@@ -65,27 +67,25 @@ export default function VideoTemplate() {
     <div className="relative w-full h-screen overflow-hidden bg-[#0D0D0D] font-sans">
       <audio ref={audioRef} src={`${base}audio/background.mp3`} preload="auto" loop />
 
-      {/* Persistent midground overlay if needed */}
       <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay">
-        <video 
-          src={`${base}videos/market-lights.mp4`} 
-          autoPlay 
-          muted 
-          loop 
-          playsInline 
-          className="w-full h-full object-cover" 
+        <video
+          src={`${base}videos/market-lights.mp4`}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
         />
       </div>
 
       <AnimatePresence mode="sync">
-        {currentScene === 0 && <Scene1 key="problem" />}
-        {currentScene === 1 && <Scene2 key="build" />}
-        {currentScene === 2 && <Scene3 key="catalog" />}
-        {currentScene === 3 && <Scene4 key="share" />}
-        {currentScene === 4 && <Scene5 key="closing" />}
+        {currentScene === 0 && <Scene1 key="problem" portrait={portrait} />}
+        {currentScene === 1 && <Scene2 key="build" portrait={portrait} />}
+        {currentScene === 2 && <Scene3 key="catalog" portrait={portrait} />}
+        {currentScene === 3 && <Scene4 key="share" portrait={portrait} />}
+        {currentScene === 4 && <Scene5 key="closing" portrait={portrait} />}
       </AnimatePresence>
 
-      {/* Mute button */}
       <button
         className="absolute top-[2cqh] right-[2cqw] z-50 w-[3.5cqw] h-[3.5cqw] rounded-full bg-black/40 backdrop-blur flex items-center justify-center border border-white/20 text-white shadow-lg transition-opacity hover:opacity-100 opacity-60"
         onClick={toggleMute}

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import VideoTemplate from "./components/video/VideoTemplate";
+import { VideoModeContext } from "./contexts/VideoModeContext";
 
 const TOTAL_DURATION_MS = 7000 + 9000 + 10000 + 11000 + 12000 + 2500;
 const COUNTDOWN_SECONDS = 3;
@@ -11,19 +12,30 @@ function App() {
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [videoKey, setVideoKey] = useState(0);
+  const [portrait, setPortrait] = useState(false);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const portraitRef = useRef(portrait);
+  portraitRef.current = portrait;
+
+  function switchMode() {
+    setPortrait(p => !p);
+    setVideoKey(k => k + 1);
+  }
 
   async function startDownload() {
     setRecState("waiting");
     chunksRef.current = [];
 
+    const isPortrait = portraitRef.current;
     let stream: MediaStream;
     try {
       stream = await (navigator.mediaDevices as any).getDisplayMedia({
-        video: { frameRate: 30, width: 1920, height: 1080 },
+        video: isPortrait
+          ? { frameRate: 30, width: 1080, height: 1920 }
+          : { frameRate: 30, width: 1920, height: 1080 },
         audio: true,
         preferCurrentTab: true,
       } as any);
@@ -34,7 +46,6 @@ function App() {
 
     streamRef.current = stream;
 
-    // Countdown before recording starts — UI visible but NOT yet recording
     setCountdown(COUNTDOWN_SECONDS);
     setRecState("countdown");
 
@@ -44,15 +55,14 @@ function App() {
       setCountdown(count);
       if (count <= 0) {
         clearInterval(countTimer);
-        // Restart video from scene 1, then begin recording
         setVideoKey(k => k + 1);
         await new Promise(r => setTimeout(r, 600));
-        beginRecording(stream);
+        beginRecording(stream, isPortrait);
       }
     }, 1000);
   }
 
-  function beginRecording(stream: MediaStream) {
+  function beginRecording(stream: MediaStream, isPortrait: boolean) {
     const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
       ? "video/webm;codecs=vp9"
       : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
@@ -73,7 +83,7 @@ function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "catalogkit-demo.webm";
+      a.download = isPortrait ? "catalogkit-demo-portrait.webm" : "catalogkit-demo.webm";
       a.click();
       URL.revokeObjectURL(url);
       setRecState("done");
@@ -101,75 +111,85 @@ function App() {
     setRecState("idle");
   }
 
+  const stageStyle = portrait
+    ? {
+        width: "min(100vw, calc(100vh * 9 / 16))",
+        height: "min(100vh, calc(100vw * 16 / 9))",
+      }
+    : {
+        width: "min(100vw, calc(100vh * 16 / 9))",
+        height: "min(100vh, calc(100vw * 9 / 16))",
+      };
+
   return (
-    <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden relative">
-      {/* 16:9 video stage — only the video lives here */}
-      <div
-        className="video-stage relative overflow-hidden"
-        style={{
-          width: "min(100vw, calc(100vh * 16 / 9))",
-          height: "min(100vh, calc(100vw * 9 / 16))",
-        }}
-      >
-        <VideoTemplate key={videoKey} />
-      </div>
-
-      {/* All UI is outside the video stage so it never appears in the recording */}
-
-      {recState === "idle" && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <button
-            onClick={startDownload}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm px-5 py-2 rounded-full shadow-lg transition-all"
-          >
-            <span>⬇</span> Download Video
-          </button>
+    <VideoModeContext.Provider value={portrait}>
+      <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden relative">
+        {/* Video stage — only the video lives here */}
+        <div className="video-stage relative overflow-hidden" style={stageStyle}>
+          <VideoTemplate key={videoKey} />
         </div>
-      )}
 
-      {recState === "waiting" && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-2xl shadow-lg text-center leading-snug">
-            <span className="animate-pulse text-yellow-400">● </span>
-            <strong>Select this tab</strong> in the sharing dialog…
-          </div>
-        </div>
-      )}
+        {/* All UI is outside the video stage so it never appears in the recording */}
 
-      {recState === "countdown" && (
-        <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div className="text-white text-center">
-            <div className="text-8xl font-black tabular-nums" style={{ textShadow: '0 0 40px rgba(249,115,22,0.8)' }}>
-              {countdown}
-            </div>
-            <div className="text-lg font-semibold text-white/60 mt-2">Recording starts…</div>
-          </div>
-        </div>
-      )}
-
-      {/* Nothing shown during recording — completely clean capture */}
-
-      {recState === "done" && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="flex items-center gap-2 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-sm px-5 py-2 rounded-full shadow-lg">
-            <span>✓</span> catalogkit-demo.webm downloaded!
-            <button onClick={() => setRecState("idle")} className="ml-2 text-green-300/70 hover:text-green-100 text-xs underline">
-              record again
+        {recState === "idle" && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
+            <button
+              onClick={startDownload}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm px-5 py-2 rounded-full shadow-lg transition-all"
+            >
+              <span>⬇</span> Download {portrait ? "Portrait" : "Landscape"} Video
+            </button>
+            <button
+              onClick={switchMode}
+              className="text-white/40 hover:text-white/70 text-xs transition-colors"
+            >
+              Switch to {portrait ? "Landscape (16:9) 🖥" : "Portrait (9:16) 📱"}
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {recState === "error" && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-          <div className="flex flex-col items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-2 rounded-xl shadow-lg text-center">
-            <span>✕ Permission denied or cancelled.</span>
-            <span className="text-xs text-red-300/70">Select <strong>this tab</strong> when the browser asks.</span>
-            <button onClick={() => setRecState("idle")} className="mt-1 text-red-300 hover:text-red-100 text-xs underline">Try again</button>
+        {recState === "waiting" && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+            <div className="bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-2xl shadow-lg text-center leading-snug">
+              <span className="animate-pulse text-yellow-400">● </span>
+              <strong>Select this tab</strong> in the sharing dialog…
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {recState === "countdown" && (
+          <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="text-white text-center">
+              <div className="text-8xl font-black tabular-nums" style={{ textShadow: '0 0 40px rgba(249,115,22,0.8)' }}>
+                {countdown}
+              </div>
+              <div className="text-lg font-semibold text-white/60 mt-2">Recording starts…</div>
+            </div>
+          </div>
+        )}
+
+        {recState === "done" && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+            <div className="flex items-center gap-2 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-sm px-5 py-2 rounded-full shadow-lg">
+              <span>✓</span> {portrait ? "catalogkit-demo-portrait.webm" : "catalogkit-demo.webm"} downloaded!
+              <button onClick={() => setRecState("idle")} className="ml-2 text-green-300/70 hover:text-green-100 text-xs underline">
+                record again
+              </button>
+            </div>
+          </div>
+        )}
+
+        {recState === "error" && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+            <div className="flex flex-col items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-2 rounded-xl shadow-lg text-center">
+              <span>✕ Permission denied or cancelled.</span>
+              <span className="text-xs text-red-300/70">Select <strong>this tab</strong> when the browser asks.</span>
+              <button onClick={() => setRecState("idle")} className="mt-1 text-red-300 hover:text-red-100 text-xs underline">Try again</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </VideoModeContext.Provider>
   );
 }
 
