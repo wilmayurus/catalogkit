@@ -94,7 +94,7 @@ export function Scene4() {
           animate={phase >= 3 ? { scale: 1, opacity: 1, x: 0 } : {}}
           transition={{ type: 'spring', damping: 20 }}
         >
-          <div className="relative w-[20cqw] h-[28cqw] bg-white rounded-2xl shadow-2xl border border-gray-100 mb-[3cqh] flex flex-col overflow-hidden">
+          <div className="relative w-[20cqw] h-[22cqw] bg-white rounded-2xl shadow-2xl border border-gray-100 mb-[1.5cqh] flex flex-col overflow-hidden">
             <div className="h-[10%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
               <span className="text-white text-[1.2cqw] font-bold tracking-wide">Mary's Catalog</span>
             </div>
@@ -119,11 +119,6 @@ export function Scene4() {
               </svg>
               <span className="text-white font-bold text-[1.6cqw]">+675 7000 0000</span>
             </motion.div>
-          </div>
-
-          <div className="text-center mt-[1.5cqh]">
-            <h3 className="text-[3cqw] font-bold text-[#0D0D0D] font-display">WhatsApp Order</h3>
-            <p className="text-[2cqw] text-[#25D366] font-medium mt-[0.5cqh]">Customers tap to message you.</p>
           </div>
 
           {/* Customer reply bubble */}
