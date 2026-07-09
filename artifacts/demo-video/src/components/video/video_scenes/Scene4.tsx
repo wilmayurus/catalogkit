@@ -25,7 +25,7 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
     >
       {/* Heading */}
       <motion.div
-        className={`w-full text-center ${portrait ? 'pt-[3cqh] pb-[1.5cqh]' : 'pt-[4cqh] pb-[2cqh]'} px-[5cqw] flex-shrink-0`}
+        className={`w-full text-center ${portrait ? 'pt-[2cqh] pb-[1cqh]' : 'pt-[4cqh] pb-[2cqh]'} px-[5cqw] flex-shrink-0`}
         initial={{ opacity: 0, y: -15 }}
         animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
@@ -40,11 +40,11 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
 
       {portrait ? (
         /* ── Portrait: stacked vertically ── */
-        <div className="flex-1 min-h-0 overflow-hidden flex flex-col items-center justify-center gap-[2cqh] px-[5cqw] pb-[2cqh]">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col items-center justify-center gap-[1cqh] px-[5cqw] pb-[1cqh]">
 
           {/* PDF card */}
           <motion.div
-            className="flex items-center gap-[3cqw]"
+            className="flex items-center gap-[2cqw]"
             initial={{ scale: 0.85, opacity: 0, y: -20 }}
             animate={phase >= 2 ? { scale: 1, opacity: 1, y: 0 } : {}}
             transition={{ type: 'spring', damping: 20 }}
@@ -80,7 +80,7 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
           </motion.div>
 
           {/* Horizontal divider */}
-          <div className="flex items-center gap-[3cqw] w-full px-[8cqw] flex-shrink-0">
+          <div className="flex items-center gap-[2cqw] w-full px-[6cqw] flex-shrink-0">
             <div className="flex-1 h-[0.15cqh] bg-[#f97316]/15" />
             <span className="text-[3cqw] text-[#f97316]/40 font-bold">+</span>
             <div className="flex-1 h-[0.15cqh] bg-[#f97316]/15" />
@@ -88,7 +88,7 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
 
           {/* WhatsApp card + bubble */}
           <motion.div
-            className="flex items-start gap-[3cqw]"
+            className="flex items-start gap-[2cqw]"
             initial={{ scale: 0.85, opacity: 0, y: 20 }}
             animate={phase >= 3 ? { scale: 1, opacity: 1, y: 0 } : {}}
             transition={{ type: 'spring', damping: 20 }}

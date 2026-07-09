@@ -49,11 +49,11 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
         transition={{ duration: 2 }}
       />
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full px-[6cqw] py-[2cqh]">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center w-full px-[6cqw] py-[1cqh]">
 
         {/* Logo */}
         <motion.div
-          className="flex items-center gap-[2cqw] mb-[2cqh]"
+          className="flex items-center gap-[2cqw] mb-[1cqh]"
           initial={{ y: 40, opacity: 0 }}
           animate={phase >= 1 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 18 }}
@@ -67,7 +67,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
 
         {/* Tagline */}
         <motion.p
-          className={`${portrait ? 'text-[3.5cqw]' : 'text-[2.8cqw]'} text-[#FFF8F0]/70 font-semibold mb-[2cqh] text-center leading-snug`}
+          className={`${portrait ? 'text-[3.5cqw]' : 'text-[2.8cqw]'} text-[#FFF8F0]/70 font-semibold mb-[1cqh] text-center leading-snug`}
           initial={{ opacity: 0, y: 10 }}
           animate={phase >= 2 ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8 }}
@@ -78,7 +78,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
 
         {/* Feature pills */}
         <motion.div
-          className={`grid grid-cols-2 gap-[1.5cqw] mb-[2cqh] ${portrait ? 'w-[80cqw]' : 'w-auto'}`}
+          className={`grid grid-cols-2 gap-[1cqw] mb-[1cqh] ${portrait ? 'w-[80cqw]' : 'w-auto'}`}
           initial={{ opacity: 0 }}
           animate={phase >= 3 ? { opacity: 1 } : {}}
           transition={{ duration: 0.6 }}
@@ -86,7 +86,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
           {FEATURES.map((f, i) => (
             <motion.div
               key={i}
-              className={`flex items-center gap-[1cqw] bg-white/8 border border-white/10 rounded-2xl ${portrait ? 'px-[2cqw] py-[1.5cqh]' : 'px-[2cqw] py-[1.2cqh]'}`}
+              className={`flex items-center gap-[1cqw] bg-white/8 border border-white/10 rounded-2xl ${portrait ? 'px-[2cqw] py-[0.9cqh]' : 'px-[2cqw] py-[1.2cqh]'}`}
               initial={{ opacity: 0, y: 10 }}
               animate={phase >= 3 ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: i * 0.1 }}
@@ -99,7 +99,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
 
         {/* FREE badge */}
         <motion.div
-          className={`bg-[#f97316] text-white ${portrait ? 'px-[6cqw] py-[2.5cqh]' : 'px-[5cqw] py-[2.2cqh]'} rounded-full shadow-2xl mb-[2cqh]`}
+          className={`bg-[#f97316] text-white ${portrait ? 'px-[5cqw] py-[1.6cqh]' : 'px-[5cqw] py-[2.2cqh]'} rounded-full shadow-2xl mb-[1cqh]`}
           initial={{ y: 20, opacity: 0, scale: 0.9 }}
           animate={phase >= 4 ? { y: 0, opacity: 1, scale: 1 } : {}}
           transition={{ type: 'spring', damping: 16 }}
@@ -109,7 +109,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
 
         {/* URL */}
         <motion.div
-          className={`flex items-center gap-[1.5cqw] bg-white/10 border border-white/20 ${portrait ? 'px-[5cqw] py-[2cqh]' : 'px-[4cqw] py-[1.5cqh]'} rounded-2xl mb-[1.5cqh]`}
+          className={`flex items-center gap-[1.5cqw] bg-white/10 border border-white/20 ${portrait ? 'px-[4cqw] py-[1.2cqh]' : 'px-[4cqw] py-[1.5cqh]'} rounded-2xl mb-[0]`}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={phase >= 5 ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.7 }}
