@@ -114,9 +114,9 @@ export function Scene5() {
           animate={phase >= 5 ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.7 }}
         >
-          <div className="w-[3cqw] h-[3cqw] bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
-            <svg viewBox="0 0 24 24" fill="white" className="w-[1.8cqw] h-[1.8cqw]">
-              <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 15v-4H7l5-8v4h4l-5 8z"/>
+          <div className="w-[3cqw] h-[3cqw] bg-[#f97316] rounded-full flex items-center justify-center flex-shrink-0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[1.8cqw] h-[1.8cqw]">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
             </svg>
           </div>
           <span className="text-[3.5cqw] font-black text-[#FFF8F0] font-display tracking-wide">
