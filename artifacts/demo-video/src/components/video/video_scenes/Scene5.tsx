@@ -136,8 +136,8 @@ export function Scene5() {
         animate={phase >= 5 ? { opacity: 0.4 } : {}}
         transition={{ duration: 1, delay: 1 }}
       >
-        <p className="text-[1cqw] text-white font-sans">
-          Proudly PNG Made &nbsp;·&nbsp; CatalogKit
+        <p className="text-[1cqw] text-white font-sans leading-relaxed">
+          Proudly PNG Made<br />© CatalogKit
         </p>
       </motion.div>
     </motion.div>
