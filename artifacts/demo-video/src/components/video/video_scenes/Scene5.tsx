@@ -45,7 +45,7 @@ export function Scene5() {
         src={`${import.meta.env.BASE_URL}images/market-scene-warm.png`}
         className="absolute inset-0 w-full h-full object-cover"
         initial={{ opacity: 0 }}
-        animate={phase >= 1 ? { opacity: 0.07 } : {}}
+        animate={phase >= 1 ? { opacity: 0.22 } : {}}
         transition={{ duration: 2 }}
       />
 
