@@ -59,8 +59,12 @@ export function Scene1() {
             animate={phase >= 3 ? { scale: [1, 1.4, 1.2], filter: ['brightness(1)', 'brightness(2)', 'brightness(1.5)'] } : {}}
             transition={{ duration: 0.5 }}
           >
-            <svg viewBox="0 0 24 24" fill="none" className="w-[2.8cqw] h-[2.8cqw]" stroke={phase >= 3 ? '#F5A800' : 'rgba(255,255,255,0.4)'} strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072M12 6v12m0-12C10.343 6 8.842 6.842 7.757 8.172M12 6c1.657 0 3.158.842 4.243 2.172M7.757 8.172A7.02 7.02 0 006 12c0 1.38.398 2.665 1.085 3.757M16.243 8.172A7.02 7.02 0 0118 12c0 1.38-.398 2.665-1.085 3.757M3 3l18 18"/>
+            <svg viewBox="0 0 24 24" fill="none" className="w-[2.8cqw] h-[2.8cqw]" stroke={phase >= 3 ? '#F5A800' : 'rgba(255,255,255,0.4)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              <path d="M18.63 13A17.89 17.89 0 0 1 18 8"/>
+              <path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"/>
+              <path d="M18 8a6 6 0 0 0-9.33-5"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
             </svg>
             {phase >= 3 && (
               <motion.div
