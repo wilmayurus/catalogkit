@@ -137,7 +137,7 @@ export function Scene5() {
         transition={{ duration: 1, delay: 1 }}
       >
         <p className="text-[1cqw] text-white font-sans">
-          Proudly PNG Made &nbsp;·&nbsp; © CatalogKit
+          Proudly PNG Made &nbsp;·&nbsp; CatalogKit
         </p>
       </motion.div>
     </motion.div>
