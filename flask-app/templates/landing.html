@@ -856,54 +856,340 @@
   <!-- ══════════════════════════════════════════════════════════
        PRODUCT SHOWCASE
   ════════════════════════════════════════════════════════════ -->
-  <section class="bg-gray-50 py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="showcase-heading">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-14">
+  <section class="bg-gray-50 py-20 lg:py-28 px-4 sm:px-6 lg:px-8" aria-labelledby="showcase-heading">
+
+    <style>
+      .showcase-panel {
+        opacity: 0;
+        transform: translateY(36px) scale(0.98);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+      .showcase-panel.sp-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .showcase-panel { opacity: 1 !important; transform: none !important; transition: none !important; }
+      }
+    </style>
+
+    <div class="max-w-4xl mx-auto">
+
+      <!-- Header -->
+      <div class="text-center mb-20">
         <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">See it in action</p>
-        <h2 id="showcase-heading" class="text-3xl font-extrabold text-slate-900 mb-4">Your catalog, on any device</h2>
-        <p class="text-lg text-gray-500">Looks beautiful on phones, tablets, and computer screens.</p>
+        <h2 id="showcase-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Watch CatalogKit work</h2>
+        <p class="text-lg text-gray-500 max-w-xl mx-auto">From your phone photos to a WhatsApp link — here's how it looks every step of the way.</p>
       </div>
-      <div class="grid md:grid-cols-2 gap-10 items-center">
-        <!-- Visual placeholder -->
-        <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-12 flex items-center justify-center" style="min-height:320px">
-          <div class="text-center">
-            <span class="text-8xl block mb-5" aria-hidden="true">📱</span>
-            <p class="text-gray-400 font-medium">Mobile flipbook preview</p>
-            <p class="text-sm text-gray-300 mt-1">Screenshot or animated demo placeholder</p>
+
+      <!-- ── Step 1: Upload Photos ── -->
+      <div class="showcase-panel mb-20">
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <span class="w-8 h-8 bg-orange-500 text-white rounded-full text-sm font-extrabold flex items-center justify-center flex-shrink-0">1</span>
+          <h3 class="text-xl font-extrabold text-slate-900">Uploading Photos</h3>
+        </div>
+        <!-- Dark spotlight backdrop -->
+        <div class="bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <!-- Browser window -->
+          <div class="bg-white rounded-xl overflow-hidden shadow-xl">
+            <!-- Chrome bar -->
+            <div class="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div class="flex gap-1.5 flex-shrink-0"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+              <div class="flex-1 bg-white rounded-lg px-3 py-1.5 text-xs text-gray-400 border border-gray-200 flex items-center gap-1.5 min-w-0">
+                <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                <span class="truncate">catalogkit.org/dashboard/upload</span>
+              </div>
+            </div>
+            <!-- Page content -->
+            <div class="bg-gray-50 p-6">
+              <!-- Page title -->
+              <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                  <p class="font-extrabold text-slate-900 text-sm">Upload Your Product Photos</p>
+                  <p class="text-xs text-gray-400">Step 1 of 3</p>
+                </div>
+              </div>
+              <!-- Drop zone -->
+              <div class="border-2 border-dashed border-orange-300 bg-orange-50 rounded-2xl p-8 text-center mb-4">
+                <svg class="w-10 h-10 text-orange-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <p class="text-sm font-semibold text-orange-500 mb-1">Tap to choose photos</p>
+                <p class="text-xs text-gray-400">JPG or PNG · Any size</p>
+              </div>
+              <!-- Uploaded thumbnails -->
+              <div class="grid grid-cols-4 gap-2 mb-4">
+                <div class="aspect-square bg-green-100 rounded-xl flex items-center justify-center text-xl relative overflow-hidden">🥬<div class="absolute bottom-0 left-0 right-0 bg-green-500 text-white text-xs font-bold text-center py-0.5">✓</div></div>
+                <div class="aspect-square bg-blue-100 rounded-xl flex items-center justify-center text-xl relative overflow-hidden">🐟<div class="absolute bottom-0 left-0 right-0 bg-green-500 text-white text-xs font-bold text-center py-0.5">✓</div></div>
+                <div class="aspect-square bg-yellow-100 rounded-xl flex items-center justify-center text-xl relative overflow-hidden">🌽<div class="absolute bottom-0 left-0 right-0 bg-green-500 text-white text-xs font-bold text-center py-0.5">✓</div></div>
+                <div class="aspect-square bg-gray-100 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300 text-gray-300 text-2xl font-light cursor-pointer hover:border-orange-300">+</div>
+              </div>
+              <!-- CTA -->
+              <div class="bg-orange-500 text-white text-sm font-bold py-3 rounded-xl text-center">Build My Catalogue →</div>
+            </div>
           </div>
         </div>
-        <!-- Feature list -->
-        <ul class="flex flex-col gap-7 list-none" role="list">
-          <li class="flex gap-5 items-start">
-            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span class="text-orange-500 text-2xl" aria-hidden="true">📖</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-slate-800 mb-1">A flipbook your customers will love</h3>
-              <p class="text-sm text-gray-500 leading-relaxed">Pages flip beautifully. Customers browse your full product range, zoom in, and read descriptions — all from a link you send on WhatsApp.</p>
-            </div>
-          </li>
-          <li class="flex gap-5 items-start">
-            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span class="text-orange-500 text-2xl" aria-hidden="true">📄</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-slate-800 mb-1">PDF catalog they can print</h3>
-              <p class="text-sm text-gray-500 leading-relaxed">Customers can download and print a PDF version of your catalog. Great for customers who prefer paper over screens.</p>
-            </div>
-          </li>
-          <li class="flex gap-5 items-start">
-            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span class="text-orange-500 text-2xl" aria-hidden="true">⚡</span>
-            </div>
-            <div>
-              <h3 class="font-bold text-slate-800 mb-1">Builds in seconds</h3>
-              <p class="text-sm text-gray-500 leading-relaxed">Upload your photos and CatalogKit does the rest. Your catalog is ready to share in seconds — no design skills needed.</p>
-            </div>
-          </li>
-        </ul>
+        <p class="text-center text-sm text-gray-500 mt-4">3 photos uploaded and ready to go</p>
       </div>
-    </div>
+
+      <!-- ── Step 2: Building ── -->
+      <div class="showcase-panel mb-20">
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <span class="w-8 h-8 bg-orange-500 text-white rounded-full text-sm font-extrabold flex items-center justify-center flex-shrink-0">2</span>
+          <h3 class="text-xl font-extrabold text-slate-900">Building the Catalogue</h3>
+        </div>
+        <div class="bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div class="bg-white rounded-xl overflow-hidden shadow-xl">
+            <div class="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div class="flex gap-1.5 flex-shrink-0"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+              <div class="flex-1 bg-white rounded-lg px-3 py-1.5 text-xs text-gray-400 border border-gray-200 flex items-center gap-1.5 min-w-0">
+                <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                <span class="truncate">catalogkit.org/dashboard/building</span>
+              </div>
+            </div>
+            <div class="bg-gradient-to-br from-orange-50 to-amber-50 p-8 text-center">
+              <!-- Sparkle icon -->
+              <div class="w-16 h-16 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              </div>
+              <h4 class="text-xl font-extrabold text-slate-900 mb-2">Building your catalogue…</h4>
+              <p class="text-sm text-gray-500 mb-6">This usually takes less than 30 seconds</p>
+              <!-- Progress bar -->
+              <div class="bg-orange-100 rounded-full h-3 mb-4 overflow-hidden">
+                <div class="bg-orange-500 h-3 rounded-full" style="width:72%"></div>
+              </div>
+              <p class="text-xs text-orange-600 font-semibold mb-6">72% complete</p>
+              <!-- Checklist -->
+              <div class="text-left max-w-xs mx-auto space-y-2.5">
+                <div class="flex items-center gap-3 text-sm"><span class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span><span class="text-gray-600">Photos uploaded</span></div>
+                <div class="flex items-center gap-3 text-sm"><span class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span><span class="text-gray-600">Products organised</span></div>
+                <div class="flex items-center gap-3 text-sm"><span class="w-5 h-5 bg-orange-400 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></span><span class="text-gray-500">Creating your flipbook…</span></div>
+                <div class="flex items-center gap-3 text-sm opacity-40"><span class="w-5 h-5 bg-gray-200 rounded-full flex-shrink-0"></span><span class="text-gray-400">Generating your PDF</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-4">No waiting around — it builds itself automatically</p>
+      </div>
+
+      <!-- ── Step 3: Flipbook ── -->
+      <div class="showcase-panel mb-20">
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <span class="w-8 h-8 bg-orange-500 text-white rounded-full text-sm font-extrabold flex items-center justify-center flex-shrink-0">3</span>
+          <h3 class="text-xl font-extrabold text-slate-900">Viewing the Digital Flipbook</h3>
+        </div>
+        <div class="bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div class="bg-white rounded-xl overflow-hidden shadow-xl">
+            <div class="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div class="flex gap-1.5 flex-shrink-0"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+              <div class="flex-1 bg-white rounded-lg px-3 py-1.5 text-xs text-gray-400 border border-gray-200 flex items-center gap-1.5 min-w-0">
+                <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                <span class="truncate">catalogkit.org/c/marthas-fresh-produce</span>
+              </div>
+            </div>
+            <!-- Catalog header -->
+            <div class="bg-orange-500 px-5 py-3.5 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center text-lg">🥬</div>
+                <div>
+                  <p class="text-white font-extrabold text-sm">Martha's Fresh Produce</p>
+                  <p class="text-orange-200 text-xs">Gordons Market · Port Moresby</p>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <div class="bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full">PDF</div>
+                <div class="bg-white text-orange-500 text-xs font-bold px-3 py-1.5 rounded-full">💬 Share</div>
+              </div>
+            </div>
+            <!-- Flipbook page label -->
+            <div class="bg-gray-100 flex items-center justify-between px-5 py-2 text-xs text-gray-500 border-b border-gray-200">
+              <span>Page 1 of 3 — Fresh Produce</span>
+              <div class="flex items-center gap-3">
+                <button class="w-7 h-7 bg-white border border-gray-200 rounded-lg text-gray-400 flex items-center justify-center text-base shadow-sm" tabindex="-1">‹</button>
+                <button class="w-7 h-7 bg-orange-500 rounded-lg text-white flex items-center justify-center text-base shadow-sm" tabindex="-1">›</button>
+              </div>
+            </div>
+            <!-- Product grid -->
+            <div class="bg-white p-4">
+              <div class="grid grid-cols-3 gap-3">
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                  <div class="bg-green-50 h-20 flex items-center justify-center text-3xl">🥬</div>
+                  <div class="p-2"><p class="text-xs font-bold text-gray-800">Fresh Kumu</p><p class="text-sm font-extrabold text-orange-500">K 5.00</p></div>
+                </div>
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                  <div class="bg-blue-50 h-20 flex items-center justify-center text-3xl">🐟</div>
+                  <div class="p-2"><p class="text-xs font-bold text-gray-800">Smoked Fish</p><p class="text-sm font-extrabold text-orange-500">K 15.00</p></div>
+                </div>
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                  <div class="bg-yellow-50 h-20 flex items-center justify-center text-3xl">🌽</div>
+                  <div class="p-2"><p class="text-xs font-bold text-gray-800">Corn — 3 for K10</p><p class="text-sm font-extrabold text-orange-500">K 10.00</p></div>
+                </div>
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                  <div class="bg-orange-50 h-20 flex items-center justify-center text-3xl">🍠</div>
+                  <div class="p-2"><p class="text-xs font-bold text-gray-800">Sweet Potato</p><p class="text-sm font-extrabold text-orange-500">K 8.00</p></div>
+                </div>
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                  <div class="bg-red-50 h-20 flex items-center justify-center text-3xl">🍅</div>
+                  <div class="p-2"><p class="text-xs font-bold text-gray-800">Tomatoes</p><p class="text-sm font-extrabold text-orange-500">K 6.00</p></div>
+                </div>
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                  <div class="bg-purple-50 h-20 flex items-center justify-center text-3xl">🧅</div>
+                  <div class="p-2"><p class="text-xs font-bold text-gray-800">Onions · 1kg</p><p class="text-sm font-extrabold text-orange-500">K 12.00</p></div>
+                </div>
+              </div>
+              <!-- Order button -->
+              <div class="mt-4 bg-green-500 text-white text-sm font-bold py-3 rounded-xl text-center flex items-center justify-center gap-2" tabindex="-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                Order on WhatsApp
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-4">Customers can browse and place orders straight from the link</p>
+      </div>
+
+      <!-- ── Step 4: Download PDF ── -->
+      <div class="showcase-panel mb-20">
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <span class="w-8 h-8 bg-orange-500 text-white rounded-full text-sm font-extrabold flex items-center justify-center flex-shrink-0">4</span>
+          <h3 class="text-xl font-extrabold text-slate-900">Downloading the PDF</h3>
+        </div>
+        <div class="bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div class="bg-white rounded-xl overflow-hidden shadow-xl">
+            <div class="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div class="flex gap-1.5 flex-shrink-0"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+              <div class="flex-1 bg-white rounded-lg px-3 py-1.5 text-xs text-gray-400 border border-gray-200 flex items-center gap-1.5 min-w-0">
+                <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                <span class="truncate">catalogkit.org/c/marthas-fresh-produce/pdf</span>
+              </div>
+            </div>
+            <div class="bg-gray-100 p-6">
+              <!-- PDF preview stack -->
+              <div class="relative max-w-xs mx-auto mb-6">
+                <!-- Shadow pages behind -->
+                <div class="absolute top-3 left-3 right-3 bg-orange-200 rounded-xl h-full opacity-40"></div>
+                <div class="absolute top-1.5 left-1.5 right-1.5 bg-orange-100 rounded-xl h-full opacity-60"></div>
+                <!-- Main PDF page -->
+                <div class="relative bg-white rounded-xl border border-gray-200 shadow-md p-5">
+                  <!-- PDF header -->
+                  <div class="flex items-center gap-3 border-b border-gray-100 pb-4 mb-4">
+                    <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center text-xl">🥬</div>
+                    <div>
+                      <p class="font-extrabold text-slate-900 text-sm">Martha's Fresh Produce</p>
+                      <p class="text-xs text-gray-400">Product Catalogue · July 2026</p>
+                    </div>
+                  </div>
+                  <!-- Mini product rows -->
+                  <div class="space-y-2 mb-4">
+                    <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-2">
+                      <span class="text-lg">🥬</span>
+                      <span class="text-xs font-semibold text-gray-700 flex-1">Fresh Kumu</span>
+                      <span class="text-xs font-extrabold text-orange-500">K 5.00</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-2">
+                      <span class="text-lg">🐟</span>
+                      <span class="text-xs font-semibold text-gray-700 flex-1">Smoked Fish</span>
+                      <span class="text-xs font-extrabold text-orange-500">K 15.00</span>
+                    </div>
+                    <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-2">
+                      <span class="text-lg">🌽</span>
+                      <span class="text-xs font-semibold text-gray-700 flex-1">Corn — 3 for K10</span>
+                      <span class="text-xs font-extrabold text-orange-500">K 10.00</span>
+                    </div>
+                  </div>
+                  <!-- Footer of PDF page -->
+                  <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                    <span class="text-xs text-gray-400">catalogkit.org</span>
+                    <span class="text-xs text-gray-400">Page 1 of 3</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Download controls -->
+              <div class="flex flex-col sm:flex-row gap-3 max-w-xs mx-auto">
+                <div class="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-500">
+                  <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>catalogue.pdf <span class="text-gray-400">· 2.4 MB</span></span>
+                </div>
+                <div class="bg-orange-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl flex items-center justify-center gap-1.5 flex-shrink-0" tabindex="-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  Download
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-4">Customers can save or print their own copy</p>
+      </div>
+
+      <!-- ── Step 5: Share on WhatsApp ── -->
+      <div class="showcase-panel">
+        <div class="flex items-center justify-center gap-3 mb-6">
+          <span class="w-8 h-8 bg-orange-500 text-white rounded-full text-sm font-extrabold flex items-center justify-center flex-shrink-0">5</span>
+          <h3 class="text-xl font-extrabold text-slate-900">Sharing on WhatsApp</h3>
+        </div>
+        <div class="bg-slate-900 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div class="bg-white rounded-xl overflow-hidden shadow-xl">
+            <div class="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+              <div class="flex gap-1.5 flex-shrink-0"><div class="w-3 h-3 rounded-full bg-red-400"></div><div class="w-3 h-3 rounded-full bg-yellow-400"></div><div class="w-3 h-3 rounded-full bg-green-400"></div></div>
+              <div class="flex-1 bg-white rounded-lg px-3 py-1.5 text-xs text-gray-400 border border-gray-200 flex items-center gap-1.5 min-w-0">
+                <svg class="w-3 h-3 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                <span class="truncate">catalogkit.org/dashboard/share</span>
+              </div>
+            </div>
+            <div class="bg-white p-6">
+              <!-- Share card header -->
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                </div>
+                <div>
+                  <h4 class="font-extrabold text-slate-900 text-base">Your catalogue is ready!</h4>
+                  <p class="text-sm text-gray-500">Share it with your customers now</p>
+                </div>
+              </div>
+              <!-- Link box -->
+              <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4">
+                <span class="text-xs text-gray-500 flex-1 truncate font-mono">catalogkit.org/c/marthas-fresh-produce</span>
+                <span class="text-xs text-orange-500 font-bold flex-shrink-0 cursor-pointer">Copy</span>
+              </div>
+              <!-- Primary WhatsApp button -->
+              <div class="bg-green-500 text-white font-bold py-4 rounded-xl text-center text-base flex items-center justify-center gap-2.5 mb-3" tabindex="-1">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                Share on WhatsApp
+              </div>
+              <!-- View count nudge -->
+              <div class="flex items-center justify-center gap-2 text-xs text-gray-400">
+                <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <span>23 customers viewed your catalogue this week</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-4">One tap. Your whole catalogue — in your customer's hands</p>
+      </div>
+
+    </div><!-- /max-w -->
+
+    <script>
+      (function () {
+        var panels = document.querySelectorAll('.showcase-panel');
+        if (!window.IntersectionObserver) {
+          panels.forEach(function (p) { p.classList.add('sp-visible'); });
+          return;
+        }
+        var obs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add('sp-visible');
+              obs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.1 });
+        panels.forEach(function (p) { obs.observe(p); });
+      })();
+    </script>
+
   </section>
 
   <!-- ══════════════════════════════════════════════════════════
