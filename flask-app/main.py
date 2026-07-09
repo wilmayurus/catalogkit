@@ -454,6 +454,41 @@ def log_activity(user_id, action, detail=None):
     except Exception:
         pass
 
+def normalize_phone(raw):
+    """Strip formatting from a phone/WhatsApp number down to its bare local digits.
+    Returns None if the result is too short to be meaningful.
+    Examples:  '+675 7381 7000' → '73817000'
+               '07381 7000'    → '73817000'
+               '73817000'      → '73817000'
+    """
+    if not raw:
+        return None
+    digits = re.sub(r'[^\d]', '', raw)
+    if not digits:
+        return None
+    if digits.startswith('675') and len(digits) > 7:
+        digits = digits[3:]
+    if digits.startswith('0') and len(digits) > 7:
+        digits = digits[1:]
+    return digits if len(digits) >= 6 else None
+
+
+def phone_in_use_by(raw_number, exclude_user_id=None):
+    """Return the User already using this phone/WhatsApp number, or None.
+    Pass exclude_user_id to skip the current user when updating their own profile.
+    """
+    norm = normalize_phone(raw_number)
+    if not norm:
+        return None
+    q = User.query
+    if exclude_user_id:
+        q = q.filter(User.id != exclude_user_id)
+    for u in q.all():
+        if normalize_phone(u.whatsapp) == norm or normalize_phone(u.phone) == norm:
+            return u
+    return None
+
+
 def log_admin_action(admin_id, action, target_type=None, target_id=None, detail=None):
     """Record an admin/moderator action for the security audit log."""
     try:
@@ -571,9 +606,21 @@ def register():
         if User.query.filter_by(email=email).first():
             flash('An account with that email already exists.', 'error')
             return render_template('register.html')
+        # WhatsApp duplicate check — optional field but blocks if already registered
+        wa_raw = request.form.get('whatsapp', '').strip()
+        if wa_raw:
+            clash = phone_in_use_by(wa_raw)
+            if clash:
+                flash(
+                    'That WhatsApp number is already linked to an existing account. '
+                    'Please sign in instead, or contact us if you need help.',
+                    'error'
+                )
+                return render_template('register.html')
         is_first = User.query.count() == 0
         user = User(name=name, email=email,
                     password_hash=generate_password_hash(password),
+                    whatsapp=wa_raw or None,
                     is_admin=is_first)
         db.session.add(user)
         db.session.commit()
@@ -1468,8 +1515,20 @@ def profile():
         user.business_name  = request.form.get('business_name', '').strip() or None
         user.contact_person = request.form.get('contact_person', '').strip() or None
         user.location       = request.form.get('location', '').strip() or None
-        user.whatsapp       = request.form.get('whatsapp', '').strip() or None
-        user.phone          = request.form.get('phone', '').strip() or None
+        new_whatsapp = request.form.get('whatsapp', '').strip() or None
+        new_phone    = request.form.get('phone', '').strip() or None
+        # Duplicate phone/WhatsApp check — skip if the number belongs to this user already
+        for raw in filter(None, [new_whatsapp, new_phone]):
+            clash = phone_in_use_by(raw, exclude_user_id=user.id)
+            if clash:
+                flash(
+                    f'That number ({raw}) is already linked to another account. '
+                    'Each account must use a unique phone and WhatsApp number.',
+                    'error'
+                )
+                return render_template('profile.html', user=user)
+        user.whatsapp = new_whatsapp
+        user.phone    = new_phone
         user.email          = request.form.get('email', '').strip().lower() or user.email
         user.facebook_url   = request.form.get('facebook_url', '').strip() or None
         pay  = request.form.getlist('payment_methods')
@@ -1725,12 +1784,19 @@ def assisted_setup():
         db.session.commit()
         ae = admin_email()
         if ae:
+            existing_acct = phone_in_use_by(whatsapp)
+            dup_note = (
+                f'\n⚠️  DUPLICATE WARNING: This WhatsApp is already linked to '
+                f'"{existing_acct.name}" ({existing_acct.email}) — may be a re-submission.\n'
+                if existing_acct else ''
+            )
             send_email(ae,
                 f'CatalogKit — New agency setup request: {business_name}',
                 f'New Done-For-You request:\nBusiness: {business_name}\n'
                 f'Location: {market_location}\nWhatsApp: {whatsapp}\n'
                 f'Preferred visit: {preferred_datetime}\n'
-                f'Catalog plan: {ar.catalog_plan_label}\nTotal due on visit: K{ar.total_due}')
+                f'Catalog plan: {ar.catalog_plan_label}\nTotal due on visit: K{ar.total_due}'
+                f'{dup_note}')
         return render_template('assisted_setup.html', success=True, ar=ar)
     return render_template('assisted_setup.html', success=False)
 
@@ -2229,11 +2295,29 @@ def admin_reports():
 
         recent_access = AccessLog.query.order_by(AccessLog.created_at.desc()).limit(20).all()
 
+        # ── Duplicate phone/WhatsApp detection ─────────────────────────────
+        # Group users by their normalized phone number; flag groups with >1 account.
+        phone_groups = {}
+        all_users_for_dup = User.query.filter_by(is_admin=False, is_moderator=False).all()
+        for u in all_users_for_dup:
+            for raw in filter(None, [u.whatsapp, u.phone]):
+                norm = normalize_phone(raw)
+                if norm:
+                    phone_groups.setdefault(norm, [])
+                    if not any(x.id == u.id for x in phone_groups[norm]):
+                        phone_groups[norm].append(u)
+        duplicate_groups = [
+            {'phone': norm, 'users': users}
+            for norm, users in phone_groups.items()
+            if len(users) > 1
+        ]
+
         ctx.update(total_users=total_users, admins=admins, moderators=moderators,
             regular_users=regular_users, regular_users_list=regular_users_list,
             testers=testers, tester_users_list=tester_users_list, suspended=suspended,
             plan_breakdown=plan_breakdown, never_logged_in=never_logged_in,
-            dormant_30d=dormant_30d, recent_access=recent_access)
+            dormant_30d=dormant_30d, recent_access=recent_access,
+            duplicate_groups=duplicate_groups)
 
     elif tab == 'catalogs':
         total_catalogs     = Catalog.query.count()

@@ -416,12 +416,13 @@
 
 <div class="admin-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
   {% set acards = [
-    ('👥', total_users,         'Total Users',   None,    '#list-all'),
-    ('🛡️', admins | length,     'Admins',        None,    '#list-admins'),
-    ('🧭', moderators | length, 'Moderators',    None,    '#list-moderators'),
-    ('🙋', regular_users,       'Regular Users', None,    '#list-regular'),
-    ('🧪', testers,             'Testers',       None,    '#list-testers'),
-    ('🚫', suspended | length,  'Suspended',     'danger' if suspended else None, '#list-suspended'),
+    ('👥', total_users,              'Total Users',      None,    '#list-all'),
+    ('🛡️', admins | length,          'Admins',           None,    '#list-admins'),
+    ('🧭', moderators | length,      'Moderators',       None,    '#list-moderators'),
+    ('🙋', regular_users,            'Regular Users',    None,    '#list-regular'),
+    ('🧪', testers,                  'Testers',          None,    '#list-testers'),
+    ('🚫', suspended | length,       'Suspended',        'danger' if suspended else None, '#list-suspended'),
+    ('⚠️', duplicate_groups | length, 'Duplicate Phones', 'danger' if duplicate_groups else None, '#list-duplicates'),
   ] %}
   {% for icon, val, label, color, anchor in acards %}
   <a href="{{ anchor }}" style="text-decoration:none;color:inherit">
@@ -662,6 +663,42 @@
 </div>
 
 <!-- Recent access log -->
+<!-- ── Duplicate Accounts Panel ── -->
+{% if duplicate_groups %}
+<div id="list-duplicates" style="margin-bottom:20px">
+  <div class="admin-section" style="border-color:#e53e3e">
+    <div class="admin-section-head" style="background:rgba(229,62,62,0.07)">
+      <div class="admin-section-title" style="color:#c53030">⚠️ Potential Duplicate Accounts ({{ duplicate_groups|length }} phone number{{ 's' if duplicate_groups|length != 1 }})</div>
+    </div>
+    <div class="admin-section-body">
+      <p style="font-size:0.83rem;color:var(--muted);margin:0 0 12px">These vendor accounts share the same phone or WhatsApp number — possible free-plan abuse. Review and suspend or merge as needed.</p>
+      {% for group in duplicate_groups %}
+      <div style="border:1px solid #fed7d7;border-radius:8px;padding:10px 14px;margin-bottom:10px;background:#fff5f5">
+        <div style="font-size:0.78rem;color:var(--muted);margin-bottom:6px">📞 Shared number: <strong>{{ group.phone }}</strong></div>
+        <table class="admin-tbl" style="margin:0">
+          <thead><tr><th>Name</th><th>Email</th><th>WhatsApp</th><th>Plan</th><th>Registered</th><th>Action</th></tr></thead>
+          <tbody>
+            {% for u in group.users %}
+            <tr>
+              <td>{{ u.name }}</td>
+              <td style="font-size:0.82rem">{{ u.email }}</td>
+              <td style="font-size:0.82rem">{{ u.whatsapp or '—' }}</td>
+              <td><span class="badge badge-{{ u.plan }}">{{ u.plan }}</span></td>
+              <td style="font-size:0.78rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
+              <td>
+                <a href="/admin/users/{{ u.id }}/edit" style="font-size:0.78rem;color:var(--accent-text)">Edit</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <div style="margin-bottom:20px">
   <div class="admin-section">
     <div class="admin-section-head">
