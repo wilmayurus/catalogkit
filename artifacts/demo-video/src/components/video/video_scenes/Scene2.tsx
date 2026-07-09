@@ -55,7 +55,7 @@ export function Scene2() {
       >
         {/* Phone */}
         <motion.div
-          className="w-[20cqw] h-[34cqw] bg-[#222] rounded-[2.5cqw] border-[0.6cqw] border-[#111] shadow-2xl overflow-hidden flex flex-col flex-shrink-0"
+          className="w-[18cqw] h-[26cqw] bg-[#222] rounded-[2.5cqw] border-[0.6cqw] border-[#111] shadow-2xl overflow-hidden flex flex-col flex-shrink-0"
           initial={{ y: '15cqh', opacity: 0, scale: 0.88 }}
           animate={phase >= 2 ? { y: 0, opacity: 1, scale: 1 } : {}}
           transition={{ type: 'spring', damping: 20 }}
@@ -184,7 +184,7 @@ export function Scene2() {
 
         {/* Finished catalog page */}
         <motion.div
-          className="w-[20cqw] h-[29cqw] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col flex-shrink-0"
+          className="w-[18cqw] h-[22cqw] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col flex-shrink-0"
           initial={{ opacity: 0, scale: 0.85, x: 30 }}
           animate={phase >= 10 ? { opacity: 1, scale: 1, x: 0 } : {}}
           transition={{ type: 'spring', damping: 18 }}

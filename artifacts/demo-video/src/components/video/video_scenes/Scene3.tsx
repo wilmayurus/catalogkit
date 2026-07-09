@@ -147,7 +147,7 @@ export function Scene3() {
 
         {/* Customer phone — flipbook */}
         <motion.div
-          className="relative w-[18cqw] h-[34cqw] bg-white rounded-[3cqw] shadow-2xl border-[0.8cqw] border-[#222] overflow-hidden flex-shrink-0 flex flex-col"
+          className="relative w-[16cqw] h-[26cqw] bg-white rounded-[3cqw] shadow-2xl border-[0.8cqw] border-[#222] overflow-hidden flex-shrink-0 flex flex-col"
           initial={{ y: '20cqh', opacity: 0 }}
           animate={phase >= 2 ? { y: 0, opacity: 1 } : {}}
           transition={{ type: 'spring', damping: 20, delay: 0.2 }}
