@@ -52,7 +52,7 @@ export function Scene3({ portrait }: { portrait?: boolean }) {
         transition={{ duration: 0.7 }}
       >
         <h2 className={`${portrait ? 'text-[5.5cqw]' : 'text-[5cqw]'} font-black text-[#f97316] font-display leading-tight`}>
-          One link. Every product. With prices.
+          One link. Every product.<br />With prices.
         </h2>
         <p className={`${portrait ? 'text-[3cqw]' : 'text-[2.5cqw]'} text-[#0D0D0D]/70 font-medium mt-[1cqh]`}>
           Customers swipe through — like a real catalog.
