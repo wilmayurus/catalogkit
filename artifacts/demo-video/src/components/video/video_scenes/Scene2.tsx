@@ -48,7 +48,7 @@ export function Scene2({ portrait }: { portrait?: boolean }) {
         transition={{ duration: 0.7 }}
       >
         <h2 className={`${portrait ? 'text-[5.5cqw]' : 'text-[4.8cqw]'} font-black text-[#f97316] font-display leading-tight`}>
-          Upload your photos. Add price & name.
+          Upload your photos.<br />Add price & name.
         </h2>
         <p className={`${portrait ? 'text-[3cqw]' : 'text-[2.4cqw]'} text-[#0D0D0D]/65 font-semibold mt-[0.8cqh]`}>
           <span className="text-[#f97316]">CatalogKit builds your catalog</span> — automatically.
