@@ -1195,85 +1195,176 @@
   <!-- ══════════════════════════════════════════════════════════
        PRICING
   ════════════════════════════════════════════════════════════ -->
-  <section id="pricing" class="bg-white py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="pricing-heading">
+  <section id="pricing" class="bg-white py-20 lg:py-28 px-4 sm:px-6 lg:px-8" aria-labelledby="pricing-heading">
     <div class="max-w-5xl mx-auto">
+
+      <!-- Header -->
       <div class="text-center mb-14">
         <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">Pricing</p>
-        <h2 id="pricing-heading" class="text-3xl font-extrabold text-slate-900 mb-4">Simple, honest pricing</h2>
-        <p class="text-lg text-gray-500">Start free. Upgrade only when your business is ready.</p>
+        <h2 id="pricing-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Simple, honest pricing</h2>
+        <p class="text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">Start free. Upgrade only when your business grows and you need more builds.</p>
       </div>
-      <ul class="grid md:grid-cols-3 gap-6 list-none" role="list">
 
-        <!-- Starter (free) -->
-        <li class="bg-white rounded-2xl border-2 border-gray-200 p-8 flex flex-col">
-          <div class="mb-6">
-            <h3 class="text-xl font-extrabold text-slate-900 mb-1">Starter</h3>
-            <p class="text-sm text-gray-500 mb-5">Perfect to get started</p>
-            <div class="flex items-baseline gap-1">
-              <span class="text-4xl font-extrabold text-slate-900">K0</span>
-              <span class="text-gray-400 text-sm font-medium">/month</span>
-            </div>
+      <!-- Three plans -->
+      <ul class="grid md:grid-cols-3 gap-5 list-none items-stretch" role="list">
+
+        <!-- ── Free (highlighted) ── -->
+        <li class="relative bg-white rounded-2xl border-2 border-orange-500 shadow-xl p-8 flex flex-col ring-4 ring-orange-100">
+          <!-- Badge -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2" aria-label="Recommended plan">
+            <span class="bg-orange-500 text-white text-xs font-extrabold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
+              ✦ Start here — it's free
+            </span>
           </div>
+
+          <!-- Plan name + price -->
+          <div class="text-center pt-2 mb-6">
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Free</h3>
+            <div class="flex items-baseline justify-center gap-1 my-3">
+              <span class="text-5xl font-extrabold text-orange-500">K0</span>
+              <span class="text-gray-400 text-sm">/month</span>
+            </div>
+            <p class="text-sm text-gray-500">Forever free · No credit card</p>
+          </div>
+
+          <!-- Features -->
           <ul class="flex flex-col gap-3 mb-8 flex-grow list-none" role="list">
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> 3 catalog builds/month</li>
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> Flipbook &amp; PDF catalog</li>
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> WhatsApp sharing</li>
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> Your logo &amp; brand colour</li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-700">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+                <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </span>
+              <span><strong class="text-slate-900">3 catalogue builds</strong> every month</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-700">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+                <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </span>
+              <span>Builds reset at the start of each month</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-700">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+                <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </span>
+              <span>Digital flipbook + PDF catalogue</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-700">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+                <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </span>
+              <span>WhatsApp sharing link</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-700">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+                <svg class="w-3 h-3 text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </span>
+              <span>Your logo &amp; business name</span>
+            </li>
           </ul>
-          <a href="/register" class="block text-center bg-gray-100 hover:bg-gray-200 text-slate-700 font-bold py-3.5 px-6 rounded-xl transition-colors min-h-[48px] flex items-center justify-center">
-            Get started free
+
+          <a href="/register"
+             class="block text-center bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-4 px-6 rounded-xl transition-colors min-h-[52px] flex items-center justify-center text-base shadow-lg shadow-orange-200">
+            Create My Free Catalogue
           </a>
+          <p class="text-center text-xs text-gray-400 mt-3">No credit card · No commitment · Always free</p>
         </li>
 
-        <!-- Basic — highlighted -->
-        <li class="bg-orange-500 rounded-2xl border-2 border-orange-500 p-8 flex flex-col text-white relative">
-          <div class="absolute top-0 right-6 -translate-y-1/2">
-            <span class="bg-white text-orange-500 text-xs font-extrabold px-3 py-1.5 rounded-full shadow-md">Most popular</span>
-          </div>
-          <div class="mb-6">
-            <h3 class="text-xl font-extrabold mb-1">Basic</h3>
-            <p class="text-sm text-orange-100 mb-5">For growing businesses</p>
-            <div class="flex items-baseline gap-1">
-              <span class="text-4xl font-extrabold">K49</span>
-              <span class="text-orange-200 text-sm font-medium">/month</span>
+        <!-- ── Basic ── -->
+        <li class="bg-white rounded-2xl border-2 border-gray-200 p-8 flex flex-col">
+          <div class="text-center mb-6">
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Basic</h3>
+            <div class="flex items-baseline justify-center gap-1 my-3">
+              <span class="text-5xl font-extrabold text-slate-900">K20</span>
+              <span class="text-gray-400 text-sm">/month</span>
             </div>
+            <p class="text-sm text-gray-500">When 3 builds isn't quite enough</p>
           </div>
+
           <ul class="flex flex-col gap-3 mb-8 flex-grow list-none" role="list">
-            <li class="flex items-center gap-2 text-sm text-orange-50"><span class="font-bold" aria-hidden="true">✓</span> 10 catalog builds/month</li>
-            <li class="flex items-center gap-2 text-sm text-orange-50"><span class="font-bold" aria-hidden="true">✓</span> Flipbook &amp; PDF catalog</li>
-            <li class="flex items-center gap-2 text-sm text-orange-50"><span class="font-bold" aria-hidden="true">✓</span> WhatsApp &amp; Facebook sharing</li>
-            <li class="flex items-center gap-2 text-sm text-orange-50"><span class="font-bold" aria-hidden="true">✓</span> Payment &amp; delivery info</li>
-            <li class="flex items-center gap-2 text-sm text-orange-50"><span class="font-bold" aria-hidden="true">✓</span> Priority support</li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span><strong class="text-slate-800">20 catalogue builds</strong> every month</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span>Builds reset monthly</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span>Everything in Free</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span>WhatsApp &amp; Facebook sharing</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span>Payment &amp; delivery details shown</span>
+            </li>
           </ul>
-          <a href="/register" class="block text-center bg-white hover:bg-orange-50 text-orange-500 font-bold py-3.5 px-6 rounded-xl transition-colors min-h-[48px] flex items-center justify-center">
-            Start Basic plan
+
+          <a href="/contact"
+             class="block text-center bg-gray-100 hover:bg-gray-200 text-slate-700 font-bold py-4 px-6 rounded-xl transition-colors min-h-[52px] flex items-center justify-center">
+            Upgrade via WhatsApp
           </a>
+          <p class="text-center text-xs text-gray-400 mt-3">Message us and we'll set it up for you</p>
         </li>
 
-        <!-- Pro -->
+        <!-- ── Pro ── -->
         <li class="bg-white rounded-2xl border-2 border-gray-200 p-8 flex flex-col">
-          <div class="mb-6">
-            <h3 class="text-xl font-extrabold text-slate-900 mb-1">Pro</h3>
-            <p class="text-sm text-gray-500 mb-5">For established businesses</p>
-            <div class="flex items-baseline gap-1">
-              <span class="text-4xl font-extrabold text-slate-900">K99</span>
-              <span class="text-gray-400 text-sm font-medium">/month</span>
+          <div class="text-center mb-6">
+            <h3 class="text-lg font-extrabold text-slate-900 mb-1">Pro</h3>
+            <div class="flex items-baseline justify-center gap-1 my-3">
+              <span class="text-5xl font-extrabold text-slate-900">K50</span>
+              <span class="text-gray-400 text-sm">/month</span>
             </div>
+            <p class="text-sm text-gray-500">For busy sellers who build often</p>
           </div>
+
           <ul class="flex flex-col gap-3 mb-8 flex-grow list-none" role="list">
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> Unlimited catalog builds</li>
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> Everything in Basic</li>
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> Multiple products per catalog</li>
-            <li class="flex items-center gap-2 text-sm text-gray-600"><span class="text-green-500 font-bold" aria-hidden="true">✓</span> Dedicated support agent</li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span><strong class="text-slate-800">Unlimited catalogue builds</strong></span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span>Everything in Basic</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span>Build as many as you need, any time</span>
+            </li>
+            <li class="flex items-start gap-2.5 text-sm text-gray-600">
+              <span class="text-green-500 font-bold flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>
+              <span>Priority customer support</span>
+            </li>
           </ul>
-          <a href="/register" class="block text-center bg-gray-100 hover:bg-gray-200 text-slate-700 font-bold py-3.5 px-6 rounded-xl transition-colors min-h-[48px] flex items-center justify-center">
-            Start Pro plan
+
+          <a href="/contact"
+             class="block text-center bg-gray-100 hover:bg-gray-200 text-slate-700 font-bold py-4 px-6 rounded-xl transition-colors min-h-[52px] flex items-center justify-center">
+            Upgrade via WhatsApp
           </a>
+          <p class="text-center text-xs text-gray-400 mt-3">Message us and we'll set it up for you</p>
         </li>
 
       </ul>
-      <p class="text-center text-sm text-gray-400 mt-8">
-        All prices shown in PNG Kina (K). &nbsp;
+
+      <!-- WhatsApp upgrade note -->
+      <div class="mt-10 bg-green-50 border border-green-200 rounded-2xl px-6 py-5 flex items-start gap-4 max-w-2xl mx-auto">
+        <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" aria-hidden="true">
+          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+        </div>
+        <div>
+          <p class="font-bold text-slate-900 text-sm mb-1">Upgrading is easy — just send us a WhatsApp</p>
+          <p class="text-sm text-gray-600 leading-relaxed">No online payment forms. No complicated sign-up. Just message us on WhatsApp and we'll upgrade your account and arrange payment together.</p>
+          <a href="https://wa.me/6757381700" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-1.5 text-green-700 font-semibold text-sm mt-2 hover:underline">
+            Message us on WhatsApp
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <p class="text-center text-sm text-gray-400 mt-8">All prices in PNG Kina (K) &nbsp;·&nbsp;
         <a href="/pricing" class="text-orange-500 hover:underline font-semibold">See full pricing details →</a>
       </p>
     </div>
