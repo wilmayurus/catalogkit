@@ -661,7 +661,7 @@ def logout():
 @app.route('/')
 def index():
     if 'user_id' not in session:
-        return render_template('landing.html')
+        return render_template('landing.html', now=datetime.utcnow())
     user     = current_user()
     catalogs = Catalog.query.filter_by(user_id=user.id).order_by(Catalog.updated_at.desc()).all()
     return render_template('index.html', user=user, catalogs=catalogs)
