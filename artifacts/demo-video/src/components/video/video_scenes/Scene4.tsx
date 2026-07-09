@@ -146,7 +146,7 @@ export function Scene4() {
 
       {/* Bottom caption */}
       <motion.div
-        className="flex-shrink-0 w-full text-center pb-[2.5cqh]"
+        className="flex-shrink-0 w-full text-center pb-[4cqh]"
         initial={{ opacity: 0 }}
         animate={phase >= 5 ? { opacity: 1 } : {}}
         transition={{ duration: 0.8 }}

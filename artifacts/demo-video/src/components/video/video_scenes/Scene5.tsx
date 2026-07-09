@@ -131,7 +131,7 @@ export function Scene5() {
 
       {/* Credit */}
       <motion.div
-        className="flex-shrink-0 mt-auto w-full text-center pb-[2cqh]"
+        className="flex-shrink-0 mt-auto w-full text-center pb-[3.5cqh]"
         initial={{ opacity: 0 }}
         animate={phase >= 5 ? { opacity: 0.4 } : {}}
         transition={{ duration: 1, delay: 1 }}

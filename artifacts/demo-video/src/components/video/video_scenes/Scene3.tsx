@@ -217,7 +217,7 @@ export function Scene3() {
       </div>
 
       <motion.div
-        className="w-full text-center px-[4cqw] pb-[2.5cqh] flex-shrink-0"
+        className="w-full text-center px-[4cqw] pb-[4cqh] flex-shrink-0"
         initial={{ opacity: 0, y: 10 }}
         animate={phase >= 4 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.8 }}
