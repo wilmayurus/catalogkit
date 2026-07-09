@@ -102,8 +102,19 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
       {portrait ? (
         /* ── Portrait: clean 40/60 split ── */
         <>
-          {/* Top 40%: WhatsApp chat */}
+          {/* Top 40%: WhatsApp chat with context label */}
           <div className="absolute top-0 left-0 right-0 flex flex-col overflow-hidden" style={{ height: '40%' }}>
+            {/* Context banner */}
+            <motion.div
+              className="flex-shrink-0 bg-[#f97316] px-[4cqw] py-[1.2cqh] flex items-center justify-center gap-[2cqw]"
+              initial={{ opacity: 0, y: -10 }}
+              animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="text-[2.8cqw] font-black text-white font-display leading-none">
+                📱 PNG vendors flooding WhatsApp groups with photos...
+              </span>
+            </motion.div>
             {chatHeader}
             {chatBody('w-[20cqw]')}
             <AnimatePresence>

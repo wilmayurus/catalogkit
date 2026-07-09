@@ -48,7 +48,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
 
       {portrait ? (
         /* ── Portrait: tightly packed, no mt-auto credit ── */
-        <div className="relative z-10 w-full flex flex-col items-center px-[6cqw] pt-[4cqh] pb-[3cqh] gap-[2cqh]">
+        <div className="relative z-10 w-full h-full flex flex-col items-center px-[6cqw] py-[5cqh] justify-between">
           {/* Logo */}
           <motion.img
             src={`${import.meta.env.BASE_URL}images/catalogkit-logo.png`}
