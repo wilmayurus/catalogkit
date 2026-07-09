@@ -10,7 +10,11 @@
 {% block admin_body %}
 
 {% set suspended_ct = all_users | selectattr('is_suspended') | list | length %}
-{% set total_catalogs = namespace(count=0) %}
+{% set pending_prs  = payment_requests | selectattr('status','equalto','pending')  | list %}
+{% set done_prs     = payment_requests | rejectattr('status','equalto','pending')  | list %}
+{% set setup_new    = (agency_requests | selectattr('status','equalto','New Request') | list) + (agency_requests | selectattr('status','equalto','Assigned') | list) %}
+{% set setup_wip    = agency_requests | selectattr('status','equalto','In Progress') | list %}
+{% set setup_done   = agency_requests | selectattr('status','equalto','Completed')   | list %}
 
 <!-- ── Stat cards ───────────────────────────────────────── -->
 <div class="admin-stat-grid">
@@ -41,8 +45,7 @@
 
 </div>
 
-<!-- ── Section A2: Payment requests ─────────────────────── -->
-{% set pending_prs = payment_requests | selectattr('status','eq','pending') | list %}
+<!-- ── Section A: Payment requests (tabbed) ─────────────── -->
 <div class="admin-section" id="payments" style="{% if pending_prs %}border-color:var(--accent){% endif %}">
   <div class="admin-section-head">
     <div class="admin-section-title">
@@ -50,66 +53,111 @@
       {% if pending_prs %}<span class="chip chip-blue">{{ pending_prs | length }} pending</span>{% endif %}
     </div>
   </div>
+
+  <!-- Tab bar -->
+  <div class="ck-tab-bar" style="padding:0 20px">
+    <button class="ck-tab active" onclick="switchTab('pr','pending',this)">
+      ⏳ Pending
+      {% if pending_prs %}<span class="ck-tab-badge">{{ pending_prs | length }}</span>{% endif %}
+    </button>
+    <button class="ck-tab" onclick="switchTab('pr','processed',this)">
+      ✅ Processed
+      {% if done_prs %}<span class="ck-tab-badge ck-tab-badge-muted">{{ done_prs | length }}</span>{% endif %}
+    </button>
+  </div>
+
   <div class="admin-section-body">
-    {% if payment_requests %}
-    <div class="admin-tbl-wrap">
-      <table class="admin-tbl">
-        <thead>
-          <tr><th>User</th><th>Plan</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Status</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-          {% for pr in payment_requests %}
-          <tr style="{% if pr.status == 'pending' %}background:rgba(108,99,255,.04){% endif %}">
-            <td>
-              <div style="font-weight:700;font-size:.875rem">{{ pr.user.name }}</div>
-              <div style="font-size:.78rem;color:var(--muted)">{{ pr.user.email }}</div>
-              {% if pr.user.whatsapp %}
-              <a href="https://wa.me/{{ pr.user.whatsapp | replace(' ','') | replace('+','') }}"
-                 target="_blank" style="font-size:.75rem;color:#22c55e;text-decoration:none">📱 {{ pr.user.whatsapp }}</a>
-              {% endif %}
-            </td>
-            <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
-            <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
-            <td style="font-size:.8rem;color:var(--muted);max-width:160px;word-break:break-all">{{ pr.reference or '—' }}</td>
-            <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ pr.submitted_at.strftime('%d %b %Y %H:%M') }}</td>
-            <td>
-              {% if pr.status == 'pending' %}
-              <span style="background:rgba(245,158,11,.15);color:#d97706;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">Pending</span>
-              {% elif pr.status == 'approved' %}
-              <span style="background:rgba(34,197,94,.15);color:#16a34a;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">Approved</span>
-              {% else %}
-              <span style="background:rgba(239,68,68,.15);color:#ef4444;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">Rejected</span>
-              {% endif %}
-            </td>
-            <td>
-              {% if pr.status == 'pending' %}
-              <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-                <form method="POST" action="/admin/payment/{{ pr.id }}/approve" style="margin:0">
-                  <button class="btn btn-primary btn-sm">✓ Approve</button>
-                </form>
-                <form method="POST" action="/admin/payment/{{ pr.id }}/reject" style="margin:0">
-                  <button class="btn btn-secondary btn-sm" style="color:var(--danger)">✗ Reject</button>
-                </form>
-              </div>
-              {% else %}
-              <span style="font-size:.78rem;color:var(--muted)">{{ pr.resolved_at.strftime('%d %b') if pr.resolved_at else '—' }}</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    <!-- Pending tab -->
+    <div id="pr-tab-pending">
+      {% if pending_prs %}
+      <div class="admin-tbl-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr><th>User</th><th>Plan</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            {% for pr in pending_prs %}
+            <tr style="background:rgba(108,99,255,.04)">
+              <td>
+                <div style="font-weight:700;font-size:.875rem">{{ pr.user.name }}</div>
+                <div style="font-size:.78rem;color:var(--muted)">{{ pr.user.email }}</div>
+                {% if pr.user.whatsapp %}
+                <a href="https://wa.me/{{ pr.user.whatsapp | replace(' ','') | replace('+','') }}"
+                   target="_blank" style="font-size:.75rem;color:#22c55e;text-decoration:none">📱 {{ pr.user.whatsapp }}</a>
+                {% endif %}
+              </td>
+              <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
+              <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
+              <td style="font-size:.8rem;color:var(--muted);max-width:160px;word-break:break-all">{{ pr.reference or '—' }}</td>
+              <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ pr.submitted_at.strftime('%d %b %Y %H:%M') }}</td>
+              <td>
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <form method="POST" action="/admin/payment/{{ pr.id }}/approve" style="margin:0">
+                    <button class="btn btn-primary btn-sm">✓ Approve</button>
+                  </form>
+                  <form method="POST" action="/admin/payment/{{ pr.id }}/reject" style="margin:0">
+                    <button class="btn btn-secondary btn-sm" style="color:var(--danger)">✗ Reject</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="admin-empty">
+        <div class="ae-icon">🎉</div>
+        <p>No pending payment requests</p>
+      </div>
+      {% endif %}
     </div>
-    {% else %}
-    <div class="admin-empty">
-      <div class="ae-icon">💳</div>
-      <p>No payment requests yet</p>
+
+    <!-- Processed tab (hidden by default) -->
+    <div id="pr-tab-processed" style="display:none">
+      {% if done_prs %}
+      <div class="admin-tbl-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr><th>User</th><th>Plan</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Status</th><th>Resolved</th></tr>
+          </thead>
+          <tbody>
+            {% for pr in done_prs | sort(attribute='resolved_at', reverse=True) %}
+            <tr>
+              <td>
+                <div style="font-weight:700;font-size:.875rem">{{ pr.user.name }}</div>
+                <div style="font-size:.78rem;color:var(--muted)">{{ pr.user.email }}</div>
+              </td>
+              <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
+              <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
+              <td style="font-size:.8rem;color:var(--muted);max-width:160px;word-break:break-all">{{ pr.reference or '—' }}</td>
+              <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ pr.submitted_at.strftime('%d %b %Y %H:%M') }}</td>
+              <td>
+                {% if pr.status == 'approved' %}
+                <span style="background:rgba(34,197,94,.15);color:#16a34a;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">✓ Approved</span>
+                {% else %}
+                <span style="background:rgba(239,68,68,.15);color:#ef4444;font-weight:700;font-size:.75rem;padding:3px 10px;border-radius:100px">✗ Rejected</span>
+                {% endif %}
+              </td>
+              <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ pr.resolved_at.strftime('%d %b %Y') if pr.resolved_at else '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="admin-empty">
+        <div class="ae-icon">💳</div>
+        <p>No processed requests yet</p>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
+
   </div>
 </div>
 
-<!-- ── Section B: Agency requests ──────────────────────── -->
+<!-- ── Section B: Setup requests (tabbed) ───────────────── -->
 <div class="admin-section" id="agency">
   <div class="admin-section-head">
     <div class="admin-section-title">
@@ -117,65 +165,194 @@
       {% if agency_requests %}<span class="chip chip-blue">{{ agency_requests | length }}</span>{% endif %}
     </div>
   </div>
+
+  <!-- Tab bar -->
+  <div class="ck-tab-bar" style="padding:0 20px">
+    <button class="ck-tab active" onclick="switchTab('ar','new',this)">
+      📋 New / Assigned
+      {% if setup_new %}<span class="ck-tab-badge">{{ setup_new | length }}</span>{% endif %}
+    </button>
+    <button class="ck-tab" onclick="switchTab('ar','wip',this)">
+      🔧 In Progress
+      {% if setup_wip %}<span class="ck-tab-badge ck-tab-badge-warn">{{ setup_wip | length }}</span>{% endif %}
+    </button>
+    <button class="ck-tab" onclick="switchTab('ar','done',this)">
+      ✅ Completed
+      {% if setup_done %}<span class="ck-tab-badge ck-tab-badge-muted">{{ setup_done | length }}</span>{% endif %}
+    </button>
+  </div>
+
   <div class="admin-section-body">
-    {% if agency_requests %}
-    <div class="admin-tbl-wrap">
-      <table class="admin-tbl">
-        <thead>
-          <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Plan</th><th>Due on Visit</th><th>Submitted</th><th>Linked User</th><th>Status</th></tr>
-        </thead>
-        <tbody>
-          {% for ar in agency_requests %}
-          <tr>
-            <td><strong>{{ ar.business_name }}</strong></td>
-            <td style="color:var(--muted)">{{ ar.market_location }}</td>
-            <td>
-              <a href="https://wa.me/{{ ar.whatsapp | replace(' ','') | replace('+','') }}" target="_blank"
-                 style="color:var(--success);text-decoration:none;font-size:0.83rem">
-                📱 {{ ar.whatsapp }}
-              </a>
-            </td>
-            <td style="font-size:0.83rem;color:var(--muted)">{{ ar.preferred_datetime }}</td>
-            <td style="font-size:0.83rem;white-space:nowrap">{{ ar.catalog_plan_label }}</td>
-            <td style="font-size:0.83rem;font-weight:700;white-space:nowrap">K{{ ar.total_due }}</td>
-            <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
-            <td>
-              {% if ar.user %}
-              <a href="/admin/user/{{ ar.user.id }}/edit" style="text-decoration:none;font-size:0.8rem">
-                <strong>{{ ar.user.name }}</strong><br>
-                <span style="color:var(--muted)">{{ ar.user.email }}</span>
-              </a>
-              {% else %}
-              <span style="color:var(--muted);font-size:0.8rem">Not linked</span>
-              {% endif %}
-            </td>
-            <td>
-              <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-                <select name="status" class="filter-select" style="padding:5px 8px;font-size:0.8rem">
-                  {% for s in ['New Request','Assigned','In Progress','Completed'] %}
-                  <option value="{{ s }}" {% if ar.status == s %}selected{% endif %}>{{ s }}</option>
-                  {% endfor %}
-                </select>
-                <select name="linked_user_id" class="filter-select" style="padding:5px 8px;font-size:0.8rem;max-width:140px" title="Link to the user account created for this business">
-                  <option value="">{{ 'Link user…' if not ar.user else 'Change link…' }}</option>
-                  {% for u in all_users %}
-                  <option value="{{ u.id }}" {% if ar.user_id == u.id %}selected{% endif %}>{{ u.name }} ({{ u.email }})</option>
-                  {% endfor %}
-                </select>
-                <button class="btn btn-secondary btn-sm">Save</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+    <!-- New / Assigned tab -->
+    <div id="ar-tab-new">
+      {% if setup_new %}
+      <div class="admin-tbl-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Plan</th><th>Due</th><th>Submitted</th><th>Linked User</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for ar in setup_new %}
+            <tr>
+              <td><strong>{{ ar.business_name }}</strong></td>
+              <td style="color:var(--muted)">{{ ar.market_location }}</td>
+              <td>
+                <a href="https://wa.me/{{ ar.whatsapp | replace(' ','') | replace('+','') }}" target="_blank"
+                   style="color:var(--success);text-decoration:none;font-size:0.83rem">📱 {{ ar.whatsapp }}</a>
+              </td>
+              <td style="font-size:0.83rem;color:var(--muted)">{{ ar.preferred_datetime }}</td>
+              <td style="font-size:0.83rem;white-space:nowrap">{{ ar.catalog_plan_label }}</td>
+              <td style="font-size:0.83rem;font-weight:700;white-space:nowrap">K{{ ar.total_due }}</td>
+              <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
+              <td>
+                {% if ar.user %}
+                <a href="/admin/user/{{ ar.user.id }}/edit" style="text-decoration:none;font-size:0.8rem">
+                  <strong>{{ ar.user.name }}</strong><br>
+                  <span style="color:var(--muted)">{{ ar.user.email }}</span>
+                </a>
+                {% else %}
+                <span style="color:var(--muted);font-size:0.8rem">Not linked</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <select name="status" class="filter-select" style="padding:5px 8px;font-size:0.8rem">
+                    {% for s in ['New Request','Assigned','In Progress','Completed'] %}
+                    <option value="{{ s }}" {% if ar.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                  </select>
+                  <select name="linked_user_id" class="filter-select" style="padding:5px 8px;font-size:0.8rem;max-width:140px"
+                          title="Link to the user account created for this business">
+                    <option value="">{{ 'Link user…' if not ar.user else 'Change link…' }}</option>
+                    {% for u in all_users %}
+                    <option value="{{ u.id }}" {% if ar.user_id == u.id %}selected{% endif %}>{{ u.name }} ({{ u.email }})</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-secondary btn-sm">Save</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="admin-empty">
+        <div class="ae-icon">📭</div>
+        <p>No new setup requests</p>
+      </div>
+      {% endif %}
     </div>
-    {% else %}
-    <div class="admin-empty">
-      <div class="ae-icon">📭</div>
-      <p>No setup requests yet</p>
+
+    <!-- In Progress tab (hidden) -->
+    <div id="ar-tab-wip" style="display:none">
+      {% if setup_wip %}
+      <div class="admin-tbl-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Plan</th><th>Due</th><th>Submitted</th><th>Linked User</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            {% for ar in setup_wip %}
+            <tr>
+              <td><strong>{{ ar.business_name }}</strong></td>
+              <td style="color:var(--muted)">{{ ar.market_location }}</td>
+              <td>
+                <a href="https://wa.me/{{ ar.whatsapp | replace(' ','') | replace('+','') }}" target="_blank"
+                   style="color:var(--success);text-decoration:none;font-size:0.83rem">📱 {{ ar.whatsapp }}</a>
+              </td>
+              <td style="font-size:0.83rem;color:var(--muted)">{{ ar.preferred_datetime }}</td>
+              <td style="font-size:0.83rem;white-space:nowrap">{{ ar.catalog_plan_label }}</td>
+              <td style="font-size:0.83rem;font-weight:700;white-space:nowrap">K{{ ar.total_due }}</td>
+              <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
+              <td>
+                {% if ar.user %}
+                <a href="/admin/user/{{ ar.user.id }}/edit" style="text-decoration:none;font-size:0.8rem">
+                  <strong>{{ ar.user.name }}</strong><br>
+                  <span style="color:var(--muted)">{{ ar.user.email }}</span>
+                </a>
+                {% else %}
+                <span style="color:var(--muted);font-size:0.8rem">Not linked</span>
+                {% endif %}
+              </td>
+              <td>
+                <form method="POST" action="/admin/agency/{{ ar.id }}/status" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                  <select name="status" class="filter-select" style="padding:5px 8px;font-size:0.8rem">
+                    {% for s in ['New Request','Assigned','In Progress','Completed'] %}
+                    <option value="{{ s }}" {% if ar.status == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                  </select>
+                  <select name="linked_user_id" class="filter-select" style="padding:5px 8px;font-size:0.8rem;max-width:140px"
+                          title="Link to the user account created for this business">
+                    <option value="">{{ 'Link user…' if not ar.user else 'Change link…' }}</option>
+                    {% for u in all_users %}
+                    <option value="{{ u.id }}" {% if ar.user_id == u.id %}selected{% endif %}>{{ u.name }} ({{ u.email }})</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-secondary btn-sm">Save</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="admin-empty">
+        <div class="ae-icon">🔧</div>
+        <p>No setups in progress</p>
+      </div>
+      {% endif %}
     </div>
-    {% endif %}
+
+    <!-- Completed tab (hidden) -->
+    <div id="ar-tab-done" style="display:none">
+      {% if setup_done %}
+      <div class="admin-tbl-wrap">
+        <table class="admin-tbl">
+          <thead>
+            <tr><th>Business</th><th>Market / Location</th><th>WhatsApp</th><th>Preferred Visit</th><th>Plan</th><th>Due</th><th>Submitted</th><th>Linked User</th><th>Completed</th></tr>
+          </thead>
+          <tbody>
+            {% for ar in setup_done | sort(attribute='completed_at', reverse=True) %}
+            <tr>
+              <td><strong>{{ ar.business_name }}</strong></td>
+              <td style="color:var(--muted)">{{ ar.market_location }}</td>
+              <td>
+                <a href="https://wa.me/{{ ar.whatsapp | replace(' ','') | replace('+','') }}" target="_blank"
+                   style="color:var(--success);text-decoration:none;font-size:0.83rem">📱 {{ ar.whatsapp }}</a>
+              </td>
+              <td style="font-size:0.83rem;color:var(--muted)">{{ ar.preferred_datetime }}</td>
+              <td style="font-size:0.83rem;white-space:nowrap">{{ ar.catalog_plan_label }}</td>
+              <td style="font-size:0.83rem;font-weight:700;white-space:nowrap">K{{ ar.total_due }}</td>
+              <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ ar.submitted_at.strftime('%d %b %Y') }}</td>
+              <td>
+                {% if ar.user %}
+                <a href="/admin/user/{{ ar.user.id }}/edit" style="text-decoration:none;font-size:0.8rem">
+                  <strong>{{ ar.user.name }}</strong><br>
+                  <span style="color:var(--muted)">{{ ar.user.email }}</span>
+                </a>
+                {% else %}
+                <span style="color:var(--muted);font-size:0.8rem">Not linked</span>
+                {% endif %}
+              </td>
+              <td style="font-size:0.8rem;color:var(--success);font-weight:700;white-space:nowrap">
+                {{ ar.completed_at.strftime('%d %b %Y') if ar.completed_at else '✓ Done' }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="admin-empty">
+        <div class="ae-icon">🏁</div>
+        <p>No completed setups yet</p>
+      </div>
+      {% endif %}
+    </div>
+
   </div>
 </div>
 
@@ -265,7 +442,6 @@
                     </form>
                   {% endif %}
                 {% else %}
-                  {# Moderator: activity log only #}
                   {% if u.id == me.id %}
                     <span style="color:var(--muted);font-size:0.75rem">(you)</span>
                   {% endif %}
@@ -324,5 +500,67 @@
   </div>
 </div>
 {% endif %}
+
+<!-- ── Tab styles & JS ───────────────────────────────────── -->
+<style>
+.ck-tab-bar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.ck-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.ck-tab:hover { color: var(--text); }
+.ck-tab.active {
+  color: var(--accent-text);
+  border-bottom-color: var(--accent-text);
+}
+.ck-tab-badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 100px;
+  min-width: 20px;
+  text-align: center;
+}
+.ck-tab-badge-muted {
+  background: var(--surface2);
+  color: var(--muted);
+}
+.ck-tab-badge-warn {
+  background: rgba(245,158,11,.25);
+  color: #d97706;
+}
+</style>
+
+<script>
+function switchTab(prefix, tab, btn) {
+  document.querySelectorAll('[id^="' + prefix + '-tab-"]').forEach(function(el) {
+    el.style.display = 'none';
+  });
+  var target = document.getElementById(prefix + '-tab-' + tab);
+  if (target) target.style.display = '';
+  btn.closest('.ck-tab-bar').querySelectorAll('.ck-tab').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  btn.classList.add('active');
+}
+</script>
 
 {% endblock %}
