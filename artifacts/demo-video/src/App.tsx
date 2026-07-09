@@ -129,14 +129,8 @@ function App() {
         </div>
       )}
 
-      {/* Recording indicator — also outside the video stage */}
-      {recState === "recording" && (
-        <div className="absolute bottom-4 right-4 z-50 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-red-500/50">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          Recording… {secondsLeft}s
-          <button onClick={cancelRecording} className="ml-1 text-white/50 hover:text-white transition-colors" title="Cancel">✕</button>
-        </div>
-      )}
+      {/* Nothing rendered during recording — keeps the captured video 100% clean.
+          The file downloads automatically when the run finishes. */}
     </div>
   );
 }
