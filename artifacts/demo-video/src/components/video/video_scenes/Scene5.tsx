@@ -137,7 +137,7 @@ export function Scene5() {
         transition={{ duration: 1, delay: 1 }}
       >
         <p className="text-[1cqw] text-white font-sans leading-relaxed">
-          Proudly PNG Made<br />CatalogKit © built by Sapphire Consulting Services
+          CatalogKit &copy; &nbsp;|&nbsp; Proudly PNG Made
         </p>
       </motion.div>
     </motion.div>
