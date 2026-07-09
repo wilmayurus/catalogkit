@@ -27,6 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://i.pravatar.cc">
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -44,17 +45,17 @@
     /* Skip link — visible only on keyboard focus */
     .skip-link {
       position: absolute; top: -100%; left: 16px;
-      background: #f97316; color: #fff; padding: 14px 22px;
+      background: #c2410c; color: #fff; padding: 14px 22px;
       font-weight: 700; font-size: 1rem; z-index: 9999;
       text-decoration: none; border-radius: 0 0 10px 10px;
     }
     .skip-link:focus { top: 0; }
 
-    /* Focus ring — visible for keyboard and switch-device users */
+    /* Focus ring — thick, high-contrast, visible for keyboard and switch-device users */
     :focus-visible {
-      outline: 3px solid #f97316;
-      outline-offset: 3px;
-      border-radius: 4px;
+      outline: 3px solid #c2410c;
+      outline-offset: 4px;
+      border-radius: 6px;
     }
 
     /* Screen-reader-only utility */
@@ -62,6 +63,15 @@
       position: absolute; width: 1px; height: 1px; padding: 0;
       margin: -1px; overflow: hidden; clip: rect(0,0,0,0);
       white-space: nowrap; border: 0;
+    }
+
+    /* Dyslexia-friendly base typography */
+    body {
+      letter-spacing: 0.01em;
+      word-spacing: 0.04em;
+    }
+    p, li, blockquote {
+      line-height: 1.75;
     }
 
     /* Respect user's reduced-motion preference */
@@ -75,6 +85,15 @@
     }
     @media (prefers-reduced-motion: no-preference) {
       html { scroll-behavior: smooth; }
+    }
+
+    /* High-contrast colour tokens used for WCAG AA eyebrow labels */
+    .eyebrow {
+      color: #b45309; /* amber-700 — 4.9:1 on white */
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
   </style>
 </head>
@@ -119,7 +138,7 @@
     </div>
 
     <!-- Mobile menu (hidden by default) -->
-    <div id="mobile-menu" class="hidden md:hidden pb-4" role="menu">
+    <div id="mobile-menu" class="hidden md:hidden pb-4">
       <ul class="flex flex-col gap-1 pt-3 border-t border-gray-100 list-none" role="list">
         <li><a href="#how-it-works" class="text-gray-700 hover:bg-gray-50 px-4 py-3 rounded-xl text-sm font-medium min-h-[44px] flex items-center">How it works</a></li>
         <li><a href="#features"     class="text-gray-700 hover:bg-gray-50 px-4 py-3 rounded-xl text-sm font-medium min-h-[44px] flex items-center">Features</a></li>
@@ -159,10 +178,19 @@
           <p class="text-xl text-gray-600 leading-relaxed mb-4">
             Turn your phone photos into a beautiful digital catalogue that customers can browse anywhere.
           </p>
-          <ul class="text-gray-500 text-base mb-10 space-y-1 list-none" role="list">
-            <li class="flex items-center gap-2"><span class="text-gray-300 font-bold" aria-hidden="true">—</span> No computer</li>
-            <li class="flex items-center gap-2"><span class="text-gray-300 font-bold" aria-hidden="true">—</span> No design skills</li>
-            <li class="flex items-center gap-2"><span class="text-gray-300 font-bold" aria-hidden="true">—</span> No app required</li>
+          <ul class="text-gray-600 text-base mb-10 space-y-2 list-none" role="list">
+            <li class="flex items-center gap-2.5">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true"><svg class="w-3 h-3 text-orange-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></span>
+              No computer needed
+            </li>
+            <li class="flex items-center gap-2.5">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true"><svg class="w-3 h-3 text-orange-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></span>
+              No design skills
+            </li>
+            <li class="flex items-center gap-2.5">
+              <span class="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0" aria-hidden="true"><svg class="w-3 h-3 text-orange-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></span>
+              No app required
+            </li>
           </ul>
 
           <!-- CTAs -->
@@ -360,7 +388,7 @@
 
       <!-- Header -->
       <div class="text-center mb-16">
-        <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">How It Works</p>
+        <p class="eyebrow mb-3">How It Works</p>
         <h2 id="steps-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900">Three steps. That's it.</h2>
       </div>
 
@@ -369,7 +397,7 @@
 
         <!-- ── Step 1 ── -->
         <article class="step-card flex-1 w-full bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
-                 style="transition-delay:0ms" role="article" aria-label="Step 1: Take Photos">
+                 style="transition-delay:0ms" aria-label="Step 1: Take Photos">
           <!-- Illustration area -->
           <div class="bg-orange-50 flex items-center justify-center py-10" aria-hidden="true">
             <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -402,7 +430,7 @@
               <span class="w-10 h-10 bg-orange-500 text-white rounded-full font-extrabold text-lg flex items-center justify-center flex-shrink-0" aria-label="Step 1">1</span>
               <h3 class="text-xl font-extrabold text-slate-900">Take Photos</h3>
             </div>
-            <p class="text-gray-500 text-base leading-relaxed">Take photos of your products using your phone.</p>
+            <p class="text-gray-600 text-base leading-relaxed">Take photos of your products using your phone.</p>
           </div>
         </article>
 
@@ -424,7 +452,7 @@
 
         <!-- ── Step 2 ── -->
         <article class="step-card flex-1 w-full bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
-                 style="transition-delay:150ms" role="article" aria-label="Step 2: Build Your Catalogue">
+                 style="transition-delay:150ms" aria-label="Step 2: Build Your Catalogue">
           <!-- Illustration area -->
           <div class="bg-amber-50 flex items-center justify-center py-10" aria-hidden="true">
             <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -457,7 +485,7 @@
               <span class="w-10 h-10 bg-orange-500 text-white rounded-full font-extrabold text-lg flex items-center justify-center flex-shrink-0" aria-label="Step 2">2</span>
               <h3 class="text-xl font-extrabold text-slate-900">Build Your Catalogue</h3>
             </div>
-            <p class="text-gray-500 text-base leading-relaxed">Upload your photos. CatalogKit automatically creates a beautiful catalogue.</p>
+            <p class="text-gray-600 text-base leading-relaxed">Upload your photos. CatalogKit automatically creates a beautiful catalogue.</p>
           </div>
         </article>
 
@@ -479,7 +507,7 @@
 
         <!-- ── Step 3 ── -->
         <article class="step-card flex-1 w-full bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
-                 style="transition-delay:300ms" role="article" aria-label="Step 3: Share on WhatsApp">
+                 style="transition-delay:300ms" aria-label="Step 3: Share on WhatsApp">
           <!-- Illustration area -->
           <div class="bg-green-50 flex items-center justify-center py-10" aria-hidden="true">
             <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -504,7 +532,7 @@
               <span class="w-10 h-10 bg-orange-500 text-white rounded-full font-extrabold text-lg flex items-center justify-center flex-shrink-0" aria-label="Step 3">3</span>
               <h3 class="text-xl font-extrabold text-slate-900">Share on WhatsApp</h3>
             </div>
-            <p class="text-gray-500 text-base leading-relaxed">Send one link. Customers browse your products instantly.</p>
+            <p class="text-gray-600 text-base leading-relaxed">Send one link. Customers browse your products instantly.</p>
           </div>
         </article>
 
@@ -539,7 +567,7 @@
     <div class="max-w-6xl mx-auto">
 
       <div class="text-center mb-16">
-        <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">Features</p>
+        <p class="eyebrow mb-3">Features</p>
         <h2 id="features-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900">Why Vendors Love CatalogKit</h2>
       </div>
 
@@ -558,7 +586,7 @@
             </svg>
           </div>
           <h3 class="text-lg font-extrabold text-slate-900 mb-2">No Printing Costs</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Update your catalogue anytime, for free. No paper, no ink, no printing bills.</p>
+          <p class="text-sm text-gray-600 leading-relaxed">Update your catalogue anytime, for free. No paper, no ink, no printing bills.</p>
         </li>
 
         <!-- ── Card 2: Share on WhatsApp ── -->
@@ -575,7 +603,7 @@
             </svg>
           </div>
           <h3 class="text-lg font-extrabold text-slate-900 mb-2">Share Instantly on WhatsApp</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Send one link to customers. They see all your products straight away — no app needed.</p>
+          <p class="text-sm text-gray-600 leading-relaxed">Send one link to customers. They see all your products straight away — no app needed.</p>
         </li>
 
         <!-- ── Card 3: PDF Included ── -->
@@ -598,7 +626,7 @@
             </svg>
           </div>
           <h3 class="text-lg font-extrabold text-slate-900 mb-2">Professional PDF Included</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Every catalogue comes with a ready-to-download PDF your customers can save or print.</p>
+          <p class="text-sm text-gray-600 leading-relaxed">Every catalogue comes with a ready-to-download PDF your customers can save or print.</p>
         </li>
 
         <!-- ── Card 4: Slow Internet ── -->
@@ -616,7 +644,7 @@
             </svg>
           </div>
           <h3 class="text-lg font-extrabold text-slate-900 mb-2">Works on Slow Internet</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Loads fast on 3G and 4G. Works even in areas with weak mobile signal.</p>
+          <p class="text-sm text-gray-600 leading-relaxed">Loads fast on 3G and 4G. Works even in areas with weak mobile signal.</p>
         </li>
 
         <!-- ── Card 5: Android Phones ── -->
@@ -644,7 +672,7 @@
             </svg>
           </div>
           <h3 class="text-lg font-extrabold text-slate-900 mb-2">Works on Android Phones</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">Built for the phones PNG vendors actually use. No expensive phone required.</p>
+          <p class="text-sm text-gray-600 leading-relaxed">Built for the phones PNG vendors actually use. No expensive phone required.</p>
         </li>
 
         <!-- ── Card 6: Easy to Use ── -->
@@ -660,7 +688,7 @@
             </svg>
           </div>
           <h3 class="text-lg font-extrabold text-slate-900 mb-2">Easy to Use</h3>
-          <p class="text-sm text-gray-500 leading-relaxed">If you can take a photo and send a WhatsApp message, you can use CatalogKit.</p>
+          <p class="text-sm text-gray-600 leading-relaxed">If you can take a photo and send a WhatsApp message, you can use CatalogKit.</p>
         </li>
 
       </ul>
@@ -877,7 +905,7 @@
 
       <!-- Header -->
       <div class="text-center mb-20">
-        <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">See it in action</p>
+        <p class="eyebrow mb-3">See it in action</p>
         <h2 id="showcase-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Watch CatalogKit work</h2>
         <p class="text-lg text-gray-500 max-w-xl mx-auto">From your phone photos to a WhatsApp link — here's how it looks every step of the way.</p>
       </div>
@@ -1200,7 +1228,7 @@
 
       <!-- Header -->
       <div class="text-center mb-14">
-        <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">Pricing</p>
+        <p class="eyebrow mb-3">Pricing</p>
         <h2 id="pricing-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">Simple, honest pricing</h2>
         <p class="text-lg text-gray-500 max-w-lg mx-auto leading-relaxed">Start free. Upgrade only when your business grows and you need more builds.</p>
       </div>
@@ -1211,8 +1239,8 @@
         <!-- ── Free (highlighted) ── -->
         <li class="relative bg-white rounded-2xl border-2 border-orange-500 shadow-xl p-8 flex flex-col ring-4 ring-orange-100">
           <!-- Badge -->
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2" aria-label="Recommended plan">
-            <span class="bg-orange-500 text-white text-xs font-extrabold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2" role="img" aria-label="Recommended plan — Start here, it's free">
+            <span class="bg-orange-500 text-white text-sm font-extrabold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap" aria-hidden="true">
               ✦ Start here — it's free
             </span>
           </div>
@@ -1224,7 +1252,7 @@
               <span class="text-5xl font-extrabold text-orange-500">K0</span>
               <span class="text-gray-400 text-sm">/month</span>
             </div>
-            <p class="text-sm text-gray-500">Forever free · No credit card</p>
+            <p class="text-sm text-gray-600">Forever free · No credit card</p>
           </div>
 
           <!-- Features -->
@@ -1265,7 +1293,7 @@
              class="block text-center bg-orange-500 hover:bg-orange-600 text-white font-extrabold py-4 px-6 rounded-xl transition-colors min-h-[52px] flex items-center justify-center text-base shadow-lg shadow-orange-200">
             Create My Free Catalogue
           </a>
-          <p class="text-center text-xs text-gray-400 mt-3">No credit card · No commitment · Always free</p>
+          <p class="text-center text-sm text-gray-500 mt-3">No credit card · No commitment · Always free</p>
         </li>
 
         <!-- ── Basic ── -->
@@ -1276,7 +1304,7 @@
               <span class="text-5xl font-extrabold text-slate-900">K20</span>
               <span class="text-gray-400 text-sm">/month</span>
             </div>
-            <p class="text-sm text-gray-500">When 3 builds isn't quite enough</p>
+            <p class="text-sm text-gray-600">When 3 builds isn't quite enough</p>
           </div>
 
           <ul class="flex flex-col gap-3 mb-8 flex-grow list-none" role="list">
@@ -1306,7 +1334,7 @@
              class="block text-center bg-gray-100 hover:bg-gray-200 text-slate-700 font-bold py-4 px-6 rounded-xl transition-colors min-h-[52px] flex items-center justify-center">
             Upgrade via WhatsApp
           </a>
-          <p class="text-center text-xs text-gray-400 mt-3">Message us and we'll set it up for you</p>
+          <p class="text-center text-sm text-gray-500 mt-3">Message us and we'll set it up for you</p>
         </li>
 
         <!-- ── Pro ── -->
@@ -1317,7 +1345,7 @@
               <span class="text-5xl font-extrabold text-slate-900">K50</span>
               <span class="text-gray-400 text-sm">/month</span>
             </div>
-            <p class="text-sm text-gray-500">For busy sellers who build often</p>
+            <p class="text-sm text-gray-600">For busy sellers who build often</p>
           </div>
 
           <ul class="flex flex-col gap-3 mb-8 flex-grow list-none" role="list">
@@ -1343,7 +1371,7 @@
              class="block text-center bg-gray-100 hover:bg-gray-200 text-slate-700 font-bold py-4 px-6 rounded-xl transition-colors min-h-[52px] flex items-center justify-center">
             Upgrade via WhatsApp
           </a>
-          <p class="text-center text-xs text-gray-400 mt-3">Message us and we'll set it up for you</p>
+          <p class="text-center text-sm text-gray-500 mt-3">Message us and we'll set it up for you</p>
         </li>
 
       </ul>
@@ -1364,8 +1392,8 @@
         </div>
       </div>
 
-      <p class="text-center text-sm text-gray-400 mt-8">All prices in PNG Kina (K) &nbsp;·&nbsp;
-        <a href="/pricing" class="text-orange-500 hover:underline font-semibold">See full pricing details →</a>
+      <p class="text-center text-sm text-gray-600 mt-8">All prices in PNG Kina (K) &nbsp;·&nbsp;
+        <a href="/pricing" class="text-orange-700 hover:underline font-semibold underline-offset-2">See full pricing details →</a>
       </p>
     </div>
   </section>
@@ -1377,7 +1405,7 @@
     <div class="max-w-6xl mx-auto">
 
       <div class="text-center mb-14">
-        <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">Testimonials</p>
+        <p class="eyebrow mb-3">Testimonials</p>
         <h2 id="testimonials-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-3">What vendors are saying</h2>
         <p class="text-lg text-gray-500">Real feedback from PNG market vendors and small business owners.</p>
       </div>
@@ -1407,7 +1435,7 @@
                    loading="lazy" width="48" height="48">
               <div>
                 <div class="font-bold text-slate-900 text-sm">Martha K.</div>
-                <div class="text-xs text-gray-400">Fresh Produce Seller · Gordons Market, NCD</div>
+                <div class="text-sm text-gray-500">Fresh Produce Seller · Gordons Market, NCD</div>
               </div>
             </div>
           </div>
@@ -1432,7 +1460,7 @@
                    loading="lazy" width="48" height="48">
               <div>
                 <div class="font-bold text-slate-900 text-sm">Raymond T.</div>
-                <div class="text-xs text-gray-400">Trade Store Owner · Boroko, NCD</div>
+                <div class="text-sm text-gray-500">Trade Store Owner · Boroko, NCD</div>
               </div>
             </div>
           </div>
@@ -1457,14 +1485,14 @@
                    loading="lazy" width="48" height="48">
               <div>
                 <div class="font-bold text-slate-900 text-sm">Susan N.</div>
-                <div class="text-xs text-gray-400">Garment Seller · Koki Market, NCD</div>
+                <div class="text-sm text-gray-500">Garment Seller · Koki Market, NCD</div>
               </div>
             </div>
           </div>
         </li>
 
       </ul>
-      <p class="text-center text-xs text-gray-400 mt-8">Representative examples based on vendor feedback. Names shortened for privacy.</p>
+      <p class="text-center text-sm text-gray-500 mt-8">Representative examples based on vendor feedback. Names shortened for privacy.</p>
     </div>
   </section>
 
@@ -1474,7 +1502,7 @@
   <section class="bg-white py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="dfy-heading">
     <div class="max-w-3xl mx-auto text-center">
       <span class="text-5xl block mb-6" aria-hidden="true">👩‍💼</span>
-      <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">Done For You</p>
+      <p class="eyebrow mb-3">Done For You</p>
       <h2 id="dfy-heading" class="text-3xl font-extrabold text-slate-900 mb-6">Not tech-savvy? We come to you.</h2>
       <p class="text-lg text-gray-500 mb-8 leading-relaxed max-w-2xl mx-auto">
         Our agents visit your market stall or shop, set up your account, and build your first catalog right beside you — so you learn as you go. You only pay K50 cash to the agent on the day. No upfront payment, no risk.
@@ -1483,7 +1511,7 @@
          class="inline-flex items-center justify-center bg-orange-500 hover:bg-orange-600 text-white text-lg font-bold px-8 py-4 rounded-2xl transition-colors shadow-lg min-h-[56px]">
         Book a Done-For-You Setup — K50
       </a>
-      <p class="text-sm text-gray-400 mt-5">Available at Gordons, Koki, Boroko, Waigani &amp; more NCD markets</p>
+      <p class="text-sm text-gray-500 mt-5">Available at Gordons, Koki, Boroko, Waigani &amp; more NCD markets</p>
     </div>
   </section>
 
@@ -1508,25 +1536,25 @@
         Ready to Start<br>Selling More?
       </h2>
 
-      <p class="text-lg sm:text-xl text-orange-100 mb-10 leading-relaxed max-w-xl mx-auto">
+      <p class="text-lg sm:text-xl text-white/90 mb-10 leading-relaxed max-w-xl mx-auto">
         Join market vendors and small businesses across Papua New Guinea using CatalogKit.
       </p>
 
       <!-- Primary CTA -->
       <a href="/register"
-         class="inline-flex items-center justify-center bg-white text-orange-500 hover:bg-orange-50 text-lg font-extrabold px-10 py-4 rounded-2xl transition-colors shadow-2xl min-h-[60px] mb-6">
+         class="inline-flex items-center justify-center bg-white text-orange-600 hover:bg-orange-50 text-lg font-extrabold px-10 py-4 rounded-2xl transition-colors shadow-2xl min-h-[60px] mb-6">
         Create My Free Catalogue
       </a>
 
       <!-- Trust row -->
-      <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-orange-100 mb-8">
-        <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-orange-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Free forever</span>
-        <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-orange-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> No credit card</span>
-        <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-orange-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Ready in minutes</span>
+      <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/80 mb-8">
+        <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Free forever</span>
+        <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> No credit card</span>
+        <span class="flex items-center gap-1.5"><svg class="w-4 h-4 text-white/70" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Ready in minutes</span>
       </div>
 
-      <p class="text-sm text-orange-200">
-        Already using CatalogKit? <a href="/login" class="text-white font-bold underline underline-offset-2 hover:text-orange-100">Sign in here</a>
+      <p class="text-sm text-white/70">
+        Already using CatalogKit? <a href="/login" class="text-white font-bold underline underline-offset-2 hover:text-white/90">Sign in here</a>
       </p>
 
     </div>
@@ -1634,15 +1662,15 @@
           <p class="text-sm text-slate-300 font-semibold mb-1 flex items-center gap-2">
             <span aria-hidden="true">🇵🇬</span> Built proudly in Papua New Guinea
           </p>
-          <p class="text-xs text-slate-500 leading-relaxed">
-            Created by <span class="text-slate-400 font-medium">Sapphire Consulting Services</span>,
-            a subsidiary of <span class="text-slate-400 font-medium">Trey Holdings Limited</span>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Created by <span class="text-slate-300 font-medium">Sapphire Consulting Services</span>,
+            a subsidiary of <span class="text-slate-300 font-medium">Trey Holdings Limited</span>
             &nbsp;·&nbsp; Port Moresby, PNG
           </p>
         </div>
 
         <!-- Copyright -->
-        <p class="text-xs text-slate-600 whitespace-nowrap">
+        <p class="text-sm text-slate-400 whitespace-nowrap">
           &copy; {{ now.year if now is defined else 2026 }} CatalogKit &nbsp;·&nbsp; All rights reserved
         </p>
 
