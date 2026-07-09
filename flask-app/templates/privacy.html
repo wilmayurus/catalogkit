@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:40px;max-width:720px">
+
+  <div style="text-align:center;margin-bottom:48px">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:12px">Privacy Policy</h1>
+    <p style="color:var(--muted);font-size:0.93rem;line-height:1.7">
+      Last updated: July 2026 &nbsp;·&nbsp; Sapphire Consulting Services (Trey Holdings Limited)
+    </p>
+  </div>
+
+  <div style="background:var(--surface2);border-radius:12px;padding:18px 22px;margin-bottom:32px;font-size:0.9rem;color:var(--muted);line-height:1.7">
+    <strong style="color:var(--text)">Plain English summary:</strong> We collect only what we need to run CatalogKit. We don't sell your data. We don't share it with advertisers. Your product photos and catalogue information belong to you.
+  </div>
+
+  {% set sections = [
+    {
+      "id": "who",
+      "title": "1. Who we are",
+      "content": "CatalogKit is operated by <strong>Sapphire Consulting Services</strong>, a subsidiary of <strong>Trey Holdings Limited</strong>, Port Moresby, Papua New Guinea.<br><br>If you have any questions about this policy, contact us at <a href=\"mailto:info@catalogkit.org\" style=\"color:var(--accent-text)\">info@catalogkit.org</a> or on WhatsApp at +675 7381 7000."
+    },
+    {
+      "id": "collect",
+      "title": "2. What information we collect",
+      "content": "When you create an account, we collect:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>Your name and email address</li><li>Your business name and location</li><li>Your chosen password (stored securely — we never see it in plain text)</li></ul><br>When you use CatalogKit, we also store:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>The product photos you upload</li><li>The product names and prices you enter</li><li>The catalogues you build</li><li>Your plan level (Free, Basic, or Pro)</li></ul>"
+    },
+    {
+      "id": "use",
+      "title": "3. How we use your information",
+      "content": "We use your information only to:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>Create and manage your CatalogKit account</li><li>Build your digital flipbook and PDF catalogue</li><li>Send you service emails (e.g. password resets)</li><li>Respond to your support requests</li><li>Improve CatalogKit based on how it is used</li></ul><br>We do <strong>not</strong> use your information to send marketing emails without your permission, or to show you advertisements."
+    },
+    {
+      "id": "share",
+      "title": "4. Who can see your information",
+      "content": "Your personal information is only accessible to:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>You, when you are logged in to your account</li><li>Authorised staff of Sapphire Consulting Services who need it to provide support or manage the platform</li></ul><br>We do <strong>not</strong> sell, rent, or share your personal information with any third party.<br><br>Your published catalogue link (e.g. catalogkit.org/c/your-catalogue) is public — anyone with the link can view it. This is intentional, so you can share it on WhatsApp."
+    },
+    {
+      "id": "storage",
+      "title": "5. How we store your data",
+      "content": "Your data is stored on secure servers hosted by Supabase (PostgreSQL). Your product photos are stored in secure cloud storage.<br><br>We use industry-standard security practices including encrypted passwords and HTTPS connections."
+    },
+    {
+      "id": "retention",
+      "title": "6. How long we keep your data",
+      "content": "We keep your account and catalogue data for as long as your account is active.<br><br>If you close your account, we will delete your personal information and product photos within 30 days, unless we are required by law to keep it longer."
+    },
+    {
+      "id": "rights",
+      "title": "7. Your rights",
+      "content": "You have the right to:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>See what personal information we hold about you</li><li>Ask us to correct information that is wrong</li><li>Ask us to delete your account and all your data</li><li>Download a copy of your catalogue data</li></ul><br>To exercise any of these rights, contact us at <a href=\"mailto:info@catalogkit.org\" style=\"color:var(--accent-text)\">info@catalogkit.org</a> or on WhatsApp at +675 7381 7000."
+    },
+    {
+      "id": "cookies",
+      "title": "8. Cookies",
+      "content": "We use a small cookie to keep you logged in to your account. This cookie is essential for the service to work and contains no personal information.<br><br>We do not use advertising cookies or tracking cookies."
+    },
+    {
+      "id": "children",
+      "title": "9. Children",
+      "content": "CatalogKit is designed for adults running a business. We do not knowingly collect information from anyone under the age of 18. If you believe a child has registered, please contact us and we will remove the account."
+    },
+    {
+      "id": "changes",
+      "title": "10. Changes to this policy",
+      "content": "If we make significant changes to this Privacy Policy, we will notify you by email or by a notice in the app before the change takes effect."
+    }
+  ] %}
+
+  {% for s in sections %}
+  <section style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:16px" aria-labelledby="priv-{{ s.id }}">
+    <h2 id="priv-{{ s.id }}" style="font-size:1rem;font-weight:700;margin-bottom:12px">{{ s.title }}</h2>
+    <div style="font-size:0.9rem;color:var(--muted);line-height:1.75">{{ s.content | safe }}</div>
+  </section>
+  {% endfor %}
+
+  <div style="text-align:center;padding:32px 0 40px">
+    <p style="font-size:0.87rem;color:var(--muted);margin-bottom:16px">
+      Questions about your privacy?
+    </p>
+    <a href="https://wa.me/6757381700?text={{ 'Hi, I have a question about CatalogKit privacy.' | urlencode }}"
+       target="_blank" rel="noopener noreferrer"
+       style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:12px 22px;font-size:0.9rem;font-weight:700">
+      📱 Message us on WhatsApp
+    </a>
+  </div>
+
+</div>
+{% endblock %}

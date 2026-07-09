@@ -2510,6 +2510,27 @@ with app.app_context():
             except Exception as _e:
                 app.logger.warning('Migration skipped: %s', _e)
 
+# ── About page ─────────────────────────────────────────────────────────────────
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+
+# ── Privacy Policy ──────────────────────────────────────────────────────────────
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+
+# ── Terms of Service ────────────────────────────────────────────────────────────
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port, debug=False)

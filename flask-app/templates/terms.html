@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Terms of Service — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:40px;max-width:720px">
+
+  <div style="text-align:center;margin-bottom:48px">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:12px">Terms of Service</h1>
+    <p style="color:var(--muted);font-size:0.93rem;line-height:1.7">
+      Last updated: July 2026 &nbsp;·&nbsp; Sapphire Consulting Services (Trey Holdings Limited)
+    </p>
+  </div>
+
+  <div style="background:var(--surface2);border-radius:12px;padding:18px 22px;margin-bottom:32px;font-size:0.9rem;color:var(--muted);line-height:1.7">
+    <strong style="color:var(--text)">Plain English summary:</strong> Use CatalogKit honestly to sell real products. Don't misuse it or post anything harmful. We provide the service in good faith and will do our best to keep it running — but we are a small PNG team and cannot guarantee it will always be perfect.
+  </div>
+
+  {% set sections = [
+    {
+      "id": "agreement",
+      "title": "1. Agreement",
+      "content": "By creating an account or using CatalogKit, you agree to these Terms of Service. These terms form an agreement between you and <strong>Sapphire Consulting Services</strong> (a subsidiary of Trey Holdings Limited), the company that operates CatalogKit.<br><br>If you do not agree to these terms, please do not use CatalogKit."
+    },
+    {
+      "id": "account",
+      "title": "2. Your account",
+      "content": "You must be at least 18 years old to create an account.<br><br>You are responsible for keeping your password safe. Do not share your account with anyone else. You are responsible for everything that happens under your account.<br><br>Please provide accurate information when you register. If your details change (such as your business name), please update them in your profile."
+    },
+    {
+      "id": "service",
+      "title": "3. The service",
+      "content": "CatalogKit lets you:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>Upload photos of your products</li><li>Build a digital flipbook catalogue</li><li>Download a PDF version of your catalogue</li><li>Share a link to your catalogue on WhatsApp and other platforms</li></ul><br>The number of catalogue builds you can make each month depends on your plan. Builds reset on the first day of each calendar month."
+    },
+    {
+      "id": "plans",
+      "title": "4. Plans and payment",
+      "content": "<strong>Free plan:</strong> 3 builds per month, always free, no credit card required.<br><br><strong>Basic plan (K20/month):</strong> 20 builds per month.<br><br><strong>Pro plan (K50/month):</strong> Unlimited builds per month.<br><br>Paid plans are activated manually after you contact us on WhatsApp and arrange payment. Payment methods include mobile banking, internet banking, or cash to our agent. There are no automatic charges or subscriptions — you pay when you choose to, and your plan is updated by our team."
+    },
+    {
+      "id": "content",
+      "title": "5. Your content",
+      "content": "You own the photos and information you upload to CatalogKit.<br><br>By uploading content, you give us permission to store it and display it as part of your catalogue. We do not claim ownership of your content.<br><br>You must only upload content you have the right to use. You must not upload:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>Photos that belong to someone else without permission</li><li>Anything illegal, harmful, offensive, or misleading</li><li>Content that advertises illegal products or services</li></ul>"
+    },
+    {
+      "id": "conduct",
+      "title": "6. Acceptable use",
+      "content": "You must use CatalogKit honestly and for its intended purpose — to help real businesses show their real products to customers.<br><br>You must not:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>Use CatalogKit to deceive or mislead customers</li><li>Create fake or spam accounts</li><li>Try to hack, break, or overload the service</li><li>Use automated tools to access the service in ways that damage it</li><li>Copy or resell the CatalogKit platform without our permission</li></ul>"
+    },
+    {
+      "id": "suspension",
+      "title": "7. Suspension and termination",
+      "content": "We reserve the right to suspend or close an account if we believe these terms have been seriously breached, or if an account is being used in a way that harms other users or the service.<br><br>We will try to contact you first before taking any action, unless the situation requires us to act immediately (for example, if illegal content is uploaded).<br><br>You can close your account at any time by contacting us. We will delete your data within 30 days."
+    },
+    {
+      "id": "availability",
+      "title": "8. Service availability",
+      "content": "We aim to keep CatalogKit running at all times, but we cannot guarantee it will always be available. We may need to take the service down for maintenance, updates, or to fix problems.<br><br>We will do our best to let you know in advance if we plan to take the service down for a significant period."
+    },
+    {
+      "id": "liability",
+      "title": "9. Limitation of liability",
+      "content": "CatalogKit is provided \"as is\". We are a small PNG team doing our best to provide a reliable service.<br><br>We are not responsible for:<ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px\"><li>Any lost sales or income due to the service being unavailable</li><li>Any errors or problems caused by your internet connection or device</li><li>Content uploaded by other users</li></ul><br>To the extent permitted by Papua New Guinea law, our liability to you for any claim is limited to the amount you paid us in the 12 months before the claim."
+    },
+    {
+      "id": "changes",
+      "title": "10. Changes to these terms",
+      "content": "We may update these Terms of Service from time to time. If we make significant changes, we will notify you by email or by a notice in the app.<br><br>Your continued use of CatalogKit after changes take effect means you accept the new terms."
+    },
+    {
+      "id": "law",
+      "title": "11. Governing law",
+      "content": "These terms are governed by the laws of Papua New Guinea. Any disputes will be resolved in the courts of Papua New Guinea."
+    },
+    {
+      "id": "contact",
+      "title": "12. Contact us",
+      "content": "If you have any questions about these terms, please contact us:<br><br><strong>Sapphire Consulting Services</strong><br>A subsidiary of Trey Holdings Limited<br>Port Moresby, Papua New Guinea<br><br>📱 WhatsApp: <a href=\"https://wa.me/6757381700\" style=\"color:var(--accent-text)\">+675 7381 7000</a><br>✉️ Email: <a href=\"mailto:info@catalogkit.org\" style=\"color:var(--accent-text)\">info@catalogkit.org</a>"
+    }
+  ] %}
+
+  {% for s in sections %}
+  <section style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:16px" aria-labelledby="term-{{ s.id }}">
+    <h2 id="term-{{ s.id }}" style="font-size:1rem;font-weight:700;margin-bottom:12px">{{ s.title }}</h2>
+    <div style="font-size:0.9rem;color:var(--muted);line-height:1.75">{{ s.content | safe }}</div>
+  </section>
+  {% endfor %}
+
+  <div style="text-align:center;padding:32px 0 40px">
+    <p style="font-size:0.87rem;color:var(--muted);margin-bottom:16px">
+      Questions about these terms?
+    </p>
+    <a href="https://wa.me/6757381700?text={{ 'Hi, I have a question about CatalogKit terms.' | urlencode }}"
+       target="_blank" rel="noopener noreferrer"
+       style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:12px 22px;font-size:0.9rem;font-weight:700">
+      📱 Message us on WhatsApp
+    </a>
+  </div>
+
+</div>
+{% endblock %}
