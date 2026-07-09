@@ -86,8 +86,11 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
 }
 .who-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+}
+@media (max-width: 600px) {
+  .who-grid { grid-template-columns: 1fr; }
 }
 .who-card {
   background: var(--surface);
