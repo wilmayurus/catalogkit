@@ -234,9 +234,18 @@ class User(db.Model):
         used = self.monthly_builds_used or 0
         return max(0, limit - used)
 
+    def check_and_expire_plan(self):
+        """Downgrade to free if the paid plan's expiry date has passed. Returns True if expired."""
+        if self.plan != 'free' and self.plan_expires and self.plan_expires < datetime.utcnow():
+            self.plan = 'free'
+            self.plan_start = None
+            return True
+        return False
+
     def reset_monthly_if_needed(self):
-        """Reset build count when a new month begins. Returns True if reset."""
+        """Reset build count when a new month begins. Also checks plan expiry. Returns True if reset."""
         from datetime import date
+        self.check_and_expire_plan()
         today = date.today()
         reset = self.monthly_reset_date
         if reset is None or today >= reset:
@@ -351,7 +360,8 @@ class PaymentRequest(db.Model):
     id             = db.Column(db.Integer, primary_key=True)
     user_id        = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     plan           = db.Column(db.String(20),  nullable=False)   # 'basic' | 'pro'
-    amount         = db.Column(db.String(10),  nullable=False)   # 'K20' | 'K50'
+    amount         = db.Column(db.String(10),  nullable=False)   # per-month: 'K20' | 'K50'
+    months_paid    = db.Column(db.Integer, default=1)            # number of months pre-paid (1–12)
     payment_method = db.Column(db.String(50),  nullable=False)   # 'cash' | 'mobile_money' | 'internet_banking'
     reference      = db.Column(db.String(255), nullable=True)    # transaction ref / receipt number
     status         = db.Column(db.String(20),  default='pending') # 'pending' | 'approved' | 'rejected'
@@ -359,6 +369,12 @@ class PaymentRequest(db.Model):
     submitted_at   = db.Column(db.DateTime, default=datetime.utcnow)
     resolved_at    = db.Column(db.DateTime, nullable=True)
     user           = db.relationship('User', backref=db.backref('payment_requests', lazy=True))
+
+    @property
+    def total_amount_kina(self):
+        """Total payment: per-month price × months_paid."""
+        per_month = int(''.join(c for c in (self.amount or '0') if c.isdigit()) or 0)
+        return per_month * (self.months_paid or 1)
 
 
 class AdminAuditLog(db.Model):
@@ -1541,35 +1557,45 @@ def payment_request():
         flash('Invalid payment details.', 'error')
         return redirect(url_for('choose_plan'))
 
-    amount = PLAN_AMOUNTS[plan]
+    try:
+        months_paid = int(request.form.get('months_paid', '1') or 1)
+    except (ValueError, TypeError):
+        months_paid = 1
+    months_paid = max(1, min(12, months_paid))
 
-    # Save the request
+    per_month_str = PLAN_AMOUNTS[plan]
+    per_month_int = int(''.join(c for c in per_month_str if c.isdigit()) or 0)
+    total_kina    = per_month_int * months_paid
+
     pr = PaymentRequest(
         user_id        = user.id,
         plan           = plan,
-        amount         = amount,
+        amount         = per_month_str,
+        months_paid    = months_paid,
         payment_method = method,
         reference      = ref or None,
     )
     db.session.add(pr)
     db.session.commit()
-    log_activity(user.id, 'payment_requested', f'{plan} plan via {method}')
+    log_activity(user.id, 'payment_requested',
+                 f'{plan} plan × {months_paid} month(s) = K{total_kina} via {method}')
 
-    # Email notification to info@catalogkit.org
     method_label = PAYMENT_METHOD_LABELS[method]
+    months_label = f'{months_paid} month' + ('' if months_paid == 1 else 's')
     body = (
         f"New plan upgrade request — please verify and approve.\n\n"
         f"User:           {user.name} ({user.email})\n"
         f"Business:       {user.business_name or '(not set)'}\n"
         f"WhatsApp:       {user.whatsapp or '(not set)'}\n"
-        f"Plan requested: {plan.title()} ({amount}/month)\n"
+        f"Plan requested: {plan.title()} ({per_month_str}/month × {months_label})\n"
+        f"Total amount:   K{total_kina}\n"
         f"Payment method: {method_label}\n"
         f"Reference/Ref#: {ref or '(not provided)'}\n\n"
         f"To approve, go to: https://www.catalogkit.org/admin\n"
         f"Request ID: #{pr.id}\n"
     )
     send_email('info@catalogkit.org',
-               f'[CatalogKit] Payment request #{pr.id} — {user.name} → {plan.title()} {amount}',
+               f'[CatalogKit] Payment #{pr.id} — {user.name} → {plan.title()} K{total_kina} ({months_label})',
                body)
 
     return redirect(url_for('payment_pending'))
@@ -1595,31 +1621,56 @@ def admin_approve_payment(pr_id):
     pr.status      = 'approved'
     pr.resolved_at = datetime.utcnow()
     pr.notes       = request.form.get('notes', '').strip() or None
-    # Upgrade the user's plan
+
     user = db.session.get(User, pr.user_id)
     if user:
-        user.plan = pr.plan
-        # Create their first catalog if they don't have one yet
+        months_paid   = pr.months_paid or 1
+        per_month_int = int(''.join(c for c in (pr.amount or '0') if c.isdigit()) or 0)
+        total_kina    = per_month_int * months_paid
+        months_label  = f'{months_paid} month' + ('' if months_paid == 1 else 's')
+        now_dt        = datetime.utcnow()
+
+        # If the user is on the same plan and it hasn't expired yet, extend from current expiry.
+        # Otherwise start fresh from today.
+        if user.plan == pr.plan and user.plan_expires and user.plan_expires > now_dt:
+            new_expires  = user.plan_expires + timedelta(days=30 * months_paid)
+            plan_message = f'extended by {months_label} (now expires {new_expires.strftime("%d %b %Y")})'
+        else:
+            user.plan_start = now_dt
+            new_expires     = now_dt + timedelta(days=30 * months_paid)
+            plan_message    = f'activated for {months_label} (expires {new_expires.strftime("%d %b %Y")})'
+
+        user.plan         = pr.plan
+        user.plan_expires = new_expires
+        # Reset the monthly build counter immediately on activation
+        user.monthly_builds_used = 0
+        today = now_dt.date()
+        if today.month == 12:
+            user.monthly_reset_date = date(today.year + 1, 1, 1)
+        else:
+            user.monthly_reset_date = date(today.year, today.month + 1, 1)
+
         if not user.catalogs:
             catalog = Catalog(user_id=user.id, name='My Catalog')
             db.session.add(catalog)
         db.session.commit()
-        log_activity(user.id, 'plan_upgraded', f'Plan set to {pr.plan} (payment #{pr.id} approved)')
+        log_activity(user.id, 'plan_upgraded',
+                     f'{pr.plan.title()} plan {plan_message} (payment #{pr.id} approved, K{total_kina} total)')
         log_admin_action(session['user_id'], 'payment_approved', 'payment_request', pr.id,
-                         f'Approved {pr.plan} plan for {user.name} ({user.email})')
-        # Notify user by email
+                         f'Approved {pr.plan} plan K{total_kina} ({months_label}) for {user.name} ({user.email})')
         send_email(
             user.email,
             f'[CatalogKit] Your {pr.plan.title()} plan is now active!',
             f"Hi {user.name},\n\n"
-            f"We've confirmed your {pr.amount}/month payment and your {pr.plan.title()} plan is now active.\n\n"
+            f"We've confirmed your payment of K{total_kina} ({pr.amount}/month × {months_label}).\n\n"
+            f"Your {pr.plan.title()} plan is {plan_message}.\n\n"
             f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
             f"Thank you for supporting CatalogKit!\n"
             f"— The CatalogKit Team"
         )
     else:
         db.session.commit()
-    flash(f'Payment #{pr_id} approved and {pr.plan.title()} plan activated.', 'success')
+    flash(f'Payment #{pr_id} approved — {pr.plan.title()} plan activated.', 'success')
     return redirect(url_for('admin'))
 
 
@@ -1698,6 +1749,7 @@ def admin():
                            agency_requests=agency_requests,
                            payment_requests=payment_requests,
                            pending_count=pending_count, now=datetime.utcnow(),
+                           timedelta=timedelta,
                            me=me, admin_active='dashboard')
 
 @app.route('/admin/agency/<int:ar_id>/status', methods=['POST'])
@@ -2053,11 +2105,22 @@ def admin_reports():
         pr_pending  = PaymentRequest.query.filter_by(status='pending').count()
         pr_approved = PaymentRequest.query.filter_by(status='approved').all()
         pr_rejected = PaymentRequest.query.filter_by(status='rejected').count()
-        approved_total = sum(int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0) for p in pr_approved)
+        approved_total = sum(p.total_amount_kina for p in pr_approved)
 
         pr_by_method = {}
-        for p in PaymentRequest.query.filter_by(status='approved').all():
+        for p in pr_approved:
             pr_by_method[p.payment_method] = pr_by_method.get(p.payment_method, 0) + 1
+
+        # ── Active subscriptions & expiry tracking
+        thirty_days_out = now + timedelta(days=30)
+        active_basic   = User.query.filter(User.plan == 'basic',
+                                           User.plan_expires > now).count()
+        active_pro     = User.query.filter(User.plan == 'pro',
+                                           User.plan_expires > now).count()
+        expiring_soon  = User.query.filter(User.plan.in_(['basic', 'pro']),
+                                           User.plan_expires > now,
+                                           User.plan_expires <= thirty_days_out
+                                           ).order_by(User.plan_expires).all()
 
         # ── Approved payments per week (last 8 weeks)
         revenue_weeks = []
@@ -2068,7 +2131,7 @@ def admin_reports():
                 PaymentRequest.status == 'approved',
                 PaymentRequest.resolved_at >= week_start,
                 PaymentRequest.resolved_at < week_end).all()
-            total = sum(int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0) for p in weekly)
+            total = sum(p.total_amount_kina for p in weekly)
             revenue_weeks.append({'label': week_start.strftime('%d %b'), 'count': total})
 
         # ── Done-For-You (agency) revenue: K50 visit fee + plan add-on
@@ -2106,7 +2169,7 @@ def admin_reports():
                 continue
             key, label = _bucket(when)
             b = buckets.setdefault(key, {'label': label, 'plan_revenue': 0, 'agency_revenue': 0, 'tx_count': 0})
-            b['plan_revenue'] += int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0)
+            b['plan_revenue'] += p.total_amount_kina
             b['tx_count'] += 1
 
         for a in agency_completed:
@@ -2137,7 +2200,9 @@ def admin_reports():
             period=period, period_label=period_labels[period], period_rows=period_rows, period_total=period_total,
             agency_total=len(agency_all), agency_completed_count=len(agency_completed),
             agency_revenue=agency_revenue, agency_by_plan=agency_by_plan,
-            recent_payments=recent_payments)
+            recent_payments=recent_payments,
+            active_basic=active_basic, active_pro=active_pro,
+            expiring_soon=expiring_soon)
 
     elif tab == 'access':
         total_users   = User.query.count()
@@ -2494,6 +2559,7 @@ with app.app_context():
             user_id INTEGER NOT NULL REFERENCES "user"(id),
             plan VARCHAR(20) NOT NULL,
             amount VARCHAR(10) NOT NULL,
+            months_paid INTEGER DEFAULT 1,
             payment_method VARCHAR(50) NOT NULL,
             reference VARCHAR(255),
             status VARCHAR(20) DEFAULT \'pending\',
@@ -2501,6 +2567,7 @@ with app.app_context():
             submitted_at TIMESTAMP DEFAULT NOW(),
             resolved_at TIMESTAMP
         )''',
+        'ALTER TABLE payment_request ADD COLUMN IF NOT EXISTS months_paid INTEGER DEFAULT 1',
     ]
     with db.engine.connect() as _conn:
         for _sql in _migrations:

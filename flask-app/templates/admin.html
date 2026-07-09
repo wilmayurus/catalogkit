@@ -74,10 +74,13 @@
       <div class="admin-tbl-wrap">
         <table class="admin-tbl">
           <thead>
-            <tr><th>User</th><th>Plan</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Action</th></tr>
+            <tr><th>User</th><th>Plan</th><th>Months / Total</th><th>Expiry (if approved)</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Action</th></tr>
           </thead>
           <tbody>
             {% for pr in pending_prs %}
+            {% set months = pr.months_paid or 1 %}
+            {% set per_mo = pr.amount | replace('K','') | int(0) %}
+            {% set total  = per_mo * months %}
             <tr style="background:rgba(108,99,255,.04)">
               <td>
                 <div style="font-weight:700;font-size:.875rem">{{ pr.user.name }}</div>
@@ -88,8 +91,20 @@
                 {% endif %}
               </td>
               <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
+              <td>
+                <strong style="color:var(--accent-text)">{{ months }} mo</strong><br>
+                <span style="font-size:.8rem;font-weight:700">K{{ total }} total</span>
+              </td>
+              <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">
+                {% if pr.user.plan == pr.plan and pr.user.plan_expires and pr.user.plan_expires > now %}
+                  Extends to<br>
+                  <strong style="color:var(--text)">{{ (pr.user.plan_expires.date() + timedelta(days=30 * months)).strftime('%d %b %Y') }}</strong>
+                {% else %}
+                  ~{{ (now.date() + timedelta(days=30 * months)).strftime('%d %b %Y') }}
+                {% endif %}
+              </td>
               <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
-              <td style="font-size:.8rem;color:var(--muted);max-width:160px;word-break:break-all">{{ pr.reference or '—' }}</td>
+              <td style="font-size:.8rem;color:var(--muted);max-width:140px;word-break:break-all">{{ pr.reference or '—' }}</td>
               <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ pr.submitted_at.strftime('%d %b %Y %H:%M') }}</td>
               <td>
                 <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -120,16 +135,19 @@
       <div class="admin-tbl-wrap">
         <table class="admin-tbl">
           <thead>
-            <tr><th>User</th><th>Plan</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Status</th><th>Resolved</th></tr>
+            <tr><th>User</th><th>Plan</th><th>Months / Total</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Status</th><th>Resolved</th></tr>
           </thead>
           <tbody>
             {% for pr in done_prs | sort(attribute='resolved_at', reverse=True) %}
+            {% set months = pr.months_paid or 1 %}
+            {% set per_mo = pr.amount | replace('K','') | int(0) %}
             <tr>
               <td>
                 <div style="font-weight:700;font-size:.875rem">{{ pr.user.name }}</div>
                 <div style="font-size:.78rem;color:var(--muted)">{{ pr.user.email }}</div>
               </td>
               <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
+              <td style="font-size:.83rem;white-space:nowrap">{{ months }} mo · <strong>K{{ per_mo * months }}</strong></td>
               <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
               <td style="font-size:.8rem;color:var(--muted);max-width:160px;word-break:break-all">{{ pr.reference or '—' }}</td>
               <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ pr.submitted_at.strftime('%d %b %Y %H:%M') }}</td>

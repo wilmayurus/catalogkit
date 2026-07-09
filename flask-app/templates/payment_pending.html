@@ -21,6 +21,16 @@
         <span style="color:var(--muted)">Plan</span>
         <strong>{{ pr.plan | title }} — {{ pr.amount }}/month</strong>
       </div>
+      {% set months = pr.months_paid or 1 %}
+      {% set per_mo = pr.amount | replace('K','') | int(0) %}
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Months paid</span>
+        <strong>{{ months }} month{{ 's' if months > 1 else '' }}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Total amount</span>
+        <strong style="color:var(--accent-text)">K{{ per_mo * months }}</strong>
+      </div>
       <div style="display:flex;justify-content:space-between">
         <span style="color:var(--muted)">Payment method</span>
         <strong>{{ pr.payment_method | replace('_', ' ') | title }}</strong>

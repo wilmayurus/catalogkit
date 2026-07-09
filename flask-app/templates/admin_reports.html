@@ -158,9 +158,12 @@
 <div class="admin-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
   {% set fcards = [
     ('💵', 'K' ~ mrr, 'Est. Monthly Recurring Revenue', None),
-    ('✅', 'K' ~ approved_total, 'Approved Plan Payments (all-time)', None),
+    ('✅', 'K' ~ approved_total, 'Total Plan Payments Received', None),
     ('🕒', pr_pending, 'Pending Payment Approvals', 'warning' if pr_pending else None),
     ('🏪', 'K' ~ agency_revenue, 'Done-For-You Revenue (Completed)', None),
+    ('⭐', active_basic, 'Active Basic Subscriptions', None),
+    ('🚀', active_pro, 'Active Pro Subscriptions', None),
+    ('⏰', expiring_soon | length, 'Plans Expiring in 30 Days', 'warning' if expiring_soon else None),
   ] %}
   {% for icon, val, label, color in fcards %}
   <div class="admin-stat-card">
@@ -170,6 +173,52 @@
   </div>
   {% endfor %}
 </div>
+
+{% if expiring_soon %}
+<!-- Plans expiring soon -->
+<div style="margin-bottom:20px">
+  <div class="admin-section" style="border-color:var(--warning)">
+    <div class="admin-section-head">
+      <div class="admin-section-title">⏰ Plans Expiring in the Next 30 Days</div>
+      <span style="font-size:0.8rem;color:var(--muted)">Contact these vendors to renew before their plan lapses</span>
+    </div>
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Vendor</th><th>Plan</th><th>Plan Start</th><th>Expires</th><th>Days Left</th><th>WhatsApp</th></tr>
+        </thead>
+        <tbody>
+          {% for u in expiring_soon %}
+          {% set days_left = ((u.plan_expires - now).days) %}
+          <tr>
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ u.name }}</div>
+              <div style="font-size:.78rem;color:var(--muted)">{{ u.email }}</div>
+            </td>
+            <td><span class="chip chip-{{ 'blue' if u.plan == 'pro' else 'green' }}">{{ u.plan | title }}</span></td>
+            <td style="font-size:.83rem;color:var(--muted)">{{ u.plan_start.strftime('%d %b %Y') if u.plan_start else '—' }}</td>
+            <td style="font-size:.83rem;font-weight:700">{{ u.plan_expires.strftime('%d %b %Y') }}</td>
+            <td>
+              <span style="font-weight:800;font-size:.9rem;color:{% if days_left <= 7 %}var(--danger){% elif days_left <= 14 %}var(--warning){% else %}var(--text){% endif %}">
+                {{ days_left }} day{{ 's' if days_left != 1 else '' }}
+              </span>
+            </td>
+            <td>
+              {% if u.whatsapp %}
+              <a href="https://wa.me/{{ u.whatsapp | replace(' ','') | replace('+','') }}?text={{ ('Hi ' ~ u.name ~ ', your CatalogKit ' ~ (u.plan | title) ~ ' plan expires on ' ~ u.plan_expires.strftime('%d %b %Y') ~ '. Would you like to renew?') | urlencode }}"
+                 target="_blank" style="color:#22c55e;text-decoration:none;font-size:.83rem">📱 {{ u.whatsapp }}</a>
+              {% else %}
+              <span style="color:var(--muted);font-size:.8rem">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <!-- Revenue by period -->
 <div style="margin-bottom:20px">
