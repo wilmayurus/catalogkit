@@ -210,7 +210,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
           animate={phase >= 5 ? { opacity: 0.4 } : {}}
           transition={{ duration: 1, delay: 1 }}
         >
-          <p className="text-[1cqw] text-white font-sans leading-relaxed">
+          <p className="text-[1cqw] text-white font-sans leading-relaxed text-center">
             CatalogKit &copy;<br /><span className="text-[0.9em] opacity-70">Built in PNG for PNG</span>
           </p>
         </motion.div>
