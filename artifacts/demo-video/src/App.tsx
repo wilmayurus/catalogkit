@@ -80,12 +80,8 @@ function App() {
   }
 
   return (
-    <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden">
-      {/*
-        16:9 container — fills the screen without distorting.
-        container-type:size makes cqw/cqh inside reference THIS box,
-        not the browser window, so everything scales correctly at any size.
-      */}
+    <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden relative">
+      {/* 16:9 video stage — only the video lives here, nothing else */}
       <div
         className="video-stage relative overflow-hidden"
         style={{
@@ -94,50 +90,53 @@ function App() {
         }}
       >
         <VideoTemplate key={videoKey} />
-
-        {recState !== "recording" && (
-          <div className="absolute bottom-[2cqh] left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
-            {recState === "idle" && (
-              <button
-                onClick={startDownload}
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-[1.4cqw] px-[2cqw] py-[0.8cqh] rounded-full shadow-lg transition-all"
-              >
-                <span>⬇</span> Download Video
-              </button>
-            )}
-            {recState === "waiting" && (
-              <div className="bg-black/60 backdrop-blur-md border border-white/20 text-white text-[1.2cqw] px-[2.5cqw] py-[1.2cqh] rounded-2xl shadow-lg text-center leading-snug">
-                <span className="animate-pulse text-yellow-400">● </span>
-                <strong>Select this tab</strong> in the sharing dialog,<br />
-                then the video will record automatically.
-              </div>
-            )}
-            {recState === "done" && (
-              <div className="flex items-center gap-2 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-[1.2cqw] px-[2cqw] py-[1cqh] rounded-full shadow-lg">
-                <span>✓</span> catalogkit-demo.webm downloaded!
-                <button onClick={() => setRecState("idle")} className="ml-2 text-green-300/70 hover:text-green-100 text-[1cqw] underline">
-                  record again
-                </button>
-              </div>
-            )}
-            {recState === "error" && (
-              <div className="flex flex-col items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-[1.2cqw] px-[2cqw] py-[1cqh] rounded-xl shadow-lg text-center">
-                <span>✕ Permission denied or cancelled.</span>
-                <span className="text-[1cqw] text-red-300/70">Select <strong>this tab</strong> when the browser asks.</span>
-                <button onClick={() => setRecState("idle")} className="mt-1 text-red-300 hover:text-red-100 text-[1cqw] underline">Try again</button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {recState === "recording" && (
-          <div className="absolute bottom-[1.5cqh] right-[1.5cqw] z-50 flex items-center gap-2 bg-black/50 backdrop-blur-sm text-white text-[1cqw] px-[1.5cqw] py-[0.6cqh] rounded-full border border-red-500/50">
-            <span className="w-[0.8cqw] h-[0.8cqw] rounded-full bg-red-500 animate-pulse" />
-            Recording… {secondsLeft}s
-            <button onClick={cancelRecording} className="ml-1 text-white/50 hover:text-white transition-colors" title="Cancel">✕</button>
-          </div>
-        )}
       </div>
+
+      {/* UI controls sit OUTSIDE the video stage in the black border area
+          so they are never captured in the screen recording */}
+      {recState !== "recording" && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3">
+          {recState === "idle" && (
+            <button
+              onClick={startDownload}
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-semibold text-sm px-5 py-2 rounded-full shadow-lg transition-all"
+            >
+              <span>⬇</span> Download Video
+            </button>
+          )}
+          {recState === "waiting" && (
+            <div className="bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-2xl shadow-lg text-center leading-snug">
+              <span className="animate-pulse text-yellow-400">● </span>
+              <strong>Select this tab</strong> in the sharing dialog,<br />
+              then the video will record automatically.
+            </div>
+          )}
+          {recState === "done" && (
+            <div className="flex items-center gap-2 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-sm px-5 py-2 rounded-full shadow-lg">
+              <span>✓</span> catalogkit-demo.webm downloaded!
+              <button onClick={() => setRecState("idle")} className="ml-2 text-green-300/70 hover:text-green-100 text-xs underline">
+                record again
+              </button>
+            </div>
+          )}
+          {recState === "error" && (
+            <div className="flex flex-col items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-2 rounded-xl shadow-lg text-center">
+              <span>✕ Permission denied or cancelled.</span>
+              <span className="text-xs text-red-300/70">Select <strong>this tab</strong> when the browser asks.</span>
+              <button onClick={() => setRecState("idle")} className="mt-1 text-red-300 hover:text-red-100 text-xs underline">Try again</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Recording indicator — also outside the video stage */}
+      {recState === "recording" && (
+        <div className="absolute bottom-4 right-4 z-50 flex items-center gap-2 bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-red-500/50">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          Recording… {secondsLeft}s
+          <button onClick={cancelRecording} className="ml-1 text-white/50 hover:text-white transition-colors" title="Cancel">✕</button>
+        </div>
+      )}
     </div>
   );
 }
