@@ -18,6 +18,7 @@ function App() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const portraitRef = useRef(portrait);
+  const lastFilenameRef = useRef<string>("");
   portraitRef.current = portrait;
 
   function switchMode() {
@@ -63,11 +64,24 @@ function App() {
   }
 
   function beginRecording(stream: MediaStream, isPortrait: boolean) {
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9"
-      : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
-      ? "video/webm;codecs=vp8"
-      : "video/webm";
+    const mimeType =
+      MediaRecorder.isTypeSupported("video/mp4;codecs=avc1.42E01E,mp4a.40.2")
+        ? "video/mp4;codecs=avc1.42E01E,mp4a.40.2"
+        : MediaRecorder.isTypeSupported("video/mp4;codecs=avc1")
+        ? "video/mp4;codecs=avc1"
+        : MediaRecorder.isTypeSupported("video/mp4")
+        ? "video/mp4"
+        : MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+        ? "video/webm;codecs=vp9"
+        : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
+        ? "video/webm;codecs=vp8"
+        : "video/webm";
+
+    const ext = mimeType.startsWith("video/mp4") ? "mp4" : "webm";
+    const filename = isPortrait
+      ? `catalogkit-demo-portrait.${ext}`
+      : `catalogkit-demo.${ext}`;
+    lastFilenameRef.current = filename;
 
     const recorder = new MediaRecorder(stream, { mimeType });
     mediaRef.current = recorder;
@@ -79,11 +93,11 @@ function App() {
     recorder.onstop = () => {
       stream.getTracks().forEach((t) => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const blob = new Blob(chunksRef.current, { type: mimeType });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = isPortrait ? "catalogkit-demo-portrait.webm" : "catalogkit-demo.webm";
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
       setRecState("done");
@@ -171,7 +185,7 @@ function App() {
         {recState === "done" && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
             <div className="flex items-center gap-2 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-sm px-5 py-2 rounded-full shadow-lg">
-              <span>✓</span> {portrait ? "catalogkit-demo-portrait.webm" : "catalogkit-demo.webm"} downloaded!
+              <span>✓</span> {lastFilenameRef.current} downloaded!
               <button onClick={() => setRecState("idle")} className="ml-2 text-green-300/70 hover:text-green-100 text-xs underline">
                 record again
               </button>
