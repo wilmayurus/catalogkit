@@ -2205,12 +2205,15 @@ def admin_reports():
             expiring_soon=expiring_soon)
 
     elif tab == 'access':
-        total_users   = User.query.count()
-        admins        = User.query.filter_by(is_admin=True).all()
-        moderators    = User.query.filter_by(is_moderator=True).all()
-        regular_users = User.query.filter_by(is_admin=False, is_moderator=False).count()
-        testers       = User.query.filter_by(is_tester=True).count()
-        suspended     = User.query.filter_by(is_suspended=True).all()
+        total_users        = User.query.count()
+        admins             = User.query.filter_by(is_admin=True).order_by(User.name).all()
+        moderators         = User.query.filter_by(is_moderator=True).order_by(User.name).all()
+        regular_users      = User.query.filter_by(is_admin=False, is_moderator=False).count()
+        regular_users_list = User.query.filter_by(is_admin=False, is_moderator=False)\
+                                 .order_by(User.created_at.desc()).all()
+        testers            = User.query.filter_by(is_tester=True).count()
+        tester_users_list  = User.query.filter_by(is_tester=True).order_by(User.name).all()
+        suspended          = User.query.filter_by(is_suspended=True).all()
 
         plan_breakdown = {}
         for plan in ('free', 'basic', 'pro'):
@@ -2227,7 +2230,8 @@ def admin_reports():
         recent_access = AccessLog.query.order_by(AccessLog.created_at.desc()).limit(20).all()
 
         ctx.update(total_users=total_users, admins=admins, moderators=moderators,
-            regular_users=regular_users, testers=testers, suspended=suspended,
+            regular_users=regular_users, regular_users_list=regular_users_list,
+            testers=testers, tester_users_list=tester_users_list, suspended=suspended,
             plan_breakdown=plan_breakdown, never_logged_in=never_logged_in,
             dormant_30d=dormant_30d, recent_access=recent_access)
 

@@ -416,19 +416,24 @@
 
 <div class="admin-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:20px">
   {% set acards = [
-    ('👥', total_users,      'Total Users', None),
-    ('🛡️', admins | length,  'Admins', None),
-    ('🧭', moderators | length, 'Moderators', None),
-    ('🙋', regular_users,    'Regular Users', None),
-    ('🧪', testers,          'Testers', None),
-    ('🚫', suspended | length, 'Suspended', 'danger' if suspended else None),
+    ('👥', total_users,         'Total Users',   None,    '#list-all'),
+    ('🛡️', admins | length,     'Admins',        None,    '#list-admins'),
+    ('🧭', moderators | length, 'Moderators',    None,    '#list-moderators'),
+    ('🙋', regular_users,       'Regular Users', None,    '#list-regular'),
+    ('🧪', testers,             'Testers',       None,    '#list-testers'),
+    ('🚫', suspended | length,  'Suspended',     'danger' if suspended else None, '#list-suspended'),
   ] %}
-  {% for icon, val, label, color in acards %}
-  <div class="admin-stat-card">
-    <span class="admin-stat-icon">{{ icon }}</span>
-    <div class="admin-stat-val" {% if color %}style="color:var(--{{ color }})"{% endif %}>{{ val }}</div>
-    <div class="admin-stat-label">{{ label }}</div>
-  </div>
+  {% for icon, val, label, color, anchor in acards %}
+  <a href="{{ anchor }}" style="text-decoration:none;color:inherit">
+    <div class="admin-stat-card" style="cursor:pointer;transition:border-color .15s,box-shadow .15s"
+         onmouseover="this.style.borderColor='var(--accent)';this.style.boxShadow='0 4px 16px rgba(108,99,255,.15)'"
+         onmouseout="this.style.borderColor='';this.style.boxShadow=''">
+      <span class="admin-stat-icon">{{ icon }}</span>
+      <div class="admin-stat-val" {% if color %}style="color:var(--{{ color }})"{% endif %}>{{ val }}</div>
+      <div class="admin-stat-label">{{ label }}</div>
+      <div style="font-size:.68rem;color:var(--accent-text);margin-top:4px">View list →</div>
+    </div>
+  </a>
   {% endfor %}
 </div>
 
@@ -489,52 +494,150 @@
   </div>
 </div>
 
-<!-- Admins & Moderators list -->
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+<!-- ── All Users ── -->
+<div id="list-all" style="margin-bottom:20px;scroll-margin-top:80px">
   <div class="admin-section">
-    <div class="admin-section-head"><div class="admin-section-title">🛡️ Admins</div></div>
-    <div class="admin-section-body">
-      {% if admins %}
-      <div class="admin-tbl-wrap">
-        <table class="admin-tbl">
-          <thead><tr><th>Name</th><th>Email</th></tr></thead>
-          <tbody>
-            {% for a in admins %}
-            <tr><td><strong>{{ a.name }}</strong></td><td style="color:var(--muted)">{{ a.email }}</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-      {% else %}
-      <div class="admin-empty"><p>No admins.</p></div>
-      {% endif %}
+    <div class="admin-section-head">
+      <div class="admin-section-title">👥 All Users ({{ total_users }})</div>
+      <a href="/admin#users" style="font-size:0.8rem;color:var(--accent-text);text-decoration:none">Manage in dashboard →</a>
+    </div>
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Role</th><th>Joined</th></tr></thead>
+        <tbody>
+          {% for u in regular_users_list %}
+          <tr>
+            <td><strong>{{ u.name }}</strong>{% if u.business_name %}<br><span style="font-size:.75rem;color:var(--muted)">{{ u.business_name }}</span>{% endif %}</td>
+            <td style="color:var(--muted);font-size:.83rem">{{ u.email }}</td>
+            <td><span class="chip chip-{{ 'blue' if u.plan == 'pro' else ('green' if u.plan == 'basic' else 'grey') }}" style="font-size:.72rem">{{ u.plan | title }}</span></td>
+            <td style="font-size:.8rem">
+              {% if u.is_admin %}Admin{% elif u.is_moderator %}Mod{% elif u.is_tester %}Tester{% else %}User{% endif %}
+              {% if u.is_suspended %}<span style="color:var(--danger);font-size:.72rem"> · Suspended</span>{% endif %}
+            </td>
+            <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
+</div>
+
+<!-- ── Admins & Moderators ── -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+  <div id="list-admins" style="scroll-margin-top:80px">
+    <div class="admin-section">
+      <div class="admin-section-head"><div class="admin-section-title">🛡️ Admins ({{ admins | length }})</div></div>
+      <div class="admin-section-body">
+        {% if admins %}
+        <div class="admin-tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+            <tbody>
+              {% for a in admins %}
+              <tr>
+                <td><strong>{{ a.name }}</strong></td>
+                <td style="color:var(--muted);font-size:.83rem">{{ a.email }}</td>
+                <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">{{ a.created_at.strftime('%d %b %Y') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="admin-empty"><p>No admins.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div id="list-moderators" style="scroll-margin-top:80px">
+    <div class="admin-section">
+      <div class="admin-section-head"><div class="admin-section-title">🧭 Moderators ({{ moderators | length }})</div></div>
+      <div class="admin-section-body">
+        {% if moderators %}
+        <div class="admin-tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+            <tbody>
+              {% for m in moderators %}
+              <tr>
+                <td><strong>{{ m.name }}</strong></td>
+                <td style="color:var(--muted);font-size:.83rem">{{ m.email }}</td>
+                <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">{{ m.created_at.strftime('%d %b %Y') }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="admin-empty"><p>No moderators.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Regular Users ── -->
+<div id="list-regular" style="margin-bottom:20px;scroll-margin-top:80px">
   <div class="admin-section">
-    <div class="admin-section-head"><div class="admin-section-title">🧭 Moderators</div></div>
+    <div class="admin-section-head"><div class="admin-section-title">🙋 Regular Users ({{ regular_users }})</div></div>
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead><tr><th>Name</th><th>Business</th><th>Email</th><th>Plan</th><th>WhatsApp</th><th>Joined</th></tr></thead>
+        <tbody>
+          {% for u in regular_users_list %}
+          <tr>
+            <td><strong>{{ u.name }}</strong></td>
+            <td style="font-size:.83rem;color:var(--muted)">{{ u.business_name or '—' }}</td>
+            <td style="font-size:.83rem;color:var(--muted)">{{ u.email }}</td>
+            <td><span class="chip chip-{{ 'blue' if u.plan == 'pro' else ('green' if u.plan == 'basic' else 'grey') }}" style="font-size:.72rem">{{ u.plan | title }}</span></td>
+            <td style="font-size:.83rem">
+              {% if u.whatsapp %}
+              <a href="https://wa.me/{{ u.whatsapp | replace(' ','') | replace('+','') }}" target="_blank"
+                 style="color:#22c55e;text-decoration:none">📱 {{ u.whatsapp }}</a>
+              {% else %}—{% endif %}
+            </td>
+            <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── Testers ── -->
+<div id="list-testers" style="margin-bottom:20px;scroll-margin-top:80px">
+  <div class="admin-section">
+    <div class="admin-section-head"><div class="admin-section-title">🧪 Testers ({{ testers }})</div></div>
     <div class="admin-section-body">
-      {% if moderators %}
+      {% if tester_users_list %}
       <div class="admin-tbl-wrap">
         <table class="admin-tbl">
-          <thead><tr><th>Name</th><th>Email</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Joined</th></tr></thead>
           <tbody>
-            {% for m in moderators %}
-            <tr><td><strong>{{ m.name }}</strong></td><td style="color:var(--muted)">{{ m.email }}</td></tr>
+            {% for u in tester_users_list %}
+            <tr>
+              <td><strong>{{ u.name }}</strong></td>
+              <td style="color:var(--muted);font-size:.83rem">{{ u.email }}</td>
+              <td><span class="chip chip-{{ 'blue' if u.plan == 'pro' else ('green' if u.plan == 'basic' else 'grey') }}" style="font-size:.72rem">{{ u.plan | title }}</span></td>
+              <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
       {% else %}
-      <div class="admin-empty"><p>No moderators.</p></div>
+      <div class="admin-empty"><p>No testers yet.</p></div>
       {% endif %}
     </div>
   </div>
 </div>
 
-<!-- Suspended users -->
-<div style="margin-bottom:20px">
+<!-- ── Suspended ── -->
+<div id="list-suspended" style="margin-bottom:20px;scroll-margin-top:80px">
   <div class="admin-section">
-    <div class="admin-section-head"><div class="admin-section-title">🚫 Suspended Accounts</div></div>
+    <div class="admin-section-head"><div class="admin-section-title">🚫 Suspended Accounts ({{ suspended | length }})</div></div>
     <div class="admin-section-body">
       {% if suspended %}
       <div class="admin-tbl-wrap">
