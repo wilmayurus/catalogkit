@@ -61,11 +61,8 @@ export function Scene5() {
           <img
             src={`${import.meta.env.BASE_URL}images/catalogkit-logo.png`}
             alt="CatalogKit logo"
-            className="w-[7cqw] h-[7cqw] object-contain drop-shadow-2xl"
+            className="h-[8cqw] object-contain drop-shadow-2xl"
           />
-          <h1 className="text-[7cqw] font-black text-[#FFF8F0] font-display tracking-tight leading-none">
-            CatalogKit
-          </h1>
         </motion.div>
 
         {/* Tagline */}
