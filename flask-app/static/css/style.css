@@ -1846,6 +1846,14 @@ body.admin-body {
   .admin-main { margin-left: 0; }
 }
 
+/* ── Site footer responsive ── */
+@media (max-width: 640px) {
+  footer > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+}
+
 /* ── Accessibility: larger text / simpler view toggle ────────────────────── */
 .a11y-toggle {
   display: inline-flex;

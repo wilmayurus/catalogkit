@@ -72,20 +72,52 @@
 
 {% block body %}{% endblock %}
 
-<footer style="border-top:1px solid var(--border);padding:20px 24px;text-align:center;margin-top:auto">
-  <p style="font-size:0.78rem;color:var(--muted);margin:0">
-    <a href="/pricing" style="color:var(--muted);text-decoration:none">Pricing</a>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="/support" style="color:var(--muted);text-decoration:none">Help &amp; Support</a>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="/contact" style="color:var(--muted);text-decoration:none">Contact &amp; FAQ</a>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="/assisted-setup" style="color:var(--muted);text-decoration:none">Done For You</a>
-  </p>
-  <hr style="border:none;border-top:1px solid var(--border);max-width:200px;margin:12px auto">
-  <p style="font-size:0.78rem;color:var(--muted);margin:0">
-    &copy; {{ now.year if now is defined else 2026 }} <strong>CatalogKit</strong>
-  </p>
+<footer style="border-top:1px solid var(--border);margin-top:auto;background:var(--surface)">
+  <div style="max-width:960px;margin:0 auto;padding:40px 24px 28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+
+    <!-- Logo + tagline -->
+    <div>
+      <img src="/static/img/catalogkit-logo.png" alt="CatalogKit" style="height:40px;width:auto;margin-bottom:12px;display:block">
+      <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin:0">
+        Digital catalogs for PNG market vendors &amp; small businesses.<br>
+        Share your products on WhatsApp in minutes.
+      </p>
+    </div>
+
+    <!-- Contact -->
+    <div>
+      <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Contact us</div>
+      <a href="https://wa.me/67573817000?text={{ 'Hi! I have a question about CatalogKit.' | urlencode }}"
+         target="_blank" rel="noopener"
+         style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:0.85rem;font-weight:600;margin-bottom:10px">
+        <span style="font-size:1rem">📱</span>
+        <span>+675 7381 7000</span>
+        <span style="font-size:0.7rem;background:#25d366;color:#fff;padding:2px 7px;border-radius:20px;font-weight:700">WhatsApp</span>
+      </a>
+      <a href="mailto:info@catalogkit.org"
+         style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:0.85rem;font-weight:600">
+        <span style="font-size:1rem">✉️</span>
+        <span>info@catalogkit.org</span>
+      </a>
+    </div>
+
+    <!-- Links -->
+    <div>
+      <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Quick links</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a href="/pricing"       style="font-size:0.85rem;color:var(--muted);text-decoration:none">Pricing</a>
+        <a href="/support"       style="font-size:0.85rem;color:var(--muted);text-decoration:none">Help &amp; Support</a>
+        <a href="/contact"       style="font-size:0.85rem;color:var(--muted);text-decoration:none">Contact &amp; FAQ</a>
+        <a href="/assisted-setup" style="font-size:0.85rem;color:var(--muted);text-decoration:none">Done For You</a>
+      </div>
+    </div>
+
+  </div>
+  <div style="border-top:1px solid var(--border);padding:14px 24px;text-align:center">
+    <p style="font-size:0.75rem;color:var(--muted);margin:0">
+      &copy; {{ now.year if now is defined else 2026 }} <strong>CatalogKit</strong> &nbsp;·&nbsp; A product of Sapphire Consulting Services
+    </p>
+  </div>
 </footer>
 
 <script>
