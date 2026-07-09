@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}CatalogKit{% endblock %}</title>
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#C41230">
@@ -37,19 +37,21 @@
 </head>
 <body>
 
-<nav>
-  <a href="/" class="nav-brand">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<nav aria-label="Main navigation">
+  <a href="/" class="nav-brand" aria-label="CatalogKit home">
     <img src="/static/img/catalogkit-logo.png" alt="CatalogKit" style="height:44px;width:auto;display:block;">
   </a>
-  <div class="nav-links">
+  <div class="nav-links" role="list">
     {% if current_user %}
-      <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>Catalogs</a>
-      {% if not current_user.is_admin %}<a href="/assisted-setup" {% if request.endpoint == 'assisted_setup' %}class="active"{% endif %}>Done For You</a>{% endif %}
-      <a href="/profile" {% if request.endpoint == 'profile' %}class="active"{% endif %}>Profile</a>
-      <a href="/support" {% if request.endpoint in ['support','support_ticket'] %}class="active"{% endif %}>Help</a>
-      <a href="/contact" {% if request.endpoint == 'contact' %}class="active"{% endif %}>Contact</a>
+      <a href="/" role="listitem" {% if request.endpoint == 'index' %}class="active" aria-current="page"{% endif %}>Catalogs</a>
+      {% if not current_user.is_admin %}<a href="/assisted-setup" role="listitem" {% if request.endpoint == 'assisted_setup' %}class="active" aria-current="page"{% endif %}>Done For You</a>{% endif %}
+      <a href="/profile" role="listitem" {% if request.endpoint == 'profile' %}class="active" aria-current="page"{% endif %}>Profile</a>
+      <a href="/support" role="listitem" {% if request.endpoint in ['support','support_ticket'] %}class="active" aria-current="page"{% endif %}>Help</a>
+      <a href="/contact" role="listitem" {% if request.endpoint == 'contact' %}class="active" aria-current="page"{% endif %}>Contact</a>
       {% if current_user.is_admin %}
-        <a href="/admin" {% if request.endpoint == 'admin' %}class="active"{% endif %} style="color:var(--warning)">Admin</a>
+        <a href="/admin" role="listitem" {% if request.endpoint == 'admin' %}class="active" aria-current="page"{% endif %} style="color:var(--warning)">Admin</a>
       {% endif %}
       <button type="button" id="a11y-toggle" class="a11y-toggle" aria-pressed="false"
               title="Larger text / simpler view" aria-label="Toggle larger text and simpler view">Aa</button>
@@ -57,8 +59,8 @@
         <a href="/logout" class="btn btn-ghost btn-sm">Sign out</a>
       </div>
     {% else %}
-      <a href="/pricing" {% if request.endpoint == 'pricing' %}class="active"{% endif %}>Pricing</a>
-      <a href="/contact" {% if request.endpoint == 'contact' %}class="active"{% endif %}>Contact</a>
+      <a href="/pricing" role="listitem" {% if request.endpoint == 'pricing' %}class="active" aria-current="page"{% endif %}>Pricing</a>
+      <a href="/contact" role="listitem" {% if request.endpoint == 'contact' %}class="active" aria-current="page"{% endif %}>Contact</a>
       <button type="button" id="a11y-toggle" class="a11y-toggle" aria-pressed="false"
               title="Larger text / simpler view" aria-label="Toggle larger text and simpler view">Aa</button>
       <a href="/login" class="btn btn-ghost btn-sm">Log in</a>
@@ -69,7 +71,7 @@
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    <div class="flash-wrap">
+    <div class="flash-wrap" role="alert" aria-live="polite" aria-atomic="true">
       {% for category, message in messages %}
         <div class="flash flash-{{ category }}">{{ message }}</div>
       {% endfor %}
@@ -77,52 +79,58 @@
   {% endif %}
 {% endwith %}
 
+<main id="main-content" tabindex="-1">
 {% block body %}{% endblock %}
+</main>
 
-<footer style="border-top:1px solid var(--border);margin-top:auto;background:var(--surface)">
+<footer aria-label="Site footer" style="border-top:1px solid var(--border);margin-top:auto;background:var(--surface)">
   <div style="max-width:960px;margin:0 auto;padding:40px 24px 28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
 
     <!-- Logo + tagline -->
     <div>
-      <img src="/static/img/catalogkit-logo.png" alt="CatalogKit" style="height:40px;width:auto;margin-bottom:12px;display:block">
-      <p style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin:0">
+      <a href="/" aria-label="CatalogKit home">
+        <img src="/static/img/catalogkit-logo.png" alt="CatalogKit" style="height:40px;width:auto;margin-bottom:12px;display:block">
+      </a>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.6;margin:0">
         Digital catalogs for PNG market vendors &amp; small businesses.<br>
         Share your products on WhatsApp in minutes.
       </p>
     </div>
 
     <!-- Contact -->
-    <div>
-      <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Contact us</div>
+    <address style="font-style:normal">
+      <p style="font-size:0.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Contact us</p>
       <a href="https://wa.me/67573817000?text={{ 'Hi! I have a question about CatalogKit.' | urlencode }}"
-         target="_blank" rel="noopener"
-         style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:0.85rem;font-weight:600;margin-bottom:10px">
-        <span style="font-size:1rem">📱</span>
+         target="_blank" rel="noopener noreferrer"
+         aria-label="Call or WhatsApp us on +675 7381 7000 (opens WhatsApp)"
+         style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:0.85rem;font-weight:600;margin-bottom:10px;min-height:44px">
+        <span aria-hidden="true" style="font-size:1rem">📱</span>
         <span>+675 7381 7000</span>
-        <span style="font-size:0.7rem;background:#25d366;color:#fff;padding:2px 7px;border-radius:20px;font-weight:700">WhatsApp</span>
+        <span aria-hidden="true" style="font-size:0.7rem;background:#25d366;color:#fff;padding:2px 7px;border-radius:20px;font-weight:700">WhatsApp</span>
       </a>
       <a href="mailto:info@catalogkit.org"
-         style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:0.85rem;font-weight:600">
-        <span style="font-size:1rem">✉️</span>
+         aria-label="Email us at info@catalogkit.org"
+         style="display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:0.85rem;font-weight:600;min-height:44px">
+        <span aria-hidden="true" style="font-size:1rem">✉️</span>
         <span>info@catalogkit.org</span>
       </a>
-    </div>
+    </address>
 
     <!-- Links -->
-    <div>
-      <div style="font-size:0.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Quick links</div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <a href="/pricing"       style="font-size:0.85rem;color:var(--muted);text-decoration:none">Pricing</a>
-        <a href="/support"       style="font-size:0.85rem;color:var(--muted);text-decoration:none">Help &amp; Support</a>
-        <a href="/contact"       style="font-size:0.85rem;color:var(--muted);text-decoration:none">Contact &amp; FAQ</a>
-        <a href="/assisted-setup" style="font-size:0.85rem;color:var(--muted);text-decoration:none">Done For You</a>
-      </div>
-    </div>
+    <nav aria-label="Footer navigation">
+      <p style="font-size:0.75rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Quick links</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;padding:0;margin:0">
+        <li><a href="/pricing"        style="font-size:0.85rem;color:var(--text);text-decoration:none;min-height:44px;display:flex;align-items:center">Pricing</a></li>
+        <li><a href="/support"        style="font-size:0.85rem;color:var(--text);text-decoration:none;min-height:44px;display:flex;align-items:center">Help &amp; Support</a></li>
+        <li><a href="/contact"        style="font-size:0.85rem;color:var(--text);text-decoration:none;min-height:44px;display:flex;align-items:center">Contact &amp; FAQ</a></li>
+        <li><a href="/assisted-setup" style="font-size:0.85rem;color:var(--text);text-decoration:none;min-height:44px;display:flex;align-items:center">Done For You</a></li>
+      </ul>
+    </nav>
 
   </div>
   <div style="border-top:1px solid var(--border);padding:14px 24px;text-align:center">
-    <p style="font-size:0.75rem;color:var(--muted);margin:0">
-      &copy; {{ now.year if now is defined else 2026 }} <strong>CatalogKit</strong> &nbsp;·&nbsp; A product of Sapphire Consulting Services
+    <p style="font-size:0.8rem;color:var(--muted);margin:0">
+      &copy; {{ now.year if now is defined else 2026 }} <strong>CatalogKit</strong> &nbsp;&middot;&nbsp; A product of Sapphire Consulting Services
     </p>
   </div>
 </footer>

@@ -15,14 +15,14 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(196,18,48,0.1);
-  border: 1px solid rgba(196,18,48,0.25);
-  color: #e05070;
-  font-size: 0.7rem;
+  background: rgba(196,18,48,0.12);
+  border: 1px solid rgba(196,18,48,0.3);
+  color: #ff7090;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 2.5px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  padding: 6px 16px;
+  padding: 7px 18px;
   border-radius: 100px;
   margin-bottom: 28px;
 }
@@ -65,12 +65,15 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
 .lp-trust {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 16px 24px;
   flex-wrap: wrap;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   color: var(--muted);
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
-.lp-trust span {
+.lp-trust li {
   display: flex;
   align-items: center;
   gap: 5px;
@@ -88,6 +91,9 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 @media (max-width: 600px) {
   .who-grid { grid-template-columns: 1fr; }
@@ -99,9 +105,9 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   padding: 22px 16px;
   text-align: center;
 }
-.who-icon { font-size: 2rem; margin-bottom: 10px; }
-.who-title { font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-.who-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+.who-icon { font-size: 2rem; display: block; margin-bottom: 10px; }
+.who-title { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.who-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
 
 /* ── Section wrapper ── */
 .lp-section {
@@ -112,9 +118,9 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   margin: 0 auto;
 }
 .lp-section-tag {
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--accent-text);
   margin-bottom: 10px;
@@ -142,6 +148,9 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 .step-card {
   background: var(--surface2);
@@ -172,6 +181,9 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 .pill {
   display: flex;
@@ -180,9 +192,10 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 100px;
-  padding: 8px 18px;
-  font-size: 0.83rem;
+  padding: 10px 18px;
+  font-size: 0.875rem;
   color: var(--text);
+  min-height: 44px;
 }
 .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #3ecf8e; flex-shrink: 0; }
 
@@ -253,126 +266,127 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
 {% block body %}
 
 <!-- ── Hero ──────────────────────────────────────────────── -->
-<div class="lp-hero">
+<section class="lp-hero" aria-labelledby="hero-heading">
   <img src="/static/img/catalogkit-logo.png" alt="CatalogKit"
        style="height:72px;width:auto;margin-bottom:28px;display:block;margin-left:auto;margin-right:auto;filter:drop-shadow(0 4px 16px rgba(196,18,48,0.25))">
-  <div class="lp-eyebrow">Built for PNG market vendors &amp; small businesses</div>
-  <h1>Your products,<br><em>shared in minutes</em></h1>
+  <p class="lp-eyebrow" aria-hidden="true">Built for PNG market vendors &amp; small businesses</p>
+  <h1 id="hero-heading">Your products,<br><span style="background:linear-gradient(135deg,#C41230 0%,#F5A800 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">shared in minutes</span></h1>
   <p class="lp-sub">
     Upload your product photos and CatalogKit instantly builds a beautiful
     digital flipbook and PDF catalog — ready to share on WhatsApp.
     No tech skills required. Works on any phone, even on slow data.
   </p>
   <div class="lp-cta">
-    <a href="/register" class="btn btn-primary btn-hero">Get started</a>
-    <a href="/pricing"  class="btn btn-ghost   btn-hero">See pricing</a>
+    <a href="/register" class="btn btn-primary btn-hero">Get started — it's free</a>
+    <a href="/pricing"  class="btn btn-ghost btn-hero">See pricing</a>
   </div>
-  <div class="lp-trust">
-    <span><span class="tick">✓</span> Start free — 3 builds/month</span>
-    <span><span class="tick">✓</span> No app download</span>
-    <span><span class="tick">✓</span> Works on 3G &amp; 4G</span>
-    <span><span class="tick">✓</span> Share on WhatsApp</span>
-  </div>
-</div>
+  <ul class="lp-trust" role="list" aria-label="Key benefits">
+    <li><span class="tick" aria-hidden="true">✓</span> Start free — 3 builds/month</li>
+    <li><span class="tick" aria-hidden="true">✓</span> No app download</li>
+    <li><span class="tick" aria-hidden="true">✓</span> Works on 3G &amp; 4G</li>
+    <li><span class="tick" aria-hidden="true">✓</span> Share on WhatsApp</li>
+  </ul>
+</section>
 
 <!-- ── Who it helps ──────────────────────────────────────── -->
-<div class="lp-who">
-  <div class="who-grid">
-    <div class="who-card">
-      <div class="who-icon">👩‍🌾</div>
-      <div class="who-title">Market Mamas</div>
-      <div class="who-desc">Fresh produce, bilums, and cooked food sellers at Gordons, Koki &amp; beyond</div>
-    </div>
-    <div class="who-card">
-      <div class="who-icon">👗</div>
-      <div class="who-title">Garment Sellers</div>
-      <div class="who-desc">Clothing, fabrics, second-hand clothes and fashion accessories</div>
-    </div>
-    <div class="who-card">
-      <div class="who-icon">🏪</div>
-      <div class="who-title">Trade Stores</div>
-      <div class="who-desc">Hardware, household goods, groceries and general merchandise</div>
-    </div>
-    <div class="who-card">
-      <div class="who-icon">🎨</div>
-      <div class="who-title">Artisans &amp; Crafts</div>
-      <div class="who-desc">Handmade bags, carvings, jewellery and traditional PNG crafts</div>
-    </div>
-    <div class="who-card">
-      <div class="who-icon">🍱</div>
-      <div class="who-title">Food Businesses</div>
-      <div class="who-desc">Catering, takeaway, baked goods, frozen meals and meal prep</div>
-    </div>
-    <div class="who-card">
-      <div class="who-icon">📦</div>
-      <div class="who-title">Any Small Business</div>
-      <div class="who-desc">If you sell products, CatalogKit can help customers see them</div>
-    </div>
-  </div>
-</div>
+<section class="lp-who" aria-labelledby="who-heading">
+  <h2 id="who-heading" class="sr-only">Who CatalogKit helps</h2>
+  <ul class="who-grid" role="list">
+    <li class="who-card">
+      <span class="who-icon" aria-hidden="true">👩‍🌾</span>
+      <h3 class="who-title">Market Mamas</h3>
+      <p class="who-desc">Fresh produce, bilums, and cooked food sellers at Gordons, Koki &amp; beyond</p>
+    </li>
+    <li class="who-card">
+      <span class="who-icon" aria-hidden="true">👗</span>
+      <h3 class="who-title">Garment Sellers</h3>
+      <p class="who-desc">Clothing, fabrics, second-hand clothes and fashion accessories</p>
+    </li>
+    <li class="who-card">
+      <span class="who-icon" aria-hidden="true">🏪</span>
+      <h3 class="who-title">Trade Stores</h3>
+      <p class="who-desc">Hardware, household goods, groceries and general merchandise</p>
+    </li>
+    <li class="who-card">
+      <span class="who-icon" aria-hidden="true">🎨</span>
+      <h3 class="who-title">Artisans &amp; Crafts</h3>
+      <p class="who-desc">Handmade bags, carvings, jewellery and traditional PNG crafts</p>
+    </li>
+    <li class="who-card">
+      <span class="who-icon" aria-hidden="true">🍱</span>
+      <h3 class="who-title">Food Businesses</h3>
+      <p class="who-desc">Catering, takeaway, baked goods, frozen meals and meal prep</p>
+    </li>
+    <li class="who-card">
+      <span class="who-icon" aria-hidden="true">📦</span>
+      <h3 class="who-title">Any Small Business</h3>
+      <p class="who-desc">If you sell products, CatalogKit can help customers see them</p>
+    </li>
+  </ul>
+</section>
 
-<div class="lp-divider"></div>
+<div class="lp-divider" role="separator"></div>
 
 <!-- ── How it works ──────────────────────────────────────── -->
-<div class="lp-section" style="background:var(--surface)">
+<section class="lp-section" style="background:var(--surface)" aria-labelledby="steps-heading">
   <div class="lp-section-inner">
-    <div class="lp-section-tag">How it works</div>
-    <h2 class="lp-section-title">Ready in 3 simple steps</h2>
-    <div class="lp-section-sub">No computer needed. Works on any Android or iPhone, even on slow mobile data.</div>
-    <div class="steps">
-      <div class="step-card">
-        <div class="step-num">1</div>
-        <div class="step-icon">📸</div>
+    <p class="lp-section-tag" aria-hidden="true">How it works</p>
+    <h2 id="steps-heading" class="lp-section-title">Ready in 3 simple steps</h2>
+    <p class="lp-section-sub">No computer needed. Works on any Android or iPhone, even on slow mobile data.</p>
+    <ol class="steps" role="list" aria-label="Steps to get started">
+      <li class="step-card">
+        <div class="step-num" aria-hidden="true">1</div>
+        <span class="step-icon" aria-hidden="true">📸</span>
         <h3>Take photos of your products</h3>
         <p>Use your phone camera to take photos of your products — bilums, produce, clothing, crafts, anything.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">2</div>
-        <div class="step-icon">⬆️</div>
+      </li>
+      <li class="step-card">
+        <div class="step-num" aria-hidden="true">2</div>
+        <span class="step-icon" aria-hidden="true">⬆️</span>
         <h3>Upload &amp; set prices</h3>
         <p>Upload your photos, type the price under each one. Your catalog builds automatically — no design needed.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">3</div>
-        <div class="step-icon">📲</div>
+      </li>
+      <li class="step-card">
+        <div class="step-num" aria-hidden="true">3</div>
+        <span class="step-icon" aria-hidden="true">📲</span>
         <h3>Share on WhatsApp</h3>
         <p>Tap the WhatsApp button and send your catalog link to customers. They can browse and place orders.</p>
-      </div>
-    </div>
+      </li>
+    </ol>
   </div>
-</div>
+</section>
 
-<div class="lp-divider"></div>
+<div class="lp-divider" role="separator"></div>
 
 <!-- ── Features ──────────────────────────────────────────── -->
-<div class="lp-section">
+<section class="lp-section" aria-labelledby="features-heading">
   <div class="lp-section-inner">
-    <div class="lp-section-tag">What you get</div>
-    <h2 class="lp-section-title">Everything your business needs</h2>
-    <div class="lp-section-sub" style="margin-bottom:28px">Available on all plans. Starter plan is free — upgrade for more builds.</div>
-    <div class="pill-grid">
-      <div class="pill"><span class="dot"></span> Flipbook customers can browse</div>
-      <div class="pill"><span class="dot"></span> PDF catalog to download &amp; print</div>
-      <div class="pill"><span class="dot"></span> Price badge on each product</div>
-      <div class="pill"><span class="dot"></span> Your product names &amp; descriptions</div>
-      <div class="pill"><span class="dot"></span> One-tap WhatsApp share</div>
-      <div class="pill"><span class="dot"></span> Your logo &amp; brand colour</div>
-      <div class="pill"><span class="dot"></span> Payment methods listed</div>
-      <div class="pill"><span class="dot"></span> Delivery options shown</div>
-      <div class="pill"><span class="dot"></span> BSP, Kina, Westpac banking</div>
-      <div class="pill"><span class="dot"></span> Wantok Wallet &amp; Pei support</div>
-      <div class="pill"><span class="dot"></span> Works on 3G mobile data</div>
-      <div class="pill"><span class="dot"></span> Share link on Facebook too</div>
-    </div>
+    <p class="lp-section-tag" aria-hidden="true">What you get</p>
+    <h2 id="features-heading" class="lp-section-title">Everything your business needs</h2>
+    <p class="lp-section-sub" style="margin-bottom:28px">Available on all plans. Starter plan is free — upgrade for more builds.</p>
+    <ul class="pill-grid" role="list" aria-label="Included features">
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Flipbook customers can browse</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> PDF catalog to download &amp; print</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Price badge on each product</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Your product names &amp; descriptions</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> One-tap WhatsApp share</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Your logo &amp; brand colour</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Payment methods listed</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Delivery options shown</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> BSP, Kina, Westpac banking</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Wantok Wallet &amp; Pei support</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Works on 3G mobile data</li>
+      <li class="pill"><span class="dot" aria-hidden="true"></span> Share link on Facebook too</li>
+    </ul>
   </div>
-</div>
+</section>
 
-<div class="lp-divider"></div>
+<div class="lp-divider" role="separator"></div>
 
 <!-- ── Mission ───────────────────────────────────────────── -->
-<div class="lp-mission">
-  <div style="font-size:2.8rem;margin-bottom:18px">🇵🇬</div>
-  <h2>Built to grow PNG businesses</h2>
+<section class="lp-mission" aria-labelledby="mission-heading">
+  <span aria-hidden="true" style="font-size:2.8rem;display:block;margin-bottom:18px">🌏</span>
+  <h2 id="mission-heading">Built to grow PNG businesses</h2>
   <p>
     Thousands of hardworking market mamas, trade store owners, and small business operators
     across PNG have amazing products but no easy way to show them to customers online.
@@ -381,51 +395,51 @@ body { font-family: 'Lexend', -apple-system, sans-serif; }
   </p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
     <a href="/register" class="btn btn-primary" style="font-size:0.95rem;font-weight:700;padding:13px 28px">
-      Create my account
+      Create my free account
     </a>
     <a href="/pricing" class="btn btn-ghost" style="font-size:0.95rem;padding:13px 28px">
       View plans &amp; pricing
     </a>
   </div>
-  <div class="mission-stats">
-    <div><div class="ms-val">K0</div><div class="ms-label">Starter plan — 3 builds/month</div></div>
-    <div><div class="ms-val">3G</div><div class="ms-label">Works on slow PNG mobile data</div></div>
-    <div><div class="ms-val">PNG</div><div class="ms-label">Built for PNG markets &amp; businesses</div></div>
-  </div>
-</div>
+  <dl class="mission-stats" aria-label="Key facts about CatalogKit">
+    <div><dt class="ms-val">K0</dt><dd class="ms-label">Starter plan — 3 builds/month</dd></div>
+    <div><dt class="ms-val">3G</dt><dd class="ms-label">Works on slow PNG mobile data</dd></div>
+    <div><dt class="ms-val">PNG</dt><dd class="ms-label">Built for PNG markets &amp; businesses</dd></div>
+  </dl>
+</section>
 
 <!-- ── Done For You ───────────────────────────────────────── -->
-<div class="lp-section">
+<section class="lp-section" aria-labelledby="dfy-heading">
   <div class="lp-dfy">
-    <div style="font-size:2.2rem;margin-bottom:14px">👩‍💼</div>
-    <h3>Not tech-savvy? We come to you.</h3>
+    <span aria-hidden="true" style="font-size:2.2rem;display:block;margin-bottom:14px">👩‍💼</span>
+    <h2 id="dfy-heading" style="font-size:1.15rem;font-weight:800;margin-bottom:8px">Not tech-savvy? We come to you.</h2>
     <p>
       Our agents visit your market stall or shop, set up your account,
       and build your first catalog right beside you — so you learn as you go.
       You only pay K50 cash to the agent on the day. No upfront payment, no risk.
     </p>
     <a href="/assisted-setup" class="btn btn-primary" style="font-weight:700;padding:12px 26px">
-      👩‍💼 Book a Done-For-You Setup — K50 cash on site
+      Book a Done-For-You Setup — K50 cash on site
     </a>
-    <p style="color:var(--muted);font-size:0.78rem;margin-top:10px;margin-bottom:0">
+    <p style="color:var(--muted);font-size:0.85rem;margin-top:10px;margin-bottom:0">
       Available at major NCD markets — Gordons, Koki, Boroko, Waigani &amp; more
     </p>
   </div>
-</div>
+</section>
 
-<div class="lp-divider"></div>
+<div class="lp-divider" role="separator"></div>
 
 <!-- ── Bottom CTA ─────────────────────────────────────────── -->
-<div class="lp-bottom">
-  <h2>Ready to show your products to more customers?</h2>
+<section class="lp-bottom" aria-labelledby="cta-heading">
+  <h2 id="cta-heading">Ready to show your products to more customers?</h2>
   <p>
     Join PNG market vendors and small businesses already using CatalogKit.
     Create your account in under a minute — no credit card needed to start.
   </p>
-  <a href="/register" class="btn btn-primary btn-hero">Get started →</a>
-  <p style="color:var(--muted);font-size:0.78rem;margin-top:16px">
+  <a href="/register" class="btn btn-primary btn-hero">Get started — it's free</a>
+  <p style="color:var(--muted);font-size:0.85rem;margin-top:16px">
     Already have an account? <a href="/login" style="color:var(--accent-text)">Sign in here</a>
   </p>
-</div>
+</section>
 
 {% endblock %}
