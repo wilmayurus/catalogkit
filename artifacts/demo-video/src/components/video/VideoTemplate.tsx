@@ -65,6 +65,18 @@ export default function VideoTemplate() {
     <div className="relative w-full h-screen overflow-hidden bg-[#0D0D0D] font-sans">
       <audio ref={audioRef} src={`${base}audio/background.mp3`} preload="auto" loop />
 
+      {/* Persistent midground overlay if needed */}
+      <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay">
+        <video 
+          src={`${base}videos/market-lights.mp4`} 
+          autoPlay 
+          muted 
+          loop 
+          playsInline 
+          className="w-full h-full object-cover" 
+        />
+      </div>
+
       <AnimatePresence mode="sync">
         {currentScene === 0 && <Scene1 key="problem" />}
         {currentScene === 1 && <Scene2 key="build" />}

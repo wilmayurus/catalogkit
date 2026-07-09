@@ -51,7 +51,7 @@ export function Scene3() {
         animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
       >
-        <h2 className="text-[5cqw] font-black text-[#C41230] font-display leading-tight">
+        <h2 className="text-[5cqw] font-black text-[#f97316] font-display leading-tight">
           One link. Every product. With prices.
         </h2>
         <p className="text-[2.5cqw] text-[#0D0D0D]/70 font-medium mt-[1cqh]">
@@ -81,7 +81,7 @@ export function Scene3() {
               <span className="text-[1.6cqw] text-blue-600 font-bold truncate block">catalogkit.org/c/mary</span>
             </div>
             <motion.div
-              className="w-[4cqw] h-[4cqw] bg-[#C41230] rounded-xl flex items-center justify-center shadow-lg flex-shrink-0"
+              className="w-[4cqw] h-[4cqw] bg-[#f97316] rounded-xl flex items-center justify-center shadow-lg flex-shrink-0"
               animate={phase >= 2 ? { scale: [1, 1.2, 1] } : {}}
               transition={{ delay: 0.8, duration: 0.4 }}
             >
@@ -140,7 +140,7 @@ export function Scene3() {
           animate={phase >= 2 ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <svg viewBox="0 0 60 24" fill="none" className="w-[7cqw] text-[#C41230]">
+          <svg viewBox="0 0 60 24" fill="none" className="w-[7cqw] text-[#f97316]">
             <path d="M0 12 H50 M38 2 L52 12 L38 22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </motion.div>
@@ -174,7 +174,7 @@ export function Scene3() {
                   <img src={`${import.meta.env.BASE_URL}images/${page.img}`} className="w-[78%] h-full object-contain" alt="" />
                 </div>
                 <div className="h-[14%] flex items-center justify-center border-t border-gray-100 flex-shrink-0">
-                  <span className="text-[1.6cqw] font-bold text-[#C41230]">{page.price}</span>
+                  <span className="text-[1.6cqw] font-bold text-[#f97316]">{page.price}</span>
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -192,7 +192,7 @@ export function Scene3() {
                 style={{
                   width: i === currentPage ? '1.6cqw' : '0.6cqw',
                   height: '0.6cqw',
-                  background: i === currentPage ? '#C41230' : 'rgba(0,0,0,0.2)',
+                  background: i === currentPage ? '#f97316' : 'rgba(0,0,0,0.2)',
                 }}
               />
             ))}
@@ -223,7 +223,7 @@ export function Scene3() {
         transition={{ duration: 0.8 }}
       >
         <h2 className="text-[3cqw] font-bold text-[#0D0D0D] font-display leading-tight">
-          No more scrolling through 20 images. <span className="text-[#C41230]">Just tap and browse.</span>
+          No more scrolling through 20 images. <span className="text-[#f97316]">Just tap and browse.</span>
         </h2>
       </motion.div>
     </motion.div>

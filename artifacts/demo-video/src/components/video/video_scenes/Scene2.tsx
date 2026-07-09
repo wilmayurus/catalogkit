@@ -42,11 +42,11 @@ export function Scene2() {
         animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
       >
-        <h2 className="text-[4.8cqw] font-black text-[#C41230] font-display leading-tight">
+        <h2 className="text-[4.8cqw] font-black text-[#f97316] font-display leading-tight">
           Upload your photos. Add price & name.
         </h2>
         <p className="text-[2.4cqw] text-[#0D0D0D]/65 font-semibold mt-[0.8cqh]">
-          <span className="text-[#C41230]">CatalogKit builds your catalog</span> — automatically.
+          <span className="text-[#f97316]">CatalogKit builds your catalog</span> — automatically.
         </p>
       </motion.div>
 
@@ -61,7 +61,7 @@ export function Scene2() {
           transition={{ type: 'spring', damping: 20 }}
         >
           <div className="w-full h-[11%] bg-white flex items-center justify-center border-b border-gray-100 flex-shrink-0">
-            <span className="text-[1.8cqw] font-bold text-[#C41230]">
+            <span className="text-[1.8cqw] font-bold text-[#f97316]">
               {phase < 6 ? 'Upload Photos' : 'Add Details'}
             </span>
           </div>
@@ -75,11 +75,11 @@ export function Scene2() {
                   exit={{ x: '-100%', opacity: 0 }}
                   transition={{ duration: 0.4 }}
                 >
-                  <div className="w-full flex-shrink-0 border-[0.3cqw] border-dashed border-[#C41230]/50 rounded-xl bg-white flex flex-col items-center justify-center py-[1.5cqh] gap-[0.6cqh]">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#C41230" strokeWidth="1.5" className="w-[3.5cqw] h-[3.5cqw]">
+                  <div className="w-full flex-shrink-0 border-[0.3cqw] border-dashed border-[#f97316]/50 rounded-xl bg-white flex flex-col items-center justify-center py-[1.5cqh] gap-[0.6cqh]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="1.5" className="w-[3.5cqw] h-[3.5cqw]">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                     </svg>
-                    <span className="text-[1.3cqw] font-bold text-[#C41230]">Select All Photos</span>
+                    <span className="text-[1.3cqw] font-bold text-[#f97316]">Select All Photos</span>
                     <span className="text-[1cqw] text-gray-400">tap to choose multiple</span>
                   </div>
 
@@ -102,7 +102,7 @@ export function Scene2() {
                   </div>
 
                   <motion.div
-                    className="bg-[#C41230] text-white text-[1.2cqw] font-bold px-[2cqw] py-[0.6cqh] rounded-full"
+                    className="bg-[#f97316] text-white text-[1.2cqw] font-bold px-[2cqw] py-[0.6cqh] rounded-full"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={phase >= 5 ? { opacity: 1, scale: 1 } : {}}
                     transition={{ duration: 0.3 }}
@@ -136,16 +136,16 @@ export function Scene2() {
                           <img src={`${import.meta.env.BASE_URL}images/${p.img}`} className="w-[90%] h-[90%] object-contain" alt="" />
                         </div>
                         <div className="flex-1 flex flex-col gap-[0.5cqh] min-w-0">
-                          <div className={`w-full rounded border px-[0.6cqw] py-[0.3cqh] text-[1.2cqw] font-bold text-[#0D0D0D] flex items-center min-h-[2.2cqh] transition-colors ${filled ? 'border-[#C41230]/40 bg-[#FFF8F0]' : 'border-gray-200 bg-gray-50'}`}>
+                          <div className={`w-full rounded border px-[0.6cqw] py-[0.3cqh] text-[1.2cqw] font-bold text-[#0D0D0D] flex items-center min-h-[2.2cqh] transition-colors ${filled ? 'border-[#f97316]/40 bg-[#FFF8F0]' : 'border-gray-200 bg-gray-50'}`}>
                             <motion.span animate={filled ? { opacity: 1 } : { opacity: 0 }} transition={{ duration: 0.2 }}>
                               {filled ? p.name : ''}
                             </motion.span>
                             {phase === 7 + i && (
-                              <motion.span className="inline-block w-[0.1cqw] h-[1.4cqw] bg-[#C41230] ml-[0.1cqw]"
+                              <motion.span className="inline-block w-[0.1cqw] h-[1.4cqw] bg-[#f97316] ml-[0.1cqw]"
                                 animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} />
                             )}
                           </div>
-                          <div className={`w-full rounded border px-[0.6cqw] py-[0.3cqh] text-[1.2cqw] font-bold text-[#C41230] flex items-center min-h-[2.2cqh] transition-colors ${filled ? 'border-[#C41230]/40 bg-[#FFF8F0]' : 'border-gray-200 bg-gray-50'}`}>
+                          <div className={`w-full rounded border px-[0.6cqw] py-[0.3cqh] text-[1.2cqw] font-bold text-[#f97316] flex items-center min-h-[2.2cqh] transition-colors ${filled ? 'border-[#f97316]/40 bg-[#FFF8F0]' : 'border-gray-200 bg-gray-50'}`}>
                             <motion.span animate={filled ? { opacity: 1 } : { opacity: 0 }} transition={{ duration: 0.2, delay: 0.2 }}>
                               {filled ? p.price : ''}
                             </motion.span>
@@ -177,7 +177,7 @@ export function Scene2() {
           animate={phase >= 10 ? { opacity: 1 } : {}}
           transition={{ duration: 0.5 }}
         >
-          <svg viewBox="0 0 60 24" fill="none" className="w-[6cqw] text-[#C41230]">
+          <svg viewBox="0 0 60 24" fill="none" className="w-[6cqw] text-[#f97316]">
             <path d="M0 12 H50 M38 2 L52 12 L38 22" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </motion.div>
@@ -199,7 +199,7 @@ export function Scene2() {
             <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="w-[70%] h-full object-contain" alt="" />
           </div>
           <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-t border-gray-100">
-            <span className="text-[1.8cqw] font-bold text-[#C41230]">K 25.00</span>
+            <span className="text-[1.8cqw] font-bold text-[#f97316]">K 25.00</span>
           </div>
           <div className="h-[11%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
             <span className="text-[1cqw] font-bold text-white">+675 7000 0000</span>
@@ -214,7 +214,7 @@ export function Scene2() {
         transition={{ duration: 0.6 }}
       >
         <span className="text-[2.6cqw] font-bold text-[#0D0D0D] font-display">
-          Your catalog — <span className="text-[#C41230]">done in minutes.</span>
+          Your catalog — <span className="text-[#f97316]">done in minutes.</span>
         </span>
       </motion.div>
     </motion.div>

@@ -90,7 +90,7 @@ export function Scene1() {
                 animate={phase >= 1 ? { x: 0, opacity: 1 } : {}}
                 transition={{ delay: msg.delay, duration: 0.3 }}
               >
-                <div className="w-[2.5cqw] h-[2.5cqw] rounded-full bg-gradient-to-br from-[#C41230] to-[#8B0D22] flex-shrink-0 flex items-center justify-center">
+                <div className="w-[2.5cqw] h-[2.5cqw] rounded-full bg-gradient-to-br from-[#f97316] to-[#ea580c] flex-shrink-0 flex items-center justify-center">
                   <span className="text-white text-[1cqw] font-bold">{msg.id % 3 === 0 ? 'M' : msg.id % 2 === 0 ? 'S' : 'R'}</span>
                 </div>
                 <div className="bg-white/10 rounded-2xl rounded-bl-none overflow-hidden w-[13cqw] flex-shrink-0">
@@ -115,10 +115,10 @@ export function Scene1() {
         <AnimatePresence>
           {phase >= 2 && (
             <motion.div
-              className="absolute top-[7cqh] right-[2cqw] bg-[#C41230] text-white text-[1.4cqw] font-black px-[1.2cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
+              className="absolute top-[7cqh] right-[2cqw] bg-[#f97316] text-white text-[1.4cqw] font-black px-[1.2cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
               initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', bounce: 0.6 }}
+              animate={{ scale: [0, 1.2, 1], opacity: 1, rotate: [0, -10, 10, 0] }}
+              transition={{ type: 'spring', bounce: 0.6, duration: 0.8 }}
             >
               20+ 📸
             </motion.div>
@@ -133,7 +133,7 @@ export function Scene1() {
         {NOTIFICATION_DOTS.map((n, i) => (
           <motion.div
             key={i}
-            className="absolute w-[2cqw] h-[2cqw] rounded-full bg-[#C41230]"
+            className="absolute w-[2cqw] h-[2cqw] rounded-full bg-[#f97316]"
             style={{ right: n.right, top: n.top }}
             initial={{ scale: 0, opacity: 0 }}
             animate={phase >= 2 ? {
@@ -172,7 +172,7 @@ export function Scene1() {
         </motion.div>
 
         <motion.div
-          className="bg-[#C41230] text-white px-[4cqw] py-[1.8cqh] rounded-2xl shadow-2xl text-center"
+          className="bg-[#f97316] text-white px-[4cqw] py-[1.8cqh] rounded-2xl shadow-2xl text-center"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={phase >= 4 ? { opacity: 1, scale: 1 } : {}}
           transition={{ type: 'spring', damping: 18 }}

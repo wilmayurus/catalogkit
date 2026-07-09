@@ -34,7 +34,7 @@ export function Scene5() {
       {/* Background glow */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 60%, #C41230 0%, transparent 65%)' }}
+        style={{ background: 'radial-gradient(ellipse at 50% 60%, #f97316 0%, transparent 65%)' }}
         initial={{ opacity: 0 }}
         animate={phase >= 1 ? { opacity: 0.18 } : {}}
         transition={{ duration: 2 }}
@@ -59,7 +59,7 @@ export function Scene5() {
           transition={{ type: 'spring', damping: 18 }}
         >
           <div className="w-[7cqw] h-[7cqw] bg-[#FFF8F0] rounded-2xl flex items-center justify-center shadow-2xl">
-            <svg viewBox="0 0 24 24" fill="none" className="w-[4.5cqw] h-[4.5cqw]" stroke="#C41230" strokeWidth="2.5">
+            <svg viewBox="0 0 24 24" fill="none" className="w-[4.5cqw] h-[4.5cqw]" stroke="#f97316" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
@@ -102,7 +102,7 @@ export function Scene5() {
 
         {/* FREE badge */}
         <motion.div
-          className="bg-[#C41230] text-white px-[5cqw] py-[2.2cqh] rounded-full shadow-2xl mb-[2cqh]"
+          className="bg-[#f97316] text-white px-[5cqw] py-[2.2cqh] rounded-full shadow-2xl mb-[2cqh]"
           initial={{ y: 20, opacity: 0, scale: 0.9 }}
           animate={phase >= 4 ? { y: 0, opacity: 1, scale: 1 } : {}}
           transition={{ type: 'spring', damping: 16 }}
@@ -146,7 +146,7 @@ export function Scene5() {
         transition={{ duration: 1, delay: 1 }}
       >
         <p className="text-[1cqw] text-white font-sans">
-          Developed by Sapphire Consulting Services, a subsidiary of Trey Holdings Limited — Port Moresby, PNG
+          Built in Papua New Guinea by Sapphire Consulting Services
         </p>
       </motion.div>
     </motion.div>

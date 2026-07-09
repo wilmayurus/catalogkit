@@ -30,7 +30,7 @@ export function Scene4() {
         animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
       >
-        <h2 className="text-[5cqw] font-black text-[#C41230] font-display leading-tight">
+        <h2 className="text-[5cqw] font-black text-[#f97316] font-display leading-tight">
           Download as PDF. Share anywhere.
         </h2>
         <p className="text-[2.4cqw] text-[#0D0D0D]/65 font-semibold mt-[0.8cqh]">
@@ -49,7 +49,7 @@ export function Scene4() {
           transition={{ type: 'spring', damping: 20 }}
         >
           <div className="relative w-[17cqw] h-[22cqw] bg-white rounded-xl shadow-2xl flex flex-col border border-gray-100 mb-[3cqh]">
-            <div className="h-[20%] bg-[#E53935] rounded-t-xl flex items-center justify-center">
+            <div className="h-[20%] bg-[#ea580c] rounded-t-xl flex items-center justify-center">
               <span className="text-white font-bold text-[2.5cqw]">PDF</span>
             </div>
             <div className="flex-1 grid grid-cols-2 gap-[1cqw] p-[1.5cqw]">
@@ -64,7 +64,7 @@ export function Scene4() {
             </div>
 
             <motion.div
-              className="absolute -right-[3cqw] -bottom-[3cqw] w-[8cqw] h-[8cqw] bg-[#C41230] rounded-full text-white flex items-center justify-center shadow-xl"
+              className="absolute -right-[3cqw] -bottom-[3cqw] w-[8cqw] h-[8cqw] bg-[#f97316] rounded-full text-white flex items-center justify-center shadow-xl"
               animate={{ y: [0, 12, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             >
@@ -76,15 +76,15 @@ export function Scene4() {
 
           <div className="text-center">
             <h3 className="text-[3cqw] font-bold text-[#0D0D0D] font-display">PDF Download</h3>
-            <p className="text-[2cqw] text-[#C41230] font-medium mt-[0.5cqh]">Print it. Email it. Share it.</p>
+            <p className="text-[2cqw] text-[#f97316] font-medium mt-[0.5cqh]">Print it. Email it. Share it.</p>
           </div>
         </motion.div>
 
         {/* Divider */}
         <div className="flex flex-col items-center gap-[2cqh] flex-shrink-0">
-          <div className="w-[0.15cqw] h-[20cqh] bg-[#C41230]/15" />
-          <span className="text-[2cqw] text-[#C41230]/40 font-bold">+</span>
-          <div className="w-[0.15cqw] h-[20cqh] bg-[#C41230]/15" />
+          <div className="w-[0.15cqw] h-[20cqh] bg-[#f97316]/15" />
+          <span className="text-[2cqw] text-[#f97316]/40 font-bold">+</span>
+          <div className="w-[0.15cqw] h-[20cqh] bg-[#f97316]/15" />
         </div>
 
         {/* Right — WhatsApp catalog last page */}
@@ -152,7 +152,7 @@ export function Scene4() {
         transition={{ duration: 0.8 }}
       >
         <span className="text-[2.5cqw] font-bold text-[#0D0D0D] font-display">
-          No more ignored photos. <span className="text-[#C41230]">Real orders. Real sales.</span>
+          No more ignored photos. <span className="text-[#f97316]">Real orders. Real sales.</span>
         </span>
       </motion.div>
     </motion.div>
