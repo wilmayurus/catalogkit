@@ -151,14 +151,17 @@ function App() {
     setRecState("idle");
   }
 
+  // Reserve 76px for the download/switch controls so they're never hidden behind the video
+  // or behind the mobile browser nav bar on small screens.
+  const CTRL_H = 76;
   const stageStyle = portrait
     ? {
-        width: "min(100vw, calc(100vh * 9 / 16))",
-        height: "min(100vh, calc(100vw * 16 / 9))",
+        width: `min(100vw, calc((100vh - ${CTRL_H}px) * 9 / 16))`,
+        height: `min(calc(100vh - ${CTRL_H}px), calc(100vw * 16 / 9))`,
       }
     : {
-        width: "min(100vw, calc(100vh * 16 / 9))",
-        height: "min(100vh, calc(100vw * 9 / 16))",
+        width: `min(100vw, calc((100vh - ${CTRL_H}px) * 16 / 9))`,
+        height: `min(calc(100vh - ${CTRL_H}px), calc(100vw * 9 / 16))`,
       };
 
   return (
