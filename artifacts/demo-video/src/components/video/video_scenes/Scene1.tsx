@@ -248,6 +248,11 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
           </div>
         </>
       )}
+
+      {/* Copyright */}
+      <div className="absolute bottom-[1.2cqh] left-0 right-0 flex justify-center pointer-events-none z-50">
+        <span className="text-[1.5cqw] text-white/30 font-medium tracking-wide">© CatalogKit</span>
+      </div>
     </motion.div>
   );
 }

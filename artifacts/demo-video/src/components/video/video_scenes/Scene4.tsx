@@ -250,6 +250,11 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
           No more ignored photos. <span className="text-[#f97316]">Real orders. Real sales.</span>
         </span>
       </motion.div>
+
+      {/* Copyright */}
+      <div className="absolute bottom-[1.2cqh] left-0 right-0 flex justify-center pointer-events-none z-50">
+        <span className="text-[1.5cqw] text-[#0D0D0D]/30 font-medium tracking-wide">© CatalogKit</span>
+      </div>
     </motion.div>
   );
 }
