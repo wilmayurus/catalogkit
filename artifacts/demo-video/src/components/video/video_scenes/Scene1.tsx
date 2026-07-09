@@ -50,7 +50,7 @@ export function Scene1() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-white text-[1.6cqw] font-bold">SME Vendors POM 🇵🇬</div>
+            <div className="text-white text-[1.6cqw] font-bold flex items-center gap-[0.6cqw]">SME Vendors POM <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG flag" className="h-[1.4cqw] w-auto inline-block" /></div>
             <div className="text-white/50 text-[1.1cqw]">247 members</div>
           </div>
           {/* Mute icon — lights up in phase 3 */}
