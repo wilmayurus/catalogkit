@@ -127,15 +127,6 @@ export function Scene5() {
           </span>
         </motion.div>
 
-        {/* For PNG vendors */}
-        <motion.p
-          className="text-[1.8cqw] text-white/40 font-medium text-center"
-          initial={{ opacity: 0 }}
-          animate={phase >= 6 ? { opacity: 1 } : {}}
-          transition={{ duration: 1 }}
-        >
-          Built for PNG market vendors & SMEs 🇵🇬
-        </motion.p>
       </div>
 
       {/* Credit */}
