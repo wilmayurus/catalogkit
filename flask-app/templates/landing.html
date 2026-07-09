@@ -339,34 +339,197 @@
   <!-- ══════════════════════════════════════════════════════════
        HOW IT WORKS
   ════════════════════════════════════════════════════════════ -->
-  <section id="how-it-works" class="bg-white py-20 px-4 sm:px-6 lg:px-8" aria-labelledby="steps-heading">
-    <div class="max-w-5xl mx-auto">
-      <div class="text-center mb-14">
-        <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">How it works</p>
-        <h2 id="steps-heading" class="text-3xl font-extrabold text-slate-900 mb-4">Ready in 3 simple steps</h2>
-        <p class="text-lg text-gray-500 max-w-xl mx-auto">No computer needed. Works on any Android or iPhone, even on slow mobile data.</p>
+  <section id="how-it-works" class="bg-white py-20 lg:py-28 px-4 sm:px-6 lg:px-8" aria-labelledby="steps-heading">
+
+    <style>
+      .step-card {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
+      }
+      .step-card.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .step-card { opacity: 1 !important; transform: none !important; transition: none !important; }
+      }
+    </style>
+
+    <div class="max-w-6xl mx-auto">
+
+      <!-- Header -->
+      <div class="text-center mb-16">
+        <p class="text-orange-500 font-semibold text-sm uppercase tracking-widest mb-3" aria-hidden="true">How It Works</p>
+        <h2 id="steps-heading" class="text-3xl sm:text-4xl font-extrabold text-slate-900">Three steps. That's it.</h2>
       </div>
-      <ol class="grid md:grid-cols-3 gap-10 list-none" role="list" aria-label="Steps to get started">
-        <li class="text-center">
-          <div class="w-14 h-14 bg-orange-500 text-white rounded-2xl text-2xl font-extrabold flex items-center justify-center mx-auto mb-5" aria-hidden="true">1</div>
-          <span class="text-4xl block mb-4" aria-hidden="true">📸</span>
-          <h3 class="text-lg font-bold text-slate-800 mb-3">Take photos of your products</h3>
-          <p class="text-gray-500 leading-relaxed">Use your phone camera to take photos of your products — bilums, produce, clothing, crafts, anything.</p>
-        </li>
-        <li class="text-center">
-          <div class="w-14 h-14 bg-orange-500 text-white rounded-2xl text-2xl font-extrabold flex items-center justify-center mx-auto mb-5" aria-hidden="true">2</div>
-          <span class="text-4xl block mb-4" aria-hidden="true">⬆️</span>
-          <h3 class="text-lg font-bold text-slate-800 mb-3">Upload &amp; set prices</h3>
-          <p class="text-gray-500 leading-relaxed">Upload your photos and type the price under each one. Your catalog builds automatically — no design skills needed.</p>
-        </li>
-        <li class="text-center">
-          <div class="w-14 h-14 bg-orange-500 text-white rounded-2xl text-2xl font-extrabold flex items-center justify-center mx-auto mb-5" aria-hidden="true">3</div>
-          <span class="text-4xl block mb-4" aria-hidden="true">📲</span>
-          <h3 class="text-lg font-bold text-slate-800 mb-3">Share on WhatsApp</h3>
-          <p class="text-gray-500 leading-relaxed">Tap the WhatsApp button and send your catalog link to customers. They can browse and place orders instantly.</p>
-        </li>
-      </ol>
-    </div>
+
+      <!-- Steps + arrows -->
+      <div class="flex flex-col lg:flex-row items-center lg:items-stretch gap-4 lg:gap-0">
+
+        <!-- ── Step 1 ── -->
+        <article class="step-card flex-1 w-full bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
+                 style="transition-delay:0ms" role="article" aria-label="Step 1: Take Photos">
+          <!-- Illustration area -->
+          <div class="bg-orange-50 flex items-center justify-center py-10" aria-hidden="true">
+            <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+              <!-- Phone body -->
+              <rect x="22" y="10" width="52" height="76" rx="10" fill="white" stroke="#f97316" stroke-width="3"/>
+              <!-- Speaker slot -->
+              <rect x="37" y="17" width="22" height="4" rx="2" fill="#fed7aa"/>
+              <!-- Screen area -->
+              <rect x="28" y="26" width="40" height="46" rx="5" fill="#fff7ed"/>
+              <!-- Viewfinder frame -->
+              <rect x="34" y="32" width="28" height="28" rx="4" fill="white" stroke="#fdba74" stroke-width="1.5" stroke-dasharray="3 2"/>
+              <!-- Camera lens outer -->
+              <circle cx="48" cy="46" r="9" fill="#fed7aa" stroke="#f97316" stroke-width="2"/>
+              <!-- Camera lens inner -->
+              <circle cx="48" cy="46" r="5" fill="#f97316"/>
+              <!-- Lens highlight -->
+              <circle cx="45.5" cy="43.5" r="2" fill="white" opacity="0.55"/>
+              <!-- Shutter button hint (corner lines) -->
+              <path d="M34 32 L38 32 M34 32 L34 36" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+              <path d="M62 32 L58 32 M62 32 L62 36" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+              <path d="M34 60 L38 60 M34 60 L34 56" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+              <path d="M62 60 L58 60 M62 60 L62 56" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+              <!-- Home indicator -->
+              <rect x="41" y="78" width="14" height="3" rx="1.5" fill="#fed7aa"/>
+            </svg>
+          </div>
+          <!-- Text -->
+          <div class="p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-10 h-10 bg-orange-500 text-white rounded-full font-extrabold text-lg flex items-center justify-center flex-shrink-0" aria-label="Step 1">1</span>
+              <h3 class="text-xl font-extrabold text-slate-900">Take Photos</h3>
+            </div>
+            <p class="text-gray-500 text-base leading-relaxed">Take photos of your products using your phone.</p>
+          </div>
+        </article>
+
+        <!-- Arrow → desktop -->
+        <div class="hidden lg:flex items-center justify-center w-14 flex-shrink-0" aria-hidden="true">
+          <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
+            <path d="M2 12 H36" stroke="#fdba74" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 3"/>
+            <path d="M28 5 L37 12 L28 19" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- Arrow ↓ mobile -->
+        <div class="lg:hidden flex justify-center" aria-hidden="true">
+          <svg width="24" height="36" viewBox="0 0 24 36" fill="none">
+            <path d="M12 2 V28" stroke="#fdba74" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 3"/>
+            <path d="M5 22 L12 32 L19 22" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- ── Step 2 ── -->
+        <article class="step-card flex-1 w-full bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
+                 style="transition-delay:150ms" role="article" aria-label="Step 2: Build Your Catalogue">
+          <!-- Illustration area -->
+          <div class="bg-amber-50 flex items-center justify-center py-10" aria-hidden="true">
+            <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+              <!-- Document body -->
+              <rect x="16" y="12" width="52" height="66" rx="8" fill="white" stroke="#f97316" stroke-width="2.5"/>
+              <!-- Product card top-left -->
+              <rect x="23" y="22" width="17" height="17" rx="4" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+              <circle cx="31.5" cy="30.5" r="4" fill="#fdba74"/>
+              <!-- Product card top-right -->
+              <rect x="44" y="22" width="17" height="17" rx="4" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+              <circle cx="52.5" cy="30.5" r="4" fill="#fca5a5"/>
+              <!-- Product card bottom-left -->
+              <rect x="23" y="43" width="17" height="17" rx="4" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+              <circle cx="31.5" cy="51.5" r="4" fill="#86efac"/>
+              <!-- Product card bottom-right -->
+              <rect x="44" y="43" width="17" height="17" rx="4" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5"/>
+              <circle cx="52.5" cy="51.5" r="4" fill="#93c5fd"/>
+              <!-- Price lines -->
+              <rect x="23" y="64" width="38" height="3" rx="1.5" fill="#fed7aa"/>
+              <rect x="23" y="70" width="26" height="3" rx="1.5" fill="#fde68a"/>
+              <!-- Sparkle top-right (magic = auto-build) -->
+              <path d="M75 14 L77 20 L83 22 L77 24 L75 30 L73 24 L67 22 L73 20 Z" fill="#f97316"/>
+              <!-- Smaller sparkle -->
+              <path d="M80 34 L81.5 38.5 L86 40 L81.5 41.5 L80 46 L78.5 41.5 L74 40 L78.5 38.5 Z" fill="#fdba74"/>
+            </svg>
+          </div>
+          <!-- Text -->
+          <div class="p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-10 h-10 bg-orange-500 text-white rounded-full font-extrabold text-lg flex items-center justify-center flex-shrink-0" aria-label="Step 2">2</span>
+              <h3 class="text-xl font-extrabold text-slate-900">Build Your Catalogue</h3>
+            </div>
+            <p class="text-gray-500 text-base leading-relaxed">Upload your photos. CatalogKit automatically creates a beautiful catalogue.</p>
+          </div>
+        </article>
+
+        <!-- Arrow → desktop -->
+        <div class="hidden lg:flex items-center justify-center w-14 flex-shrink-0" aria-hidden="true">
+          <svg width="40" height="24" viewBox="0 0 40 24" fill="none">
+            <path d="M2 12 H36" stroke="#fdba74" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 3"/>
+            <path d="M28 5 L37 12 L28 19" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- Arrow ↓ mobile -->
+        <div class="lg:hidden flex justify-center" aria-hidden="true">
+          <svg width="24" height="36" viewBox="0 0 24 36" fill="none">
+            <path d="M12 2 V28" stroke="#fdba74" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="4 3"/>
+            <path d="M5 22 L12 32 L19 22" stroke="#f97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- ── Step 3 ── -->
+        <article class="step-card flex-1 w-full bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden"
+                 style="transition-delay:300ms" role="article" aria-label="Step 3: Share on WhatsApp">
+          <!-- Illustration area -->
+          <div class="bg-green-50 flex items-center justify-center py-10" aria-hidden="true">
+            <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
+              <!-- Outer glow circle -->
+              <circle cx="48" cy="48" r="36" fill="#dcfce7"/>
+              <!-- Middle circle -->
+              <circle cx="48" cy="48" r="28" fill="#bbf7d0" stroke="#22c55e" stroke-width="2"/>
+              <!-- WhatsApp speech bubble shape -->
+              <path d="M48 24C35.85 24 26 33.85 26 46C26 50.2 27.3 54.1 29.5 57.3L26 70L39.1 66.6C42.1 68.5 45.9 69.6 48 69.6C60.15 69.6 70 59.75 70 47.6 70 35.45 60.15 25.6 48 25.6Z"
+                    fill="#16a34a"/>
+              <!-- Phone handset icon inside bubble (simplified WhatsApp phone) -->
+              <path d="M38.5 38.5C38.5 38.5 38 41.5 40 44C42 46.5 44 48 46 49.5C48 51 51 53.5 53.5 53.5C53.5 53.5 55.5 53 56.5 52L58 50.5C58.5 50 58.5 49 58 48.5L55 45.5C54.5 45 53.5 45 53 45.5L51.5 47C51 47.5 50.5 47.5 50 47C49 46 47.5 44.5 46.5 43.5 45.5 42.5 45 41.5 45.5 41L47 39.5C47.5 39 47.5 38 47 37.5L44 34.5C43.5 34 42.5 34 42 34.5L40 36.5C39 37.5 38.5 38.5 38.5 38.5Z"
+                    fill="white"/>
+              <!-- Share arrow (top right) -->
+              <circle cx="72" cy="28" r="10" fill="white" stroke="#22c55e" stroke-width="2"/>
+              <path d="M68 32 L76 24 M73 24 H76 V27" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <!-- Text -->
+          <div class="p-8">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="w-10 h-10 bg-orange-500 text-white rounded-full font-extrabold text-lg flex items-center justify-center flex-shrink-0" aria-label="Step 3">3</span>
+              <h3 class="text-xl font-extrabold text-slate-900">Share on WhatsApp</h3>
+            </div>
+            <p class="text-gray-500 text-base leading-relaxed">Send one link. Customers browse your products instantly.</p>
+          </div>
+        </article>
+
+      </div><!-- /steps row -->
+    </div><!-- /max-w -->
+
+    <script>
+      (function () {
+        var cards = document.querySelectorAll('.step-card');
+        if (!window.IntersectionObserver) {
+          cards.forEach(function (c) { c.classList.add('is-visible'); });
+          return;
+        }
+        var obs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add('is-visible');
+              obs.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.12 });
+        cards.forEach(function (c) { obs.observe(c); });
+      })();
+    </script>
+
   </section>
 
   <!-- ══════════════════════════════════════════════════════════
