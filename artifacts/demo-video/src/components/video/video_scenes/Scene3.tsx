@@ -191,14 +191,33 @@ export function Scene3({ portrait }: { portrait?: boolean }) {
           </div>
 
           {phase >= 3 && (
+            /* Swipe gesture: fingertip dot + fading trail moving left */
             <motion.div
-              className={`absolute bottom-[22%] right-[28%] ${portrait ? 'w-[4.5cqw] h-[4.5cqw]' : 'w-[3.5cqw] h-[3.5cqw]'} bg-[#25D366] rounded-full flex items-center justify-center shadow-xl z-20`}
-              animate={{ opacity: [0, 0.9, 0.9, 0], x: [0, -22, -44, -44], scale: [0.8, 1, 1, 0.9] }}
+              className="absolute bottom-[25%] right-[18%] z-20 flex items-center"
+              animate={{ opacity: [0, 1, 1, 0], x: [0, -18, -36, -36] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <svg viewBox="0 0 24 24" fill="white" className={portrait ? 'w-[2.8cqw] h-[2.8cqw]' : 'w-[2cqw] h-[2cqw]'}>
-                <path d="M18 11V8a2 2 0 1 0-4 0v3M14 11V6a2 2 0 1 0-4 0v5M10 11V8a2 2 0 1 0-4 0v8a6 6 0 0 0 12 0v-5a2 2 0 1 0-4 0v0"/>
-              </svg>
+              {/* Trail */}
+              <div
+                className="absolute right-full top-1/2 -translate-y-1/2"
+                style={{
+                  width: portrait ? '4cqw' : '3cqw',
+                  height: portrait ? '0.8cqw' : '0.6cqw',
+                  background: 'linear-gradient(to left, rgba(255,255,255,0.5), transparent)',
+                  borderRadius: '999px',
+                  marginRight: '-0.2cqw',
+                }}
+              />
+              {/* Fingertip */}
+              <div
+                style={{
+                  width: portrait ? '3cqw' : '2.2cqw',
+                  height: portrait ? '3cqw' : '2.2cqw',
+                  background: 'rgba(255,255,255,0.92)',
+                  borderRadius: '50%',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
+                }}
+              />
             </motion.div>
           )}
         </motion.div>
