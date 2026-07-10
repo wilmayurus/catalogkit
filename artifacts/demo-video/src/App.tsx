@@ -5,7 +5,7 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
 const TOTAL_DURATION_MS = 7000 + 9000 + 10000 + 11000 + 12000 + 2500;
-const COUNTDOWN_SECONDS = 3;
+const COUNTDOWN_SECONDS = 5;
 
 type RecordState = "idle" | "waiting" | "countdown" | "recording" | "converting" | "done" | "error";
 
@@ -200,7 +200,7 @@ function App() {
           </div>
         )}
 
-        {recState === "countdown" && (
+        {recState === "countdown" && countdown > 0 && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
             <div className="text-white text-center">
               <div className="text-8xl font-black tabular-nums" style={{ textShadow: '0 0 40px rgba(249,115,22,0.8)' }}>
