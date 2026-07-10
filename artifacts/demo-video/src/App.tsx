@@ -1,13 +1,11 @@
 import { useState, useRef } from "react";
 import VideoTemplate from "./components/video/VideoTemplate";
 import { VideoModeContext } from "./contexts/VideoModeContext";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile, toBlobURL } from "@ffmpeg/util";
 
 const TOTAL_DURATION_MS = 7000 + 9000 + 10000 + 11000 + 12000 + 2500;
 const COUNTDOWN_SECONDS = 5;
 
-type RecordState = "idle" | "waiting" | "countdown" | "recording" | "converting" | "done" | "error";
+type RecordState = "idle" | "waiting" | "countdown" | "recording" | "done" | "error";
 
 function App() {
   const [recState, setRecState] = useState<RecordState>("idle");
@@ -85,7 +83,7 @@ function App() {
       stream.getTracks().forEach((t) => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
       const webmBlob = new Blob(chunksRef.current, { type: mimeType });
-      convertToMp4(webmBlob, baseName);
+      saveWebm(webmBlob, baseName);
     };
 
     recorder.start(200);
@@ -103,44 +101,14 @@ function App() {
     }, 1000);
   }
 
-  async function convertToMp4(webmBlob: Blob, baseName: string) {
-    setRecState("converting");
-    try {
-      const ffmpeg = new FFmpeg();
-      const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
-      await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-      });
-      await ffmpeg.writeFile("input.webm", await fetchFile(webmBlob));
-      await ffmpeg.exec([
-        "-i", "input.webm",
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-crf", "23",
-        "-c:a", "aac",
-        "-movflags", "+faststart",
-        "output.mp4",
-      ]);
-      const data = await ffmpeg.readFile("output.mp4") as Uint8Array;
-      const mp4Blob = new Blob([data.buffer as ArrayBuffer], { type: "video/mp4" });
-      const url = URL.createObjectURL(mp4Blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${baseName}.mp4`;
-      a.click();
-      URL.revokeObjectURL(url);
-      lastFilenameRef.current = `${baseName}.mp4`;
-    } catch {
-      // ffmpeg failed — fall back to WebM download
-      const url = URL.createObjectURL(webmBlob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${baseName}.webm`;
-      a.click();
-      URL.revokeObjectURL(url);
-      lastFilenameRef.current = `${baseName}.webm`;
-    }
+  function saveWebm(webmBlob: Blob, baseName: string) {
+    const url = URL.createObjectURL(webmBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${baseName}.webm`;
+    a.click();
+    URL.revokeObjectURL(url);
+    lastFilenameRef.current = `${baseName}.webm`;
     setRecState("done");
   }
 
@@ -207,16 +175,6 @@ function App() {
                 {countdown}
               </div>
               <div className="text-lg font-semibold text-white/60 mt-2">Recording starts…</div>
-            </div>
-          </div>
-        )}
-
-        {recState === "converting" && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-            <div className="bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-2xl shadow-lg text-center leading-snug">
-              <span className="animate-spin inline-block mr-2">⏳</span>
-              <strong>Converting to MP4…</strong>
-              <div className="text-white/50 text-xs mt-1">This takes about 30–60 seconds. Please wait.</div>
             </div>
           </div>
         )}
