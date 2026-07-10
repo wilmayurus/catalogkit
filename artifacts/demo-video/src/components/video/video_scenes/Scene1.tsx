@@ -100,27 +100,42 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
       transition={{ duration: 0.6 }}
     >
       {portrait ? (
-        /* ── Portrait: clean 40/60 split ── */
-        <>
-          {/* Top 40%: WhatsApp chat with context label */}
-          <div className="absolute top-0 left-0 right-0 flex flex-col overflow-hidden" style={{ height: '40%' }}>
-            {/* Context banner */}
-            <motion.div
-              className="flex-shrink-0 bg-[#f97316] px-[4cqw] py-[1.2cqh] flex items-center justify-center gap-[2cqw]"
-              initial={{ opacity: 0, y: -10 }}
-              animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5 }}
-            >
-              <span className="text-[2.8cqw] font-black text-white font-display leading-none">
-                📱 PNG vendors flooding WhatsApp groups with photos...
-              </span>
-            </motion.div>
+        /* ── Portrait: phone frame on top, pain point below ── */
+        <div className="absolute inset-0 flex flex-col px-[4cqw] pt-[2cqh] pb-[2cqh] gap-[2.5cqh]">
+
+          {/* Context label above the phone */}
+          <motion.div
+            className="flex-shrink-0 text-center"
+            initial={{ opacity: 0, y: -8 }}
+            animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="text-[2.8cqw] font-black text-[#f97316] font-display leading-none bg-[#f97316]/10 px-[3cqw] py-[0.8cqh] rounded-full border border-[#f97316]/30">
+              📱 PNG vendors flooding WhatsApp groups with photos...
+            </span>
+          </motion.div>
+
+          {/* Phone frame wrapping the chat */}
+          <motion.div
+            className="flex-shrink-0 flex flex-col overflow-hidden"
+            style={{
+              height: '40cqh',
+              borderRadius: '2.5cqw',
+              border: '0.35cqw solid rgba(37,211,102,0.55)',
+              boxShadow: '0 0 0 0.15cqw rgba(37,211,102,0.18), 0 4px 32px rgba(0,0,0,0.6)',
+              background: '#1a1a2e',
+            }}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={phase >= 1 ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.5 }}
+          >
             {chatHeader}
             {chatBody('w-[20cqw]')}
             <AnimatePresence>
               {phase >= 2 && (
                 <motion.div
-                  className="absolute top-[7cqh] right-[2cqw] bg-[#f97316] text-white text-[1.8cqw] font-black px-[1.5cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
+                  className="absolute bg-[#f97316] text-white text-[1.8cqw] font-black px-[1.5cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
+                  style={{ top: '20cqh', right: '6cqw' }}
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: [0, 1.2, 1], opacity: 1 }}
                   transition={{ type: 'spring', bounce: 0.6 }}
@@ -129,10 +144,10 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
 
-          {/* Bottom 60%: Pain point */}
-          <div className="absolute bottom-0 left-0 right-0 bg-[#0D0D0D] flex flex-col items-center justify-center px-[7cqw] gap-[2.5cqh]" style={{ height: '60%' }}>
+          {/* Pain point section */}
+          <div className="flex-1 flex flex-col items-center justify-center px-[3cqw] gap-[2.5cqh]">
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 15 }}
@@ -168,7 +183,7 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
               </p>
             </motion.div>
           </div>
-        </>
+        </div>
       ) : (
         /* ── Landscape: original side-by-side ── */
         <>
