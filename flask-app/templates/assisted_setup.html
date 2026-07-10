@@ -1,57 +1,57 @@
 {% extends 'base.html' %}
 {% block title %}Done-For-You Setup — CatalogKit{% endblock %}
 {% block body %}
-<div class="container" style="max-width:600px">
+<div class="container" style="max-width:540px">
 
-  <div style="text-align:center; margin-bottom:36px; padding-top:20px">
+  <div style="text-align:center; margin-bottom:32px; padding-top:20px">
     <div style="font-size:2.5rem; margin-bottom:10px">&#128101;</div>
     <h1 style="font-size:1.8rem; font-weight:800; margin-bottom:8px">Done-For-You Setup</h1>
     <p class="text-muted" style="font-size:0.95rem; line-height:1.6">
-      Not tech-savvy? No problem. Our agent will come to your market stall or shop,
-      set up your CatalogKit account, and build your first product catalog right there with you.
+      Not tech-savvy? No problem. Our agent will come to your market stall or shop
+      and set up your CatalogKit catalog right there with you — for just <strong>K50 cash on site</strong>.
     </p>
   </div>
 
-  <!-- Price callout -->
-  <div style="background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); border-radius:var(--radius); padding:20px 24px; text-align:center; margin-bottom:32px; color:#fff">
-    <div style="font-size:1.7rem; font-weight:800; margin-bottom:4px">K50 cash on site</div>
-    <div style="font-size:0.9rem; opacity:0.9">Covers the setup visit. Choose a paid plan below and only the plan's cost is added — Free stays at K50 total.</div>
-  </div>
-
   {% if success %}
-  <!-- Success state -->
   <div style="background:var(--surface); border:1px solid var(--success); border-radius:var(--radius); padding:32px; text-align:center">
     <div style="font-size:3rem; margin-bottom:16px">&#127881;</div>
     <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:10px; color:var(--success)">Request Submitted!</h2>
     <p style="color:var(--muted); font-size:0.95rem; line-height:1.6; margin-bottom:20px">
-      Thank you! Our agent will message you on <strong>WhatsApp</strong> to confirm your visit date and time.
-      {% if ar %}
-      Please have <strong>K{{ ar.total_due }} cash</strong> ready for when they arrive ({{ ar.catalog_plan_label }} catalog + K50 setup visit).
-      {% else %}
-      Please have K50 cash ready for when they arrive.
-      {% endif %}
+      Thank you! Our agent will message you on <strong>WhatsApp</strong> soon to arrange your visit.
+      Please have <strong>K50 cash</strong> ready for when they arrive.
     </p>
     <div style="background:var(--surface2); border-radius:10px; padding:16px; font-size:0.875rem; color:var(--muted); margin-bottom:24px">
-      &#128242; Keep an eye on your WhatsApp — we'll confirm within 24 hours.
+      &#128242; Keep an eye on your WhatsApp — we'll be in touch within 24 hours.
     </div>
     <a href="/" class="btn btn-primary">&#8592; Back to my catalogs</a>
   </div>
 
   {% else %}
-  <!-- Request Form -->
   <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px">
     <h2 style="font-size:1.1rem; font-weight:700; margin-bottom:6px">Book a Setup Visit</h2>
-    <p class="text-muted" style="font-size:0.875rem; margin-bottom:24px">Fill in your details below and we'll reach out on WhatsApp to confirm.</p>
+    <p class="text-muted" style="font-size:0.875rem; margin-bottom:24px">Fill in your details and we'll reach out on WhatsApp to arrange a visit.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }}" style="margin-bottom:16px">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
 
     <form method="POST" action="/assisted-setup">
 
       <div class="field" style="margin-bottom:16px">
-        <label>Vendor / Business Name <span style="color:var(--danger)">*</span></label>
-        <input type="text" name="business_name" placeholder="e.g. Mama Rosa's Fresh Produce" required>
+        <label>Your Name <span style="color:var(--danger)">*</span></label>
+        <input type="text" name="business_name" placeholder="e.g. Rosa Kila" required>
       </div>
 
       <div class="field" style="margin-bottom:16px">
-        <label>Market Location / Stall Number <span style="color:var(--danger)">*</span></label>
+        <label>Phone / WhatsApp Number <span style="color:var(--danger)">*</span></label>
+        <input type="tel" name="whatsapp" placeholder="e.g. +675 7XXX XXXX" required>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">Our agent will message you here</div>
+      </div>
+
+      <div class="field" style="margin-bottom:28px">
+        <label>Your Location / Market <span style="color:var(--danger)">*</span></label>
         <input type="text" name="market_location" list="markets-list"
                placeholder="e.g. Gordons Market, Stall 12" required>
         <datalist id="markets-list">
@@ -69,66 +69,7 @@
           <option value="Madang Market">
           <option value="Mt Hagen Market">
         </datalist>
-        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">Include your stall/bay number if you have one</div>
-      </div>
-
-      <div class="field" style="margin-bottom:16px">
-        <label>WhatsApp Contact Number <span style="color:var(--danger)">*</span></label>
-        <input type="tel" name="whatsapp" placeholder="e.g. +675 7XXX XXXX" required>
-        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">Our agent will message you here to confirm</div>
-      </div>
-
-      <div class="field" style="margin-bottom:24px">
-        <label>Preferred Date &amp; Time for Agent Visit <span style="color:var(--danger)">*</span></label>
-        <input type="text" name="preferred_datetime"
-               placeholder="e.g. Monday 9am, or any weekday morning" required>
-        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">We'll confirm via WhatsApp — subject to agent availability</div>
-      </div>
-
-      <div class="field" style="margin-bottom:24px">
-        <label>Which catalog plan do you need built? <span style="color:var(--danger)">*</span></label>
-        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:10px">Don't choose one and we'll set you up on the Free plan — no extra cost, just the K50 visit fee.</div>
-        <div style="display:flex; flex-direction:column; gap:8px">
-          <label style="display:flex; align-items:center; gap:10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer">
-            <input type="radio" name="catalog_plan" value="free" checked>
-            <span style="flex:1; font-size:0.875rem"><strong>Free</strong> — 3 catalog builds/month</span>
-            <span style="font-weight:700; font-size:0.875rem">+K0</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer">
-            <input type="radio" name="catalog_plan" value="basic">
-            <span style="flex:1; font-size:0.875rem"><strong>Basic</strong> — 20 builds/month, logo on cover, more layouts</span>
-            <span style="font-weight:700; font-size:0.875rem">+K20/mo</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:10px; background:var(--surface2); border:1.5px solid var(--border); border-radius:10px; padding:12px 14px; cursor:pointer">
-            <input type="radio" name="catalog_plan" value="pro">
-            <span style="flex:1; font-size:0.875rem"><strong>Pro</strong> — unlimited builds &amp; catalogs, dedicated support</span>
-            <span style="font-weight:700; font-size:0.875rem">+K50/mo</span>
-          </label>
-        </div>
-        <div style="font-size:0.78rem; color:var(--muted); margin-top:8px">Paid plans are billed monthly after your first visit — the amount below is just what you'll owe the agent on setup day.</div>
-      </div>
-
-      <!-- What to expect -->
-      <div style="background:var(--surface2); border-radius:10px; padding:16px 18px; margin-bottom:24px">
-        <div style="font-size:0.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:10px">What happens next</div>
-        <div style="display:flex; flex-direction:column; gap:8px">
-          <div style="display:flex; gap:10px; font-size:0.875rem">
-            <span style="color:var(--accent-text); font-weight:700; min-width:20px">1</span>
-            <span>We receive your request and assign an agent</span>
-          </div>
-          <div style="display:flex; gap:10px; font-size:0.875rem">
-            <span style="color:var(--accent-text); font-weight:700; min-width:20px">2</span>
-            <span>Agent messages you on WhatsApp to confirm the visit</span>
-          </div>
-          <div style="display:flex; gap:10px; font-size:0.875rem">
-            <span style="color:var(--accent-text); font-weight:700; min-width:20px">3</span>
-            <span>Agent arrives at your stall, sets up everything &amp; builds your catalog on the plan you chose</span>
-          </div>
-          <div style="display:flex; gap:10px; font-size:0.875rem">
-            <span style="color:var(--accent-text); font-weight:700; min-width:20px">4</span>
-            <span>You pay K50 cash for the visit — plus your plan's price if you picked Basic or Pro. No selection? You default to the Free plan, so it's just K50, done!</span>
-          </div>
-        </div>
+        <div style="font-size:0.78rem; color:var(--muted); margin-top:4px">Include your stall or bay number if you have one</div>
       </div>
 
       <button type="submit" class="btn btn-primary btn-block btn-lg">

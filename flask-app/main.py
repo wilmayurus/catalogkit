@@ -1767,19 +1767,14 @@ def admin_reject_payment(pr_id):
 @app.route('/assisted-setup', methods=['GET', 'POST'])
 def assisted_setup():
     if request.method == 'POST':
-        business_name      = request.form.get('business_name', '').strip()
-        market_location    = request.form.get('market_location', '').strip()
-        whatsapp           = request.form.get('whatsapp', '').strip()
-        preferred_datetime = request.form.get('preferred_datetime', '').strip()
-        catalog_plan       = request.form.get('catalog_plan', 'free').strip() or 'free'
-        if catalog_plan not in ('free', 'basic', 'pro'):
-            catalog_plan = 'free'
-        if not business_name or not market_location or not whatsapp or not preferred_datetime:
+        business_name   = request.form.get('business_name', '').strip()
+        market_location = request.form.get('market_location', '').strip()
+        whatsapp        = request.form.get('whatsapp', '').strip()
+        if not business_name or not market_location or not whatsapp:
             flash('All fields are required.', 'error')
             return render_template('assisted_setup.html', success=False)
         ar = AgencyRequest(business_name=business_name, market_location=market_location,
-                           whatsapp=whatsapp, preferred_datetime=preferred_datetime,
-                           catalog_plan=catalog_plan)
+                           whatsapp=whatsapp, preferred_datetime='', catalog_plan='free')
         db.session.add(ar)
         db.session.commit()
         ae = admin_email()
@@ -1791,11 +1786,9 @@ def assisted_setup():
                 if existing_acct else ''
             )
             send_email(ae,
-                f'CatalogKit — New agency setup request: {business_name}',
-                f'New Done-For-You request:\nBusiness: {business_name}\n'
-                f'Location: {market_location}\nWhatsApp: {whatsapp}\n'
-                f'Preferred visit: {preferred_datetime}\n'
-                f'Catalog plan: {ar.catalog_plan_label}\nTotal due on visit: K{ar.total_due}'
+                f'CatalogKit — New Done-For-You request: {business_name}',
+                f'New Done-For-You setup request:\nName: {business_name}\n'
+                f'Location: {market_location}\nWhatsApp: {whatsapp}'
                 f'{dup_note}')
         return render_template('assisted_setup.html', success=True, ar=ar)
     return render_template('assisted_setup.html', success=False)
