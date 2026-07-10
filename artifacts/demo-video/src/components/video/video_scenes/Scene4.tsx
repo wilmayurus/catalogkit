@@ -96,12 +96,13 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
 
           {/* WhatsApp card — full width */}
           <motion.div
-            className="flex-1 flex flex-col min-h-0"
+            className="flex flex-col flex-shrink-0"
+            style={{ height: '38cqh' }}
             initial={{ opacity: 0, x: 20 }}
             animate={phase >= 3 ? { opacity: 1, x: 0 } : {}}
             transition={{ type: 'spring', damping: 20 }}
           >
-            <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col overflow-hidden min-h-0">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col overflow-hidden" style={{ height: '30cqh' }}>
               <div className="h-[12%] bg-[#0D0D0D] flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-[2cqw] font-bold tracking-wide">Mary's Catalog</span>
               </div>
