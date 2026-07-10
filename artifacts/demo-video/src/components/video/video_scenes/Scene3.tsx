@@ -208,16 +208,35 @@ export function Scene3({ portrait }: { portrait?: boolean }) {
                   marginRight: '-0.2cqw',
                 }}
               />
-              {/* Fingertip */}
+              {/* Hand */}
               <div
                 style={{
-                  width: portrait ? '3cqw' : '2.2cqw',
-                  height: portrait ? '3cqw' : '2.2cqw',
-                  background: 'rgba(255,255,255,0.92)',
-                  borderRadius: '50%',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
+                  width: portrait ? '5cqw' : '3.8cqw',
+                  height: portrait ? '5cqw' : '3.8cqw',
+                  flexShrink: 0,
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))',
                 }}
-              />
+              >
+                <svg viewBox="0 0 56 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+                  {/* Thumb */}
+                  <rect x="2" y="36" width="10" height="18" rx="5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
+                  {/* Index finger */}
+                  <rect x="13" y="4" width="10" height="32" rx="5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
+                  {/* Middle finger */}
+                  <rect x="24" y="2" width="10" height="32" rx="5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
+                  {/* Ring finger */}
+                  <rect x="35" y="6" width="9" height="28" rx="4.5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
+                  {/* Pinky */}
+                  <rect x="45" y="12" width="8" height="22" rx="4" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
+                  {/* Palm */}
+                  <rect x="12" y="30" width="42" height="34" rx="10" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
+                  {/* Knuckle lines */}
+                  <line x1="18" y1="30" x2="18" y2="36" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="29" y1="28" x2="29" y2="34" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="39.5" y1="30" x2="39.5" y2="36" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="49" y1="32" x2="49" y2="36" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </div>
             </motion.div>
           )}
         </motion.div>
