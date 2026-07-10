@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PRODUCTS = [
-  { img: 'bilum-bag-clean.png',      name: 'Bilum Bag',    price: 'K 25' },
+  { img: 'bilum-bag-clean.png',      name: 'Bilum',        price: 'K 25' },
   { img: 'tropical-fruit-warm.png',  name: 'Fruit Mix',    price: 'K 5'  },
   { img: 'product-mask.png',         name: 'Beaded Mask',  price: 'K 40' },
 ];
@@ -198,7 +198,7 @@ export function Scene2({ portrait }: { portrait?: boolean }) {
             <span className={`text-white ${portrait ? 'text-[2.2cqw]' : 'text-[1.7cqw]'} font-black font-display`}>Mary's Catalog</span>
           </div>
           <div className="h-[10%] flex items-center justify-center flex-shrink-0 border-b border-gray-100">
-            <span className={`${portrait ? 'text-[2.2cqw]' : 'text-[1.8cqw]'} font-black text-[#0D0D0D] font-display`}>BILUM BAG</span>
+            <span className={`${portrait ? 'text-[2.2cqw]' : 'text-[1.8cqw]'} font-black text-[#0D0D0D] font-display`}>BILUM</span>
           </div>
           <div className="flex-1 flex items-center justify-center overflow-hidden px-[1cqw]">
             <img src={`${import.meta.env.BASE_URL}images/bilum-bag-clean.png`} className="w-[70%] h-full object-contain" alt="" />

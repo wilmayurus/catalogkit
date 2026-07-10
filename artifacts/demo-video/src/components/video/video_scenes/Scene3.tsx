@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const PAGES = [
-  { name: 'BILUM BAG',      price: 'K 25.00', img: 'bilum-bag-clean.png' },
+  { name: 'Bilum',          price: 'K 25.00', img: 'bilum-bag-clean.png' },
   { name: 'TROPICAL FRUIT', price: 'K 10.00', img: 'tropical-fruit-warm.png' },
   { name: 'CARVED MASK',    price: 'K 45.00', img: 'product-mask.png' },
 ];
