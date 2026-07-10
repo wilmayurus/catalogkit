@@ -217,24 +217,9 @@ export function Scene3({ portrait }: { portrait?: boolean }) {
                   filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))',
                 }}
               >
-                <svg viewBox="0 0 56 72" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-                  {/* Thumb */}
-                  <rect x="2" y="36" width="10" height="18" rx="5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
-                  {/* Index finger */}
-                  <rect x="13" y="4" width="10" height="32" rx="5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
-                  {/* Middle finger */}
-                  <rect x="24" y="2" width="10" height="32" rx="5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
-                  {/* Ring finger */}
-                  <rect x="35" y="6" width="9" height="28" rx="4.5" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
-                  {/* Pinky */}
-                  <rect x="45" y="12" width="8" height="22" rx="4" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
-                  {/* Palm */}
-                  <rect x="12" y="30" width="42" height="34" rx="10" fill="#f97316" stroke="#c2410c" strokeWidth="2"/>
-                  {/* Knuckle lines */}
-                  <line x1="18" y1="30" x2="18" y2="36" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="29" y1="28" x2="29" y2="34" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="39.5" y1="30" x2="39.5" y2="36" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="49" y1="32" x2="49" y2="36" stroke="#c2410c" strokeWidth="1.5" strokeLinecap="round"/>
+                {/* Font Awesome "hand-paper" solid — natural raised hand shape */}
+                <svg viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+                  <path fill="#f97316" d="M408.781 128.007C386.356 127.578 368 145.559 368 168v24h-8V80c0-22.091-17.909-40-40-40s-40 17.909-40 40v112h-8V40c0-22.091-17.909-40-40-40s-40 17.909-40 40v152h-8V80c0-22.091-17.909-40-40-40s-40 17.909-40 40v200h-8v-72c0-22.091-17.909-40-40-40s-40 17.909-40 40v120c0 79.529 64.471 144 144 144h144c79.529 0 144-64.471 144-144V168c0-22.125-17.953-40.393-40.219-39.993z"/>
                 </svg>
               </div>
             </motion.div>
