@@ -46,7 +46,7 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
 
       {portrait ? (
         /* ── Portrait: full-height stacked layout ── */
-        <div className="flex-1 flex flex-col px-[5cqw] py-[1cqh] gap-[0] overflow-hidden justify-between">
+        <div className="flex-1 flex flex-col px-[5cqw] overflow-hidden justify-center gap-[0]">
 
           {/* PDF row */}
           <motion.div
