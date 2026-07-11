@@ -3,13 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CHAT_MESSAGES = [
   { id: 1, img: 'bilum-bag-clean.png',     delay: 0.3 },
-  { id: 2, img: 'tropical-fruit-warm.png', delay: 0.7 },
-  { id: 3, img: 'product-mask.png',        delay: 1.1 },
-  { id: 4, img: 'bilum-bag-clean.png',     delay: 1.5 },
-  { id: 5, img: 'tropical-fruit-warm.png', delay: 1.9 },
-  { id: 6, img: 'product-mask.png',        delay: 2.3 },
-  { id: 7, img: 'bilum-bag-clean.png',     delay: 2.7 },
-  { id: 8, img: 'tropical-fruit-warm.png', delay: 3.1 },
+  { id: 2, img: 'tropical-fruit-warm.png', delay: 0.8 },
+  { id: 3, img: 'product-mask.png',        delay: 1.3 },
+  { id: 4, img: 'bilum-bag-clean.png',     delay: 1.8 },
+  { id: 5, img: 'tropical-fruit-warm.png', delay: 2.3 },
+  { id: 6, img: 'product-mask.png',        delay: 2.8 },
+  { id: 7, img: 'bilum-bag-clean.png',     delay: 3.3 },
+  { id: 8, img: 'tropical-fruit-warm.png', delay: 3.8 },
+];
+
+const PORTRAIT_MESSAGES = [
+  { id: 1, img: 'bilum-bag-clean.png',     delay: 0.3 },
+  { id: 2, img: 'tropical-fruit-warm.png', delay: 0.8 },
+  { id: 3, img: 'product-mask.png',        delay: 1.3 },
 ];
 
 function sender(id: number) {
@@ -100,26 +106,25 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
       transition={{ duration: 0.6 }}
     >
       {portrait ? (
-        /* ── Portrait: two clearly bounded halves ── */
+        /* ── Portrait: fixed top chat + fixed bottom panel ── */
         <div className="absolute inset-0 flex flex-col">
 
-          {/* TOP HALF — WhatsApp chat, dark navy card */}
-          <div className="flex flex-col px-[4cqw] pt-[2cqh] pb-[1.5cqh] gap-[1.5cqh]" style={{ flex: '0 0 50%' }}>
-            {/* Label */}
+          {/* TOP: label + chat frame, fixed 46% height */}
+          <div className="flex-shrink-0 flex flex-col px-[4cqw] pt-[2cqh] gap-[1.2cqh]" style={{ height: '46%' }}>
             <motion.div
               className="flex-shrink-0 text-center"
               initial={{ opacity: 0, y: -8 }}
               animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5 }}
             >
-              <span className="text-[2.8cqw] font-black text-[#f97316] font-display bg-[#f97316]/10 px-[3cqw] py-[0.8cqh] rounded-full border border-[#f97316]/30">
+              <span className="text-[2.6cqw] font-black text-[#f97316] font-display bg-[#f97316]/10 px-[3cqw] py-[0.7cqh] rounded-full border border-[#f97316]/30">
                 📱 PNG vendors flooding WhatsApp groups with photos...
               </span>
             </motion.div>
 
-            {/* Phone frame */}
+            {/* Chat frame — fills remaining top space */}
             <motion.div
-              className="flex-1 flex flex-col overflow-hidden"
+              className="flex-1 min-h-0 flex flex-col overflow-hidden"
               style={{
                 borderRadius: '2.5cqw',
                 border: '0.35cqw solid rgba(37,211,102,0.6)',
@@ -130,51 +135,83 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
               animate={phase >= 1 ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.5 }}
             >
-              {chatHeader}
-              {chatBody('w-[20cqw]')}
-              <AnimatePresence>
-                {phase >= 2 && (
-                  <motion.div
-                    className="absolute bg-[#f97316] text-white text-[1.8cqw] font-black px-[1.5cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
-                    style={{ top: '18cqh', right: '6cqw' }}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: [0, 1.2, 1], opacity: 1 }}
-                    transition={{ type: 'spring', bounce: 0.6 }}
-                  >
-                    20+ 📸
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Header */}
+              <div className="flex-shrink-0 bg-[#1a1a2e] px-[3cqw] py-[1.2cqh] flex items-center gap-[2cqw] border-b border-white/10">
+                <div className="w-[5cqw] h-[5cqw] rounded-full bg-[#25D366] flex items-center justify-center flex-shrink-0">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-[3cqw] h-[3cqw]">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.405-.883-.733-1.48-1.639-1.653-1.935-.173-.299-.018-.461.13-.611.134-.135.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.82 9.82 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-white text-[2.2cqw] font-bold flex items-center gap-[0.8cqw]">
+                    SME Vendors POM&nbsp;
+                    <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG" className="h-[1.8cqw] w-auto inline-block" />
+                  </div>
+                  <div className="text-white/50 text-[1.5cqw]">247 members</div>
+                </div>
+                <AnimatePresence>
+                  {phase >= 2 && (
+                    <motion.div
+                      className="bg-[#f97316] text-white text-[2cqw] font-black px-[2cqw] py-[0.5cqh] rounded-full shadow-xl flex-shrink-0"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+                      transition={{ type: 'spring', bounce: 0.6 }}
+                    >
+                      20+ 📸
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              {/* Messages — 3 unique images, laid out in a row to save vertical space */}
+              <div className="flex-1 min-h-0 flex items-center gap-[2cqw] px-[3cqw] py-[1.5cqh] overflow-hidden">
+                {PORTRAIT_MESSAGES.map((msg) => {
+                  const s = sender(msg.id);
+                  return (
+                    <motion.div
+                      key={msg.id}
+                      className="flex flex-col items-center gap-[0.8cqh] flex-1"
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={phase >= 1 ? { y: 0, opacity: 1 } : {}}
+                      transition={{ delay: msg.delay, duration: 0.3 }}
+                    >
+                      <div className="w-full aspect-square bg-white/10 rounded-xl overflow-hidden">
+                        <img src={`${import.meta.env.BASE_URL}images/${msg.img}`} className="w-full h-full object-cover opacity-85" alt="" />
+                      </div>
+                      <span className="text-white/40 text-[1.5cqw]">{s.name}</span>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </motion.div>
           </div>
 
-          {/* DIVIDER — makes the split unmistakable */}
-          <div className="flex-shrink-0 flex items-center gap-[2cqw] px-[6cqw]">
+          {/* DIVIDER */}
+          <div className="flex-shrink-0 flex items-center gap-[2cqw] px-[6cqw] py-[0.8cqh]">
             <div className="flex-1 h-[0.2cqh] bg-white/15" />
-            <span className="text-[2.5cqw] text-white/30 font-bold">↓</span>
+            <span className="text-[2.2cqw] text-white/25 font-bold">↓</span>
             <div className="flex-1 h-[0.2cqh] bg-white/15" />
           </div>
 
-          {/* BOTTOM HALF — pain point, slightly lighter card */}
+          {/* BOTTOM: pain point — takes all remaining height */}
           <motion.div
-            className="flex-1 flex flex-col items-center justify-center px-[5cqw] pb-[2cqh] gap-[2cqh]"
+            className="flex-1 min-h-0 flex flex-col items-center justify-center px-[5cqw] pb-[2cqh] gap-[1.8cqh]"
             style={{ background: '#0D0D0D' }}
             initial={{ opacity: 0 }}
             animate={phase >= 2 ? { opacity: 1 } : {}}
             transition={{ duration: 0.6 }}
           >
             <div className="text-center">
-              <div className="text-[7cqw] mb-[1cqh]">😩</div>
-              <h2 className="text-[5.5cqw] font-black text-white font-display leading-tight text-center">
+              <div className="text-[6cqw] mb-[1cqh]">😩</div>
+              <h2 className="text-[5cqw] font-black text-white font-display leading-tight text-center">
                 20 images dropped<br />in the group.
               </h2>
-              <p className="text-[3.2cqw] text-white/55 font-medium mt-[1.2cqh] leading-snug text-center">
+              <p className="text-[3cqw] text-white/55 font-medium mt-[1cqh] leading-snug text-center">
                 No prices. No contact.<br />Just… photos.
               </p>
             </div>
 
             <motion.p
-              className="text-[3cqw] text-white/40 italic text-center leading-snug"
+              className="text-[2.8cqw] text-white/40 italic text-center leading-snug"
               initial={{ opacity: 0 }}
               animate={phase >= 3 ? { opacity: 1 } : {}}
               transition={{ duration: 0.6 }}
@@ -183,12 +220,12 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
             </motion.p>
 
             <motion.div
-              className="bg-[#f97316] text-white px-[7cqw] py-[2.5cqh] rounded-2xl shadow-2xl text-center"
+              className="bg-[#f97316] text-white px-[7cqw] py-[2cqh] rounded-2xl shadow-2xl text-center"
               initial={{ opacity: 0, scale: 0.85 }}
               animate={phase >= 4 ? { opacity: 1, scale: 1 } : {}}
               transition={{ type: 'spring', damping: 18 }}
             >
-              <p className="text-[4.5cqw] font-black font-display leading-tight">
+              <p className="text-[4cqw] font-black font-display leading-tight">
                 There's a better way.
               </p>
             </motion.div>
