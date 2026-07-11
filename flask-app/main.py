@@ -752,6 +752,11 @@ def index():
     catalogs = Catalog.query.filter_by(user_id=user.id).order_by(Catalog.updated_at.desc()).all()
     return render_template('index.html', user=user, catalogs=catalogs)
 
+@app.route('/homepage')
+def homepage_preview():
+    """Public landing page — accessible while logged in (admin preview)."""
+    return render_template('landing.html', now=datetime.utcnow())
+
 @app.route('/catalog/new', methods=['POST'])
 @login_required
 def new_catalog():

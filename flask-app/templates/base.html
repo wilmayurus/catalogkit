@@ -52,6 +52,7 @@
       <a href="/contact" role="listitem" {% if request.endpoint == 'contact' %}class="active" aria-current="page"{% endif %}>Contact</a>
       {% if current_user.is_admin %}
         <a href="/admin" role="listitem" {% if request.endpoint == 'admin' %}class="active" aria-current="page"{% endif %} style="color:var(--warning)">Admin</a>
+        <a href="/homepage" target="_blank" role="listitem" style="color:var(--muted);font-size:0.85rem">🌐 Homepage</a>
       {% endif %}
       <button type="button" id="a11y-toggle" class="a11y-toggle" aria-pressed="false"
               title="Larger text / simpler view" aria-label="Toggle larger text and simpler view">Aa</button>
