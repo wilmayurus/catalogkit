@@ -51,7 +51,7 @@ export function Scene2({ portrait }: { portrait?: boolean }) {
           Upload your photos.<br />Add price & name.
         </h2>
         <p className={`${portrait ? 'text-[3cqw]' : 'text-[2.4cqw]'} text-[#0D0D0D]/65 font-semibold mt-[0.8cqh]`}>
-          <span className="text-[#f97316]">CatalogKit builds your catalog</span> — automatically.
+          When you're ready — click <span className="text-[#f97316]">Build Catalog</span> and it's done.
         </p>
       </motion.div>
 
