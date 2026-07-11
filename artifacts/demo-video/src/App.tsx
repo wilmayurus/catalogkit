@@ -7,23 +7,12 @@ import { VideoModeContext } from "./contexts/VideoModeContext";
 const TOTAL_DURATION_MS = 7000 + 9000 + 10000 + 11000 + 12000 + 2500;
 const COUNTDOWN_SECONDS = 5;
 
-type RecordState = "idle" | "waiting" | "countdown" | "recording" | "converting" | "done" | "error";
+type RecordState = "idle" | "waiting" | "countdown" | "recording" | "converting" | "done" | "error" | "converterror";
 
-function pickMimeType(): { mimeType: string; nativeMp4: boolean } {
-  const mp4Candidates = [
-    "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
-    "video/mp4;codecs=avc1",
-    "video/mp4",
-  ];
-  for (const t of mp4Candidates) {
-    if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, nativeMp4: true };
-  }
-  const webm = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-    ? "video/webm;codecs=vp9"
-    : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
-    ? "video/webm;codecs=vp8"
-    : "video/webm";
-  return { mimeType: webm, nativeMp4: false };
+function pickWebmMimeType(): string {
+  if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) return "video/webm;codecs=vp9";
+  if (MediaRecorder.isTypeSupported("video/webm;codecs=vp8")) return "video/webm;codecs=vp8";
+  return "video/webm";
 }
 
 function App() {
@@ -31,6 +20,8 @@ function App() {
   const [countdown, setCountdown]   = useState(COUNTDOWN_SECONDS);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [convertProgress, setConvertProgress] = useState("");
+  const [convertError, setConvertError]       = useState("");
+  const webmFallbackRef = useRef<{ blob: Blob; name: string } | null>(null);
   const [videoKey, setVideoKey]     = useState(0);
   const [portrait, setPortrait]     = useState(false);
   const mediaRef    = useRef<MediaRecorder | null>(null);
@@ -84,7 +75,7 @@ function App() {
   }
 
   function beginRecording(stream: MediaStream, isPortrait: boolean) {
-    const { mimeType, nativeMp4 } = pickMimeType();
+    const mimeType = pickWebmMimeType();
     const baseName = isPortrait ? "catalogkit-demo-portrait" : "catalogkit-demo";
 
     const recorder = new MediaRecorder(stream, { mimeType });
@@ -98,11 +89,7 @@ function App() {
       stream.getTracks().forEach(t => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
       const blob = new Blob(chunksRef.current, { type: mimeType });
-      if (nativeMp4) {
-        triggerDownload(blob, `${baseName}.mp4`, "video/mp4");
-      } else {
-        convertToMp4(blob, baseName);
-      }
+      convertToMp4(blob, baseName);
     };
 
     recorder.start(200);
@@ -120,49 +107,69 @@ function App() {
     }, 1000);
   }
 
+  async function loadFFmpeg(): Promise<FFmpeg> {
+    if (ffmpegRef.current) return ffmpegRef.current;
+    const ffmpeg = new FFmpeg();
+    ffmpeg.on("log", ({ message }) => {
+      const m = message.match(/time=(\S+)/);
+      if (m) setConvertProgress(`Converting… ${m[1]}`);
+    });
+    // Try unpkg first, fall back to jsdelivr
+    const cdns = [
+      "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm",
+      "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm",
+    ];
+    let loaded = false;
+    for (const base of cdns) {
+      try {
+        setConvertProgress(`Downloading converter from ${new URL(base).hostname}…`);
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${base}/ffmpeg-core.js`,   "text/javascript"),
+          wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, "application/wasm"),
+        });
+        loaded = true;
+        break;
+      } catch {
+        // try next CDN
+      }
+    }
+    if (!loaded) throw new Error("Could not download the MP4 converter from any CDN.");
+    ffmpegRef.current = ffmpeg;
+    return ffmpeg;
+  }
+
   async function convertToMp4(webmBlob: Blob, baseName: string) {
     setRecState("converting");
     setConvertProgress("Loading converter…");
+    webmFallbackRef.current = { blob: webmBlob, name: `${baseName}.webm` };
 
     try {
-      let ffmpeg = ffmpegRef.current;
-      if (!ffmpeg) {
-        ffmpeg = new FFmpeg();
-        ffmpegRef.current = ffmpeg;
-        ffmpeg.on("log", ({ message }) => {
-          const m = message.match(/time=(\S+)/);
-          if (m) setConvertProgress(`Converting… ${m[1]}`);
-        });
-        const base = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
-        setConvertProgress("Downloading converter (one-time, ~30 MB)…");
-        await ffmpeg.load({
-          coreURL:  await toBlobURL(`${base}/ffmpeg-core.js`,   "text/javascript"),
-          wasmURL:  await toBlobURL(`${base}/ffmpeg-core.wasm`, "application/wasm"),
-        });
-      }
+      const ffmpeg = await loadFFmpeg();
 
       setConvertProgress("Writing video data…");
       await ffmpeg.writeFile("input.webm", await fetchFile(webmBlob));
 
       setConvertProgress("Converting to MP4…");
-      await ffmpeg.exec([
+      const ret = await ffmpeg.exec([
         "-i", "input.webm",
         "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
         "-c:a", "aac",
         "-movflags", "+faststart",
         "output.mp4",
       ]);
+      if (ret !== 0) throw new Error(`FFmpeg exited with code ${ret}`);
 
       setConvertProgress("Saving…");
       const data = await ffmpeg.readFile("output.mp4");
       const mp4Blob = new Blob([data as Uint8Array], { type: "video/mp4" });
       triggerDownload(mp4Blob, `${baseName}.mp4`, "video/mp4");
 
-      await ffmpeg.deleteFile("input.webm");
-      await ffmpeg.deleteFile("output.mp4");
+      await ffmpeg.deleteFile("input.webm").catch(() => {});
+      await ffmpeg.deleteFile("output.mp4").catch(() => {});
     } catch (err) {
-      console.error("MP4 conversion failed, falling back to WebM:", err);
-      triggerDownload(webmBlob, `${baseName}.webm`, webmBlob.type);
+      const msg = err instanceof Error ? err.message : String(err);
+      setConvertError(msg);
+      setRecState("converterror");
     }
   }
 
@@ -289,6 +296,30 @@ function App() {
               <span>✕ Permission denied or cancelled.</span>
               <span className="text-xs text-red-300/70">Select <strong>this tab</strong> when the browser asks.</span>
               <button onClick={() => setRecState("idle")} className="mt-1 text-red-300 hover:text-red-100 text-xs underline">Try again</button>
+            </div>
+          </div>
+        )}
+
+        {recState === "converterror" && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-sm w-full px-3">
+            <div className="flex flex-col gap-2 bg-red-900/80 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-3 rounded-xl shadow-lg">
+              <span className="font-semibold">✕ MP4 conversion failed</span>
+              <span className="text-xs text-red-300/80 break-words">{convertError}</span>
+              <div className="flex gap-3 mt-1 justify-center">
+                <button
+                  onClick={() => {
+                    if (webmFallbackRef.current) {
+                      triggerDownload(webmFallbackRef.current.blob, webmFallbackRef.current.name, "video/webm");
+                    }
+                  }}
+                  className="text-red-200 hover:text-white text-xs underline"
+                >
+                  Download WebM instead
+                </button>
+                <button onClick={() => setRecState("idle")} className="text-red-300/70 hover:text-red-100 text-xs underline">
+                  Record again
+                </button>
+              </div>
             </div>
           </div>
         )}
