@@ -5,7 +5,7 @@ import { VideoModeContext } from "./contexts/VideoModeContext";
 const TOTAL_DURATION_MS = 7000 + 9000 + 10000 + 11000 + 12000 + 2500;
 const COUNTDOWN_SECONDS = 5;
 
-type RecordState = "idle" | "waiting" | "recording" | "done" | "error";
+type RecordState = "idle" | "recording" | "done" | "error";
 
 function pickWebmMimeType(): string {
   if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) return "video/webm;codecs=vp9";
@@ -13,10 +13,15 @@ function pickWebmMimeType(): string {
   return "video/webm";
 }
 
+/** Wait for two animation frames so React flushes all pending state to the DOM. */
+function twoFrames(): Promise<void> {
+  return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+}
+
 function App() {
   const [recState, setRecState] = useState<RecordState>("idle");
-  const [videoKey, setVideoKey]       = useState(0);
-  const [portrait, setPortrait]       = useState(false);
+  const [videoKey, setVideoKey] = useState(0);
+  const [portrait, setPortrait] = useState(false);
   const mediaRef    = useRef<MediaRecorder | null>(null);
   const chunksRef   = useRef<Blob[]>([]);
   const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -31,10 +36,15 @@ function App() {
   }
 
   async function startDownload() {
-    setRecState("waiting");
     chunksRef.current = [];
-
     const isPortrait = portraitRef.current;
+
+    // 1. Hide ALL UI before doing anything else.
+    //    Wait two rAF cycles so React flushes and the DOM is clean.
+    setRecState("recording");
+    await twoFrames();
+
+    // 2. Now request capture — the tab has zero overlays at this point.
     let stream: MediaStream;
     try {
       stream = await (navigator.mediaDevices as any).getDisplayMedia({
@@ -50,17 +60,14 @@ function App() {
     }
 
     streamRef.current = stream;
-    // Switch to "recording" immediately — stream is live and captures the full tab,
-    // so no overlays should appear from this point on.
-    setRecState("recording");
 
-    // Silent 5-second countdown before playback restarts
+    // 3. Silent countdown — no UI is shown during this wait.
     let count = COUNTDOWN_SECONDS;
     const countTimer = setInterval(async () => {
       count -= 1;
       if (count <= 0) {
         clearInterval(countTimer);
-        setVideoKey(k => k + 1);
+        setVideoKey(k => k + 1);          // restart animation from Scene 1
         await new Promise(r => setTimeout(r, 600));
         beginRecording(stream, isPortrait);
       }
@@ -82,9 +89,9 @@ function App() {
       stream.getTracks().forEach(t => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
       const blob = new Blob(chunksRef.current, { type: mimeType });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
       a.download = `${baseName}.webm`;
       a.click();
       URL.revokeObjectURL(url);
@@ -104,38 +111,35 @@ function App() {
     }, 1000);
   }
 
-  function cancelRecording() {
-    if (timerRef.current) clearInterval(timerRef.current);
-    mediaRef.current?.stop();
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    setRecState("idle");
-  }
-
   const stageStyle = portrait
-    ? {
-        width:  `min(100vw, calc((100vh - 76px) * 9 / 16))`,
-        height: `min(calc(100vh - 76px), calc(100vw * 16 / 9))`,
-      }
-    : {
-        width:  `min(100vw, calc((100vh - 76px) * 16 / 9))`,
-        height: `min(calc(100vh - 76px), calc(100vw * 9 / 16))`,
-      };
+    ? { width:  "min(100vw, calc((100vh - 76px) * 9 / 16))",
+        height: "min(calc(100vh - 76px), calc(100vw * 16 / 9))" }
+    : { width:  "min(100vw, calc((100vh - 76px) * 16 / 9))",
+        height: "min(calc(100vh - 76px), calc(100vw * 9 / 16))" };
 
   return (
     <VideoModeContext.Provider value={portrait}>
       <div className="w-screen h-screen bg-black flex items-center justify-center overflow-hidden relative">
+
+        {/* ── Video stage ── */}
         <div className="video-stage relative overflow-hidden" style={stageStyle}>
           <VideoTemplate key={videoKey} />
-          <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pointer-events-none z-[100]" style={{ paddingBottom: '0.8cqh' }}>
+          {/* Persistent © pill — part of the content, always visible */}
+          <div
+            className="absolute bottom-0 left-0 right-0 flex flex-col items-center pointer-events-none z-[100]"
+            style={{ paddingBottom: "0.8cqh" }}
+          >
             <span style={{
-              fontSize: '1.1cqw', fontWeight: 700, letterSpacing: '0.04em',
-              color: 'rgba(255,255,255,0.9)',
-              background: 'rgba(0,0,0,0.45)',
-              borderRadius: '20px',
-              padding: '0.2cqh 1.2cqw',
+              fontSize: "1.1cqw", fontWeight: 700, letterSpacing: "0.04em",
+              color: "rgba(255,255,255,0.9)",
+              background: "rgba(0,0,0,0.45)",
+              borderRadius: "20px",
+              padding: "0.2cqh 1.2cqw",
             }}>© CatalogKit</span>
           </div>
         </div>
+
+        {/* ── Controls — only shown in idle/done/error states, NEVER during recording ── */}
 
         {recState === "idle" && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
@@ -154,17 +158,6 @@ function App() {
           </div>
         )}
 
-        {recState === "waiting" && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-            <div className="bg-black/80 backdrop-blur-md border border-white/20 text-white text-sm px-5 py-3 rounded-2xl shadow-lg text-center leading-snug">
-              <span className="animate-pulse text-yellow-400">● </span>
-              <strong>Select this tab</strong> in the sharing dialog…
-            </div>
-          </div>
-        )}
-
-        {/* No overlay during recording — stream is live and captures the full tab */}
-
         {recState === "done" && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
             <div className="flex flex-col items-center gap-1 bg-green-900/70 backdrop-blur-md border border-green-500/40 text-green-200 text-sm px-5 py-3 rounded-2xl shadow-lg text-center">
@@ -174,7 +167,10 @@ function App() {
               <div className="text-xs text-green-300/70">
                 Open with <strong>VLC</strong> · or convert to MP4 via <strong>HandBrake</strong> (free)
               </div>
-              <button onClick={() => setRecState("idle")} className="mt-1 text-green-300/60 hover:text-green-100 text-xs underline">
+              <button
+                onClick={() => setRecState("idle")}
+                className="mt-1 text-green-300/60 hover:text-green-100 text-xs underline"
+              >
                 record again
               </button>
             </div>
@@ -186,10 +182,16 @@ function App() {
             <div className="flex flex-col items-center gap-2 bg-red-900/70 backdrop-blur-md border border-red-500/40 text-red-200 text-sm px-5 py-2 rounded-xl shadow-lg text-center">
               <span>✕ Permission denied or cancelled.</span>
               <span className="text-xs text-red-300/70">Select <strong>this tab</strong> when the browser asks.</span>
-              <button onClick={() => setRecState("idle")} className="mt-1 text-red-300 hover:text-red-100 text-xs underline">Try again</button>
+              <button
+                onClick={() => setRecState("idle")}
+                className="mt-1 text-red-300 hover:text-red-100 text-xs underline"
+              >
+                Try again
+              </button>
             </div>
           </div>
         )}
+
       </div>
     </VideoModeContext.Provider>
   );
