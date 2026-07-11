@@ -459,6 +459,15 @@
               {% else %}
                 <span class="chip chip-gray">Free</span>
               {% endif %}
+              {% if u.plan_expires %}
+                {% set days_left = (u.plan_expires.date() - now.date()).days %}
+                <div style="font-size:.72rem;margin-top:4px;
+                  {% if days_left <= 7 %}color:var(--danger);font-weight:700;
+                  {% elif days_left <= 30 %}color:var(--warning);font-weight:600;
+                  {% else %}color:var(--muted);{% endif %}">
+                  Expires {{ u.plan_expires.strftime('%d %b %Y') }}
+                </div>
+              {% endif %}
             </td>
             <td style="text-align:center">{{ u.catalog_count }}</td>
             <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
