@@ -238,11 +238,6 @@ export function Scene3({ portrait }: { portrait?: boolean }) {
         </h2>
       </motion.div>
 
-      {/* Copyright */}
-      <div className="absolute bottom-[1cqh] left-0 right-0 flex flex-col items-center pointer-events-none z-50" style={{ gap: '0.15cqh' }}>
-        <span className="text-[1.35cqw] text-[#0D0D0D]/40 font-bold tracking-wide">CatalogKit 🇵🇬</span>
-        <span className="text-[1.1cqw] text-[#0D0D0D]/30 font-medium tracking-wide">Built in Papua New Guinea for Papua New Guinea</span>
-      </div>
     </motion.div>
   );
 }

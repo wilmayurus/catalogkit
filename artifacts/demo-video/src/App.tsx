@@ -138,6 +138,11 @@ function App() {
         {/* Video stage — only the video lives here */}
         <div className="video-stage relative overflow-hidden" style={stageStyle}>
           <VideoTemplate key={videoKey} />
+          {/* Persistent footer — outside scene motion divs so it's always visible */}
+          <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pointer-events-none z-[100]" style={{ paddingBottom: '1cqh', gap: '0.1cqh' }}>
+            <span style={{ fontSize: '1.8cqw', fontWeight: 700, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.04em' }}>CatalogKit 🇵🇬</span>
+            <span style={{ fontSize: '1.35cqw', fontWeight: 500, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.03em' }}>Built in Papua New Guinea for Papua New Guinea</span>
+          </div>
         </div>
 
         {/* All UI is outside the video stage so it never appears in the recording */}
