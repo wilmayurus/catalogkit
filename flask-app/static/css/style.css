@@ -114,14 +114,14 @@ nav {
 
 .nav-brand:hover { opacity: 1; }
 
-.nav-links { display: flex; gap: 8px; }
+.nav-links { display: flex; gap: 2px; }
 
 .nav-links a {
   color: var(--muted);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  padding: 12px 14px;
+  padding: 12px 10px;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
