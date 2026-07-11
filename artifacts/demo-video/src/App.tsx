@@ -5,7 +5,7 @@ import { VideoModeContext } from "./contexts/VideoModeContext";
 const TOTAL_DURATION_MS = 7000 + 9000 + 10000 + 11000 + 12000 + 2500;
 const COUNTDOWN_SECONDS = 5;
 
-type RecordState = "idle" | "waiting" | "countdown" | "recording" | "done" | "error";
+type RecordState = "idle" | "waiting" | "recording" | "done" | "error";
 
 function pickWebmMimeType(): string {
   if (MediaRecorder.isTypeSupported("video/webm;codecs=vp9")) return "video/webm;codecs=vp9";
@@ -14,9 +14,7 @@ function pickWebmMimeType(): string {
 }
 
 function App() {
-  const [recState, setRecState]       = useState<RecordState>("idle");
-  const [countdown, setCountdown]     = useState(COUNTDOWN_SECONDS);
-  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [recState, setRecState] = useState<RecordState>("idle");
   const [videoKey, setVideoKey]       = useState(0);
   const [portrait, setPortrait]       = useState(false);
   const mediaRef    = useRef<MediaRecorder | null>(null);
@@ -52,13 +50,14 @@ function App() {
     }
 
     streamRef.current = stream;
-    setCountdown(COUNTDOWN_SECONDS);
-    setRecState("countdown");
+    // Switch to "recording" immediately — stream is live and captures the full tab,
+    // so no overlays should appear from this point on.
+    setRecState("recording");
 
+    // Silent 5-second countdown before playback restarts
     let count = COUNTDOWN_SECONDS;
     const countTimer = setInterval(async () => {
       count -= 1;
-      setCountdown(count);
       if (count <= 0) {
         clearInterval(countTimer);
         setVideoKey(k => k + 1);
@@ -94,13 +93,10 @@ function App() {
     };
 
     recorder.start(200);
-    setRecState("recording");
 
     let remaining = Math.ceil(TOTAL_DURATION_MS / 1000);
-    setSecondsLeft(remaining);
     timerRef.current = setInterval(() => {
       remaining -= 1;
-      setSecondsLeft(remaining);
       if (remaining <= 0) {
         if (timerRef.current) clearInterval(timerRef.current);
         mediaRef.current?.stop();
@@ -167,28 +163,7 @@ function App() {
           </div>
         )}
 
-        {recState === "countdown" && countdown > 0 && (
-          <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="text-white text-center">
-              <div className="text-8xl font-black tabular-nums" style={{ textShadow: '0 0 40px rgba(249,115,22,0.8)' }}>
-                {countdown}
-              </div>
-              <div className="text-lg font-semibold text-white/60 mt-2">Recording starts…</div>
-            </div>
-          </div>
-        )}
-
-        {recState === "recording" && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
-            <div className="flex items-center gap-3 bg-black/80 backdrop-blur-md border border-red-500/40 text-white text-sm px-5 py-2 rounded-full shadow-lg">
-              <span className="animate-pulse text-red-400">●</span>
-              Recording… {secondsLeft}s left
-              <button onClick={cancelRecording} className="ml-1 text-white/40 hover:text-white/80 text-xs transition-colors">
-                cancel
-              </button>
-            </div>
-          </div>
-        )}
+        {/* No overlay during recording — stream is live and captures the full tab */}
 
         {recState === "done" && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
