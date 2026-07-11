@@ -344,8 +344,12 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
       )}
 
       {/* Copyright */}
-      <div className="absolute bottom-[1.2cqh] left-0 right-0 flex justify-center pointer-events-none z-50">
-        <span className="text-[1.5cqw] text-white/30 font-medium tracking-wide">© CatalogKit</span>
+      <div className="absolute bottom-[1.2cqh] left-0 right-0 flex justify-center items-center gap-[0.8cqw] pointer-events-none z-50">
+        <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG" className="h-[1.4cqw] w-auto opacity-50" />
+        <span className="text-[1.3cqw] text-white/30 font-medium tracking-wide">
+          CatalogKit · Built in PNG for PNG · © 2026 · All Rights Reserved
+        </span>
+        <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG" className="h-[1.4cqw] w-auto opacity-50" />
       </div>
     </motion.div>
   );

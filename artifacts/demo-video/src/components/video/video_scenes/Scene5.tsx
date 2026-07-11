@@ -126,7 +126,8 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
             animate={phase >= 5 ? { opacity: 1 } : {}}
             transition={{ duration: 1, delay: 0.8 }}
           >
-            CatalogKit ©<br /><span className="text-[0.9em] opacity-70">Built in PNG for PNG</span>
+            CatalogKit · Built in PNG for PNG<br />
+            <span className="text-[0.85em] opacity-60">© 2026 · All Rights Reserved</span>
           </motion.p>
         </div>
       ) : (
@@ -203,18 +204,14 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
         </div>
       )}
 
-      {!portrait && (
-        <motion.div
-          className="flex-shrink-0 mt-auto w-full text-center pb-[3.5cqh]"
-          initial={{ opacity: 0 }}
-          animate={phase >= 5 ? { opacity: 0.4 } : {}}
-          transition={{ duration: 1, delay: 1 }}
-        >
-          <p className="text-[1cqw] text-white font-sans leading-relaxed text-center">
-            CatalogKit &copy;<br /><span className="text-[0.9em] opacity-70">Built in PNG for PNG</span>
-          </p>
-        </motion.div>
-      )}
+      {/* Copyright */}
+      <div className="absolute bottom-[1.2cqh] left-0 right-0 flex justify-center items-center gap-[0.8cqw] pointer-events-none z-50">
+        <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG" className="h-[1.4cqw] w-auto opacity-50" />
+        <span className="text-[1.3cqw] text-white/30 font-medium tracking-wide">
+          CatalogKit · Built in PNG for PNG · © 2026 · All Rights Reserved
+        </span>
+        <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG" className="h-[1.4cqw] w-auto opacity-50" />
+      </div>
     </motion.div>
   );
 }
