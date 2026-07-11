@@ -1,22 +1,43 @@
 import { useState, useRef } from "react";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
 import VideoTemplate from "./components/video/VideoTemplate";
 import { VideoModeContext } from "./contexts/VideoModeContext";
 
 const TOTAL_DURATION_MS = 7000 + 9000 + 10000 + 11000 + 12000 + 2500;
 const COUNTDOWN_SECONDS = 5;
 
-type RecordState = "idle" | "waiting" | "countdown" | "recording" | "done" | "error";
+type RecordState = "idle" | "waiting" | "countdown" | "recording" | "converting" | "done" | "error";
+
+function pickMimeType(): { mimeType: string; nativeMp4: boolean } {
+  const mp4Candidates = [
+    "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+    "video/mp4;codecs=avc1",
+    "video/mp4",
+  ];
+  for (const t of mp4Candidates) {
+    if (MediaRecorder.isTypeSupported(t)) return { mimeType: t, nativeMp4: true };
+  }
+  const webm = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
+    ? "video/webm;codecs=vp8"
+    : "video/webm";
+  return { mimeType: webm, nativeMp4: false };
+}
 
 function App() {
-  const [recState, setRecState] = useState<RecordState>("idle");
-  const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const [recState, setRecState]     = useState<RecordState>("idle");
+  const [countdown, setCountdown]   = useState(COUNTDOWN_SECONDS);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [videoKey, setVideoKey] = useState(0);
-  const [portrait, setPortrait] = useState(false);
-  const mediaRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const [convertProgress, setConvertProgress] = useState("");
+  const [videoKey, setVideoKey]     = useState(0);
+  const [portrait, setPortrait]     = useState(false);
+  const mediaRef    = useRef<MediaRecorder | null>(null);
+  const chunksRef   = useRef<Blob[]>([]);
+  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+  const streamRef   = useRef<MediaStream | null>(null);
+  const ffmpegRef   = useRef<FFmpeg | null>(null);
   const portraitRef = useRef(portrait);
   const lastFilenameRef = useRef<string>("");
   portraitRef.current = portrait;
@@ -46,7 +67,6 @@ function App() {
     }
 
     streamRef.current = stream;
-
     setCountdown(COUNTDOWN_SECONDS);
     setRecState("countdown");
 
@@ -64,12 +84,7 @@ function App() {
   }
 
   function beginRecording(stream: MediaStream, isPortrait: boolean) {
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
-      ? "video/webm;codecs=vp9"
-      : MediaRecorder.isTypeSupported("video/webm;codecs=vp8")
-      ? "video/webm;codecs=vp8"
-      : "video/webm";
-
+    const { mimeType, nativeMp4 } = pickMimeType();
     const baseName = isPortrait ? "catalogkit-demo-portrait" : "catalogkit-demo";
 
     const recorder = new MediaRecorder(stream, { mimeType });
@@ -80,10 +95,14 @@ function App() {
     };
 
     recorder.onstop = () => {
-      stream.getTracks().forEach((t) => t.stop());
+      stream.getTracks().forEach(t => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
-      const webmBlob = new Blob(chunksRef.current, { type: mimeType });
-      saveWebm(webmBlob, baseName);
+      const blob = new Blob(chunksRef.current, { type: mimeType });
+      if (nativeMp4) {
+        triggerDownload(blob, `${baseName}.mp4`, "video/mp4");
+      } else {
+        convertToMp4(blob, baseName);
+      }
     };
 
     recorder.start(200);
@@ -101,14 +120,60 @@ function App() {
     }, 1000);
   }
 
-  function saveWebm(webmBlob: Blob, baseName: string) {
-    const url = URL.createObjectURL(webmBlob);
+  async function convertToMp4(webmBlob: Blob, baseName: string) {
+    setRecState("converting");
+    setConvertProgress("Loading converter…");
+
+    try {
+      let ffmpeg = ffmpegRef.current;
+      if (!ffmpeg) {
+        ffmpeg = new FFmpeg();
+        ffmpegRef.current = ffmpeg;
+        ffmpeg.on("log", ({ message }) => {
+          const m = message.match(/time=(\S+)/);
+          if (m) setConvertProgress(`Converting… ${m[1]}`);
+        });
+        const base = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
+        setConvertProgress("Downloading converter (one-time, ~30 MB)…");
+        await ffmpeg.load({
+          coreURL:  await toBlobURL(`${base}/ffmpeg-core.js`,   "text/javascript"),
+          wasmURL:  await toBlobURL(`${base}/ffmpeg-core.wasm`, "application/wasm"),
+        });
+      }
+
+      setConvertProgress("Writing video data…");
+      await ffmpeg.writeFile("input.webm", await fetchFile(webmBlob));
+
+      setConvertProgress("Converting to MP4…");
+      await ffmpeg.exec([
+        "-i", "input.webm",
+        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+        "-c:a", "aac",
+        "-movflags", "+faststart",
+        "output.mp4",
+      ]);
+
+      setConvertProgress("Saving…");
+      const data = await ffmpeg.readFile("output.mp4");
+      const mp4Blob = new Blob([data as Uint8Array], { type: "video/mp4" });
+      triggerDownload(mp4Blob, `${baseName}.mp4`, "video/mp4");
+
+      await ffmpeg.deleteFile("input.webm");
+      await ffmpeg.deleteFile("output.mp4");
+    } catch (err) {
+      console.error("MP4 conversion failed, falling back to WebM:", err);
+      triggerDownload(webmBlob, `${baseName}.webm`, webmBlob.type);
+    }
+  }
+
+  function triggerDownload(blob: Blob, filename: string, _type: string) {
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${baseName}.webm`;
+    a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
-    lastFilenameRef.current = `${baseName}.webm`;
+    lastFilenameRef.current = filename;
     setRecState("done");
   }
 
@@ -119,17 +184,14 @@ function App() {
     setRecState("idle");
   }
 
-  // Reserve 76px for the download/switch controls so they're never hidden behind the video
-  // or behind the mobile browser nav bar on small screens.
-  const CTRL_H = 76;
   const stageStyle = portrait
     ? {
-        width: `min(100vw, calc((100vh - ${CTRL_H}px) * 9 / 16))`,
-        height: `min(calc(100vh - ${CTRL_H}px), calc(100vw * 16 / 9))`,
+        width:  `min(100vw, calc((100vh - 76px) * 9 / 16))`,
+        height: `min(calc(100vh - 76px), calc(100vw * 16 / 9))`,
       }
     : {
-        width: `min(100vw, calc((100vh - ${CTRL_H}px) * 16 / 9))`,
-        height: `min(calc(100vh - ${CTRL_H}px), calc(100vw * 9 / 16))`,
+        width:  `min(100vw, calc((100vh - 76px) * 16 / 9))`,
+        height: `min(calc(100vh - 76px), calc(100vw * 9 / 16))`,
       };
 
   return (
@@ -185,6 +247,27 @@ function App() {
                 {countdown}
               </div>
               <div className="text-lg font-semibold text-white/60 mt-2">Recording starts…</div>
+            </div>
+          </div>
+        )}
+
+        {recState === "recording" && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+            <div className="flex items-center gap-3 bg-black/80 backdrop-blur-md border border-red-500/40 text-white text-sm px-5 py-2 rounded-full shadow-lg">
+              <span className="animate-pulse text-red-400">●</span>
+              Recording… {secondsLeft}s left
+              <button onClick={cancelRecording} className="ml-1 text-white/40 hover:text-white/80 text-xs transition-colors">
+                cancel
+              </button>
+            </div>
+          </div>
+        )}
+
+        {recState === "converting" && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+            <div className="flex items-center gap-3 bg-black/80 backdrop-blur-md border border-orange-500/40 text-white text-sm px-5 py-3 rounded-2xl shadow-lg text-center">
+              <span className="animate-spin text-orange-400">⟳</span>
+              <span>{convertProgress || "Converting to MP4…"}</span>
             </div>
           </div>
         )}
