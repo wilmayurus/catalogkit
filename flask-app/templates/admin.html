@@ -438,7 +438,9 @@
               </div>
             </td>
             <td>
-              {% if u.is_suspended %}
+              {% if u.is_global_admin %}
+                <span class="chip" style="background:rgba(124,92,252,.2);color:#7c5cfc;font-weight:700"><span class="status-dot" style="background:#7c5cfc"></span> ⭐ Global Admin</span>
+              {% elif u.is_suspended %}
                 <span class="chip chip-red"><span class="status-dot" style="background:#fc5c5c"></span> Suspended</span>
               {% elif u.is_admin %}
                 <span class="chip chip-yellow"><span class="status-dot" style="background:#f6c44e"></span> Admin</span>
@@ -486,8 +488,10 @@
                 </a>
                 {% endif %}
                 {% if me.is_admin %}
+                  {% if not u.is_global_admin or me.is_global_admin %}
                   <a href="/admin/user/{{ u.id }}/edit" class="btn btn-secondary btn-sm">✏ Edit</a>
-                  {% if u.id != me.id and not u.is_admin %}
+                  {% endif %}
+                  {% if u.id != me.id and not u.is_admin and not u.is_global_admin %}
                     {% if u.is_suspended %}
                       <form method="POST" action="/admin/user/{{ u.id }}/unsuspend">
                         <button class="btn btn-success btn-sm" onclick="return confirm('Reinstate {{ u.name }}?')">✓ Reinstate</button>

@@ -195,6 +195,7 @@ class User(db.Model):
     plan_start          = db.Column(db.DateTime, nullable=True)
     monthly_builds_used = db.Column(db.Integer, default=0)
     monthly_reset_date  = db.Column(db.Date, nullable=True)
+    is_global_admin = db.Column(db.Boolean, default=False)
     is_admin      = db.Column(db.Boolean, default=False)
     is_moderator  = db.Column(db.Boolean, default=False)
     is_tester     = db.Column(db.Boolean, default=False)
@@ -205,6 +206,7 @@ class User(db.Model):
 
     @property
     def plan_label(self):
+        if self.is_global_admin: return 'Global Admin'
         if self.is_admin:     return 'Admin'
         if self.is_moderator: return 'Moderator'
         if self.plan == 'pro':   return 'Pro'
@@ -213,6 +215,7 @@ class User(db.Model):
 
     @property
     def plan_css(self):
+        if self.is_global_admin: return 'global-admin'
         if self.is_admin:     return 'admin'
         if self.is_moderator: return 'moderator'
         if self.plan == 'pro':   return 'pro'
@@ -222,7 +225,7 @@ class User(db.Model):
     @property
     def monthly_limit(self):
         """Max builds per month. None = unlimited."""
-        if self.is_admin or self.is_moderator: return None
+        if self.is_global_admin or self.is_admin or self.is_moderator: return None
         if self.plan == 'pro':   return None
         if self.plan == 'basic': return 20
         return 3
@@ -548,6 +551,19 @@ def full_admin_required(f):
         user = db.session.get(User, session['user_id'])
         if not user or not user.is_admin:
             flash('Only admins can perform this action.', 'error')
+            return redirect(url_for('admin'))
+        return f(*args, **kwargs)
+    return decorated
+
+def global_admin_required(f):
+    """Global admins only — the owner/super-admin level."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        user = db.session.get(User, session['user_id'])
+        if not user or not user.is_global_admin:
+            flash('Only the Global Admin can perform this action.', 'error')
             return redirect(url_for('admin'))
         return f(*args, **kwargs)
     return decorated
@@ -2171,7 +2187,7 @@ def update_agency_status(ar_id):
 @full_admin_required
 def suspend_user(user_id):
     user = db.session.get(User, user_id)
-    if user and not user.is_admin:
+    if user and not user.is_admin and not user.is_global_admin:
         user.is_suspended = True
         user.suspended_at = datetime.utcnow()
         db.session.commit()
@@ -2211,13 +2227,20 @@ def set_user_role(user_id):
     if not target or target.id == me.id:
         flash('Cannot change your own role.', 'error')
         return redirect(url_for('admin'))
+    if target.is_global_admin and not me.is_global_admin:
+        flash('Only the Global Admin can change another Global Admin\'s role.', 'error')
+        return redirect(url_for('admin'))
     role = request.form.get('role', 'user')
-    target.is_admin     = (role == 'admin')
+    if role == 'global_admin' and not me.is_global_admin:
+        flash('Only the Global Admin can assign the Global Admin role.', 'error')
+        return redirect(url_for('admin'))
+    target.is_global_admin = (role == 'global_admin')
+    target.is_admin     = (role in ('admin', 'global_admin'))
     target.is_moderator = (role == 'moderator')
     db.session.commit()
     log_activity(target.id, 'role_changed', f'Role set to {role} by admin {me.email}')
     log_admin_action(me.id, 'role_changed', 'user', target.id, f'{target.name} → {role}')
-    flash(f'{target.name}\'s role updated to {role.title()}.', 'success')
+    flash(f'{target.name}\'s role updated to {role.replace("_"," ").title()}.', 'success')
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/create', methods=['POST'])
@@ -2238,9 +2261,13 @@ def admin_create_user():
     if User.query.filter_by(email=email).first():
         flash('An account with that email already exists.', 'error')
         return redirect(url_for('admin'))
+    if access_level == 'global_admin' and not me.is_global_admin:
+        flash('Only the Global Admin can create another Global Admin.', 'error')
+        return redirect(url_for('admin'))
     user = User(name=name, email=email,
                 password_hash=generate_password_hash(password),
-                is_admin=(access_level == 'admin'),
+                is_global_admin=(access_level == 'global_admin'),
+                is_admin=(access_level in ('admin', 'global_admin')),
                 is_moderator=(access_level == 'moderator'),
                 is_tester=is_tester)
     db.session.add(user)
@@ -2257,6 +2284,9 @@ def admin_edit_user(user_id):
     target = db.session.get(User, user_id)
     if not target:
         flash('User not found.', 'error')
+        return redirect(url_for('admin'))
+    if target.is_global_admin and not me.is_global_admin:
+        flash('Only the Global Admin can edit a Global Admin account.', 'error')
         return redirect(url_for('admin'))
     if request.method == 'POST':
         new_email = request.form.get('email', '').strip().lower()
@@ -2280,7 +2310,10 @@ def admin_edit_user(user_id):
         # Access level (only if editing someone other than yourself)
         if target.id != me.id:
             level = request.form.get('access_level', 'user')
-            target.is_admin     = (level == 'admin')
+            if level == 'global_admin' and not me.is_global_admin:
+                level = 'admin'  # silently cap — can't self-promote to global admin
+            target.is_global_admin = (level == 'global_admin')
+            target.is_admin     = (level in ('admin', 'global_admin'))
             target.is_moderator = (level == 'moderator')
         target.is_tester = request.form.get('is_tester') == 'on'
         # Plan — lets the admin activate a plan directly (e.g. after a
@@ -2331,6 +2364,9 @@ def admin_delete_user(user_id):
         return redirect(url_for('admin'))
     if target.id == me.id:
         flash('You cannot delete your own account.', 'error')
+        return redirect(url_for('admin'))
+    if target.is_global_admin:
+        flash('Cannot delete a Global Admin account.', 'error')
         return redirect(url_for('admin'))
     if target.is_admin:
         flash('Cannot delete another admin account.', 'error')

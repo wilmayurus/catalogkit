@@ -123,21 +123,32 @@
         <div class="admin-section-title">🔑 Access Level</div>
       </div>
       <div class="admin-section-body" style="padding:20px 24px;display:flex;flex-direction:column;gap:10px">
-        {% for val, label, desc in [
-          ('user',      'User',      'Standard account — can create catalogs and use all features.'),
-          ('moderator', 'Moderator', 'Can view the admin panel (users, logs, reports) but cannot suspend or delete accounts.'),
-          ('admin',     'Admin',     'Full admin access — can manage all users, roles, and data.')
-        ] %}
-        <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--surface);border:1px solid {% if (u.is_admin and val=='admin') or (u.is_moderator and val=='moderator') or (not u.is_admin and not u.is_moderator and val=='user') %}var(--accent){% else %}var(--border){% endif %};border-radius:10px;padding:12px 14px">
-          <input type="radio" name="access_level" value="{{ val }}"
-                 {% if (u.is_admin and val=='admin') or (u.is_moderator and val=='moderator') or (not u.is_admin and not u.is_moderator and val=='user') %}checked{% endif %}
-                 style="margin-top:3px;accent-color:var(--accent)">
-          <div>
-            <div style="font-weight:600;font-size:0.9rem;color:var(--text)">{{ label }}</div>
-            <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">{{ desc }}</div>
+        {% if u.is_global_admin and not me.is_global_admin %}
+          <div style="background:rgba(124,92,252,.08);border:1px solid rgba(124,92,252,.3);border-radius:10px;padding:14px 16px;font-size:0.85rem;color:#7c5cfc">
+            ⭐ This is a Global Admin account. Only another Global Admin can change this role.
           </div>
-        </label>
-        {% endfor %}
+        {% else %}
+          {% set current_level = 'global_admin' if u.is_global_admin else ('admin' if u.is_admin else ('moderator' if u.is_moderator else 'user')) %}
+          {% set levels = [
+            ('user',         'User',         'Standard account — can create catalogs and use all features.'),
+            ('moderator',    'Moderator',     'Can view the admin panel (users, logs, reports) but cannot suspend or delete accounts.'),
+            ('admin',        'Admin',         'Full admin access — can manage all users, roles, and data.')
+          ] %}
+          {% if me.is_global_admin %}
+            {% set levels = levels + [('global_admin', '⭐ Global Admin', 'Owner-level access — can manage admins, assign Global Admin, and cannot be suspended or deleted.')] %}
+          {% endif %}
+          {% for val, label, desc in levels %}
+          <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;background:var(--surface);border:1px solid {% if current_level == val %}var(--accent){% else %}var(--border){% endif %};border-radius:10px;padding:12px 14px{% if val == 'global_admin' %};border-color:rgba(124,92,252,.5){% endif %}">
+            <input type="radio" name="access_level" value="{{ val }}"
+                   {% if current_level == val %}checked{% endif %}
+                   style="margin-top:3px;accent-color:{% if val == 'global_admin' %}#7c5cfc{% else %}var(--accent){% endif %}">
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;color:{% if val == 'global_admin' %}#7c5cfc{% else %}var(--text){% endif %}">{{ label }}</div>
+              <div style="font-size:0.8rem;color:var(--muted);margin-top:2px">{{ desc }}</div>
+            </div>
+          </label>
+          {% endfor %}
+        {% endif %}
       </div>
     </div>
     {% endif %}
