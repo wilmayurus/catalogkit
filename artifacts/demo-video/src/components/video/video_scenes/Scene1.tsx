@@ -234,14 +234,27 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
       ) : (
         /* ── Landscape: original side-by-side ── */
         <>
-          {/* Left: WhatsApp chat */}
-          <div className="w-[48%] h-full flex flex-col overflow-hidden border-r border-white/10">
+          {/* Left: WhatsApp chat — slightly lighter tint */}
+          <div className="w-[48%] h-full flex flex-col overflow-hidden relative" style={{ background: '#141420' }}>
             {chatHeader}
             {chatBody('w-[13cqw]')}
+
+            {/* Left side label */}
+            <motion.div
+              className="absolute bottom-[2.5cqh] left-0 right-0 flex justify-center pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={phase >= 1 ? { opacity: 1 } : {}}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
+              <span className="text-[1.15cqw] font-bold tracking-widest uppercase text-white/25 bg-white/5 px-[1.5cqw] py-[0.4cqh] rounded-full">
+                📱 WhatsApp Group
+              </span>
+            </motion.div>
+
             <AnimatePresence>
               {phase >= 2 && (
                 <motion.div
-                  className="absolute top-[7cqh] right-[54%] bg-[#f97316] text-white text-[1.4cqw] font-black px-[1.2cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
+                  className="absolute top-[7cqh] right-[3%] bg-[#f97316] text-white text-[1.4cqw] font-black px-[1.2cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: [0, 1.2, 1], opacity: 1, rotate: [0, -10, 10, 0] }}
                   transition={{ type: 'spring', bounce: 0.6, duration: 0.8 }}
@@ -252,8 +265,36 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
             </AnimatePresence>
           </div>
 
-          {/* Right: Pain point */}
-          <div className="w-[52%] h-full flex flex-col items-center justify-center px-[4cqw] gap-[3cqh]">
+          {/* Vertical divider */}
+          <div className="relative flex-shrink-0 flex flex-col items-center justify-center" style={{ width: '2px' }}>
+            <div className="absolute inset-y-0 w-[1px]" style={{
+              background: 'linear-gradient(to bottom, transparent 0%, rgba(249,115,22,0.15) 20%, rgba(249,115,22,0.5) 50%, rgba(249,115,22,0.15) 80%, transparent 100%)',
+            }} />
+            <motion.div
+              className="relative z-10 bg-[#111111] border border-[#f97316]/40 text-[#f97316] text-[1cqw] font-black px-[0.6cqw] py-[0.8cqh] rounded-full"
+              style={{ writingMode: 'vertical-rl', letterSpacing: '0.08em' }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={phase >= 2 ? { opacity: 1, scale: 1 } : {}}
+              transition={{ type: 'spring', delay: 0.3 }}
+            >
+              VS
+            </motion.div>
+          </div>
+
+          {/* Right: Pain point — darker background */}
+          <div className="flex-1 h-full flex flex-col items-center justify-center px-[4cqw] gap-[3cqh] relative" style={{ background: '#0D0D0D' }}>
+
+            {/* Right side label */}
+            <motion.div
+              className="absolute bottom-[2.5cqh] left-0 right-0 flex justify-center pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={phase >= 2 ? { opacity: 1 } : {}}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <span className="text-[1.15cqw] font-bold tracking-widest uppercase text-[#f97316]/40 bg-[#f97316]/5 px-[1.5cqw] py-[0.4cqh] rounded-full">
+                😩 The Problem
+              </span>
+            </motion.div>
             {[
               { delay: 0.6, right: '12cqw', top: '14cqh' },
               { delay: 1.2, right: '8cqw',  top: '22cqh' },
