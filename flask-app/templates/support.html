@@ -24,21 +24,6 @@
     </form>
   </div>
 
-  {% if tickets %}
-  <h2 style="font-size:1.05rem;font-weight:700;margin-bottom:12px">Your past messages</h2>
-  <div class="card" style="padding:0">
-    {% for t in tickets %}
-    <a href="/support/{{ t.id }}" class="ticket-list-item">
-      <div>
-        <div style="font-weight:700;font-size:0.92rem;margin-bottom:2px">{{ t.subject }}</div>
-        <div style="font-size:0.78rem;color:var(--muted)">Started {{ t.created_at.strftime('%d %b %Y') }}</div>
-      </div>
-      <span class="status-pill {{ t.status }}">{{ t.status_label }}</span>
-    </a>
-    {% endfor %}
-  </div>
-  {% endif %}
-
   <p style="text-align:center;font-size:0.85rem;color:var(--muted);margin-top:28px">
     Prefer WhatsApp? <a href="https://wa.me/67573817000?text={{ 'Hi! I have a question about CatalogKit.' | urlencode }}" target="_blank" rel="noopener" style="color:var(--accent-text);font-weight:700;text-decoration:none">Message us there instead</a>.
   </p>
