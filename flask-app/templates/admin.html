@@ -388,19 +388,53 @@
       <a href="/admin/logs?type=access" class="btn btn-secondary btn-sm">Access Logs</a>
     </div>
   </div>
-  <div class="admin-section-body">
+
+  {# Search + filter bar #}
+  <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <input type="search" id="user-search" placeholder="Search by name, email or business…"
+           oninput="filterUsers()"
+           style="flex:1;min-width:180px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85rem;font-family:inherit">
+    <select id="user-plan-filter" onchange="filterUsers()"
+            style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85rem;font-family:inherit">
+      <option value="">All plans</option>
+      <option value="free">Free</option>
+      <option value="basic">Basic</option>
+      <option value="pro">Pro</option>
+    </select>
+    <select id="user-status-filter" onchange="filterUsers()"
+            style="padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.85rem;font-family:inherit">
+      <option value="">All statuses</option>
+      <option value="active">Active</option>
+      <option value="suspended">Suspended</option>
+    </select>
+    <span id="user-match-count" style="font-size:0.78rem;color:var(--muted);white-space:nowrap"></span>
+  </div>
+
+  <div class="admin-section-body" style="padding:0">
     <div class="admin-tbl-wrap">
-      <table class="admin-tbl">
+      <table class="admin-tbl" id="users-table">
         <thead>
-          <tr><th>User</th><th>Status</th><th>Plan</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
+          <tr><th></th><th>User</th><th>Status</th><th>Plan</th><th>Catalogs</th><th>Joined</th><th>Actions</th></tr>
         </thead>
         <tbody>
           {% for u in all_users %}
-          <tr class="{% if u.is_suspended %}row-suspended{% endif %}">
+          {# Data attributes for JS filtering #}
+          <tr class="user-main-row {% if u.is_suspended %}row-suspended{% endif %}"
+              data-name="{{ u.name | lower }}"
+              data-email="{{ u.email | lower }}"
+              data-business="{{ (u.business_name or '') | lower }}"
+              data-plan="{{ u.plan }}"
+              data-status="{{ 'suspended' if u.is_suspended else 'active' }}"
+              style="cursor:pointer"
+              onclick="toggleUserDetail({{ u.id }}, this)">
+            <td style="width:28px;color:var(--muted);font-size:0.7rem;padding-right:0">
+              <span id="uchev-{{ u.id }}">▶</span>
+            </td>
             <td>
               <div class="user-cell">
                 <strong>{{ u.name }}</strong>
                 <span>{{ u.email }}</span>
+                {% if u.business_name %}<span style="font-size:.74rem;color:var(--muted)">{{ u.business_name }}</span>{% endif %}
               </div>
             </td>
             <td>
@@ -428,7 +462,7 @@
             </td>
             <td style="text-align:center">{{ u.catalog_count }}</td>
             <td style="font-size:0.8rem;color:var(--muted);white-space:nowrap">{{ u.created_at.strftime('%d %b %Y') }}</td>
-            <td>
+            <td onclick="event.stopPropagation()">
               <div class="action-group" style="flex-wrap:wrap;gap:6px">
                 <a href="/admin/logs?type=activity&user_id={{ u.id }}" class="btn btn-secondary btn-sm">📋 Activity</a>
                 {% if u.whatsapp %}
@@ -467,9 +501,76 @@
               </div>
             </td>
           </tr>
+
+          {# Expandable detail row #}
+          <tr id="udetail-{{ u.id }}" class="user-detail-row" style="display:none">
+            <td colspan="7" style="padding:0;border-top:none">
+              <div style="background:var(--surface2);padding:16px 24px;border-bottom:1px solid var(--border)">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px 24px;margin-bottom:12px">
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">WhatsApp</div>
+                    <div style="font-size:.84rem;font-weight:600">{{ u.whatsapp or '—' }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Phone</div>
+                    <div style="font-size:.84rem;font-weight:600">{{ u.phone or '—' }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Location</div>
+                    <div style="font-size:.84rem;font-weight:600">{{ u.location or '—' }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Monthly Builds</div>
+                    <div style="font-size:.84rem;font-weight:600">{{ u.monthly_builds_used or 0 }} used
+                      {% if u.monthly_limit %}/ {{ u.monthly_limit }}{% else %}&nbsp;(unlimited){% endif %}
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Plan Expires</div>
+                    <div style="font-size:.84rem;font-weight:600">
+                      {% if u.plan_expires %}
+                        {{ u.plan_expires.strftime('%d %b %Y') }}
+                        {% set days_left = (u.plan_expires.date() - now.date()).days %}
+                        {% if days_left <= 7 %}<span style="color:var(--danger)">&nbsp;({{ days_left }}d left)</span>{% endif %}
+                      {% else %}—{% endif %}
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Profile</div>
+                    <div style="font-size:.84rem;font-weight:600">
+                      {% if u.business_name and u.whatsapp %}
+                        <span style="color:var(--success)">✓ Complete</span>
+                      {% else %}
+                        <span style="color:var(--muted)">Incomplete</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% if u.facebook_url %}
+                  <div>
+                    <div style="font-size:.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Facebook</div>
+                    <div style="font-size:.84rem"><a href="{{ u.facebook_url }}" target="_blank" style="color:var(--accent-text)">View page ↗</a></div>
+                  </div>
+                  {% endif %}
+                </div>
+                {% if u.catalogs %}
+                <div style="font-size:.72rem;color:var(--muted);margin-top:4px">
+                  <strong>Catalogs:</strong>
+                  {% for c in u.catalogs %}
+                    <a href="/workspace/{{ c.id }}" style="color:var(--accent-text);text-decoration:none">{{ c.name }}</a>
+                    ({{ c.page_count }}p{% if c.is_published %}, published{% endif %}){% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+
           {% endfor %}
         </tbody>
       </table>
+      <div id="no-user-match" style="display:none;padding:32px;text-align:center;color:var(--muted);font-size:.88rem">
+        No users match your search.
+      </div>
     </div>
   </div>
 </div>
@@ -578,6 +679,50 @@ function switchTab(prefix, tab, btn) {
     b.classList.remove('active');
   });
   btn.classList.add('active');
+}
+
+function toggleUserDetail(id, row) {
+  var detail = document.getElementById('udetail-' + id);
+  var chev   = document.getElementById('uchev-' + id);
+  if (!detail) return;
+  var open = detail.style.display === 'none' || detail.style.display === '';
+  detail.style.display = open ? 'table-row' : 'none';
+  chev.textContent = open ? '▼' : '▶';
+}
+
+function filterUsers() {
+  var q      = (document.getElementById('user-search').value || '').toLowerCase();
+  var plan   = document.getElementById('user-plan-filter').value;
+  var status = document.getElementById('user-status-filter').value;
+  var rows   = document.querySelectorAll('#users-table tbody .user-main-row');
+  var shown  = 0;
+  rows.forEach(function(row) {
+    var name     = (row.dataset.name || '');
+    var email    = (row.dataset.email || '');
+    var business = (row.dataset.business || '');
+    var rowPlan  = row.dataset.plan;
+    var rowStat  = row.dataset.status;
+    var textMatch = !q || name.includes(q) || email.includes(q) || business.includes(q);
+    var planMatch = !plan || rowPlan === plan;
+    var statMatch = !status || rowStat === status;
+    var visible   = textMatch && planMatch && statMatch;
+    row.style.display = visible ? '' : 'none';
+    var detailRow = row.nextElementSibling;
+    if (detailRow && detailRow.classList.contains('user-detail-row')) {
+      detailRow.style.display = 'none';
+      var chev = row.querySelector('[id^="uchev-"]');
+      if (chev) chev.textContent = '▶';
+    }
+    if (visible) shown++;
+  });
+  var total = rows.length;
+  var countEl = document.getElementById('user-match-count');
+  if (q || plan || status) {
+    countEl.textContent = shown + ' of ' + total + ' users';
+  } else {
+    countEl.textContent = '';
+  }
+  document.getElementById('no-user-match').style.display = shown === 0 ? 'block' : 'none';
 }
 </script>
 

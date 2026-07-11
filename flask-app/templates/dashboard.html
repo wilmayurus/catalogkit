@@ -1,41 +1,251 @@
 {% extends 'base.html' %}
-{% block title %}My Plan — CatalogKit{% endblock %}
+{% block title %}My Dashboard — CatalogKit{% endblock %}
 {% block body %}
-<div class="container">
+<div class="container" style="max-width:800px;padding-top:32px;padding-bottom:72px">
 
-  <!-- Catalog List -->
-  <div class="section-header" style="margin-top:40px">
-    <h3>Your catalogs &nbsp;·&nbsp; <span class="badge">{{ catalogs | length }}</span></h3>
+  {# ── Profile incomplete banner ── #}
+  {% if not user.profile_complete %}
+  <div style="background:linear-gradient(135deg,rgba(249,115,22,.12),rgba(249,115,22,.05));border:1.5px solid rgba(249,115,22,.4);border-radius:14px;padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <span style="font-size:1.4rem">⚠️</span>
+    <div style="flex:1;min-width:200px">
+      <div style="font-weight:700;font-size:.95rem;margin-bottom:2px">Complete your profile to get started</div>
+      <div style="font-size:.83rem;color:var(--muted)">Add your <strong>Business Name</strong> and <strong>WhatsApp number</strong> — these appear on every catalog you share.</div>
+    </div>
+    <a href="/profile" class="btn btn-primary btn-sm">Complete Profile →</a>
+  </div>
+  {% endif %}
+
+  {# ── Plan + Usage card ── #}
+  {% set builds_used = user.monthly_builds_used or 0 %}
+  {% set builds_limit = plan_limits[user.plan] %}
+  {% set builds_remaining = user.builds_remaining %}
+  <div style="background:var(--surface2);border-radius:16px;padding:24px;margin-bottom:28px;border:1.5px solid var(--border)">
+    <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+      {# Plan badge #}
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Your Plan</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          {% if user.plan == 'pro' %}
+            <span class="chip chip-yellow" style="font-size:.85rem;padding:4px 14px">⭐ Pro</span>
+          {% elif user.plan == 'basic' %}
+            <span class="chip chip-blue" style="font-size:.85rem;padding:4px 14px">✦ Basic</span>
+          {% else %}
+            <span class="chip chip-gray" style="font-size:.85rem;padding:4px 14px">Free</span>
+          {% endif %}
+          {% if user.is_admin %}
+            <span class="chip chip-yellow" style="font-size:.85rem;padding:4px 14px">🛡 Admin</span>
+          {% endif %}
+        </div>
+        {% if user.plan != 'free' and user.plan_expires %}
+          {% set days_left = (user.plan_expires.date() - now.date()).days %}
+          <div style="margin-top:8px;font-size:.78rem;color:{% if days_left <= 7 %}var(--danger){% else %}var(--muted){% endif %}">
+            {% if days_left > 0 %}
+              ⏱ Expires in {{ days_left }} day{{ 's' if days_left != 1 }} ({{ user.plan_expires.strftime('%d %b %Y') }})
+            {% else %}
+              ⚠ Expired
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      {# Monthly builds ── #}
+      <div style="flex:1;min-width:180px">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Monthly Builds</div>
+        {% if builds_limit is none %}
+          <div style="font-size:1.1rem;font-weight:700;color:var(--success)">∞ Unlimited</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:4px">{{ builds_used }} built this month</div>
+        {% else %}
+          <div style="font-size:1.3rem;font-weight:800;line-height:1">
+            {{ builds_used }}<span style="font-size:.9rem;font-weight:500;color:var(--muted)"> / {{ builds_limit }}</span>
+          </div>
+          <div style="margin-top:8px;height:7px;background:var(--border);border-radius:100px;overflow:hidden">
+            {% set pct = [((builds_used / builds_limit) * 100)|int, 100]|min %}
+            <div style="height:100%;width:{{ pct }}%;background:{% if pct >= 90 %}var(--danger){% elif pct >= 60 %}var(--warning){% else %}var(--accent){% endif %};border-radius:100px;transition:width .6s"></div>
+          </div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:5px">
+            {% if builds_remaining == 0 %}
+              <span style="color:var(--danger);font-weight:700">No builds remaining this month</span>
+            {% else %}
+              {{ builds_remaining }} build{{ 's' if builds_remaining != 1 }} left this month
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      {# Catalogs count ── #}
+      <div style="flex:1;min-width:130px">
+        <div style="font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Total Catalogs</div>
+        <div style="font-size:1.3rem;font-weight:800">{{ catalogs|length }}</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:4px">
+          {{ catalogs|selectattr('is_published')|list|length }} published · {{ catalogs|rejectattr('is_published')|list|length }} draft
+        </div>
+      </div>
+
+      {# Upgrade CTA ── #}
+      {% if user.plan == 'free' and not user.is_admin %}
+      <div style="flex-shrink:0;display:flex;flex-direction:column;gap:8px;justify-content:center">
+        <a href="/pricing" class="btn btn-primary btn-sm">⬆ Upgrade Plan</a>
+        <div style="font-size:.72rem;color:var(--muted);text-align:center">More builds &amp; pages</div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {# ── Quick actions ── #}
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px">
+    <a href="/profile" class="btn btn-secondary btn-sm">✏️ Edit Profile</a>
+    <a href="/support" class="btn btn-secondary btn-sm">💬 Get Help</a>
+    <a href="/pricing" class="btn btn-secondary btn-sm">📊 View Plans</a>
+    <a href="/assisted-setup" class="btn btn-secondary btn-sm">🏪 Done-For-You Setup</a>
+    <a href="/contact" class="btn btn-secondary btn-sm">📞 Contact Us</a>
+  </div>
+
+  {# ── Catalog list ── #}
+  <div class="section-header">
+    <h3>Your Catalogs &nbsp;·&nbsp; <span class="badge">{{ catalogs|length }}</span></h3>
     <form method="POST" action="/catalog/new" style="margin:0">
       <button type="submit" class="btn btn-primary btn-sm">+ New Catalog</button>
     </form>
   </div>
 
   {% if catalogs %}
-  <div class="catalog-list">
+  <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
     {% for cat in catalogs %}
-    <div class="catalog-list-item">
-      <div class="catalog-list-icon">&#128218;</div>
-      <div class="catalog-list-info">
-        <div class="catalog-list-name">{{ cat.name }}</div>
-        <div class="catalog-list-meta">{{ cat.page_count }} page{{ 's' if cat.page_count != 1 }} &nbsp;·&nbsp; {{ cat.created_at.strftime('%d %b %Y') }}</div>
+    <div style="background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:box-shadow .2s" id="cat-card-{{ cat.id }}">
+
+      {# Summary row (clickable) #}
+      <div onclick="toggleCatalog({{ cat.id }})" style="display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none" role="button" aria-expanded="false" id="cat-hdr-{{ cat.id }}">
+        <div style="font-size:1.6rem;flex-shrink:0">📚</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ cat.name }}</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:2px">
+            {{ cat.page_count }} page{{ 's' if cat.page_count != 1 else '' }}
+            &nbsp;·&nbsp; Updated {{ cat.updated_at.strftime('%d %b %Y') }}
+            {% if cat.pdf_downloads %}&nbsp;·&nbsp; {{ cat.pdf_downloads }} PDF download{{ 's' if cat.pdf_downloads != 1 }}{% endif %}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          {% if cat.is_published %}
+            <span class="chip chip-green" style="font-size:.75rem">✓ Published</span>
+          {% else %}
+            <span class="chip chip-gray" style="font-size:.75rem">Draft</span>
+          {% endif %}
+          <span id="chev-{{ cat.id }}" style="color:var(--muted);font-size:.8rem;transition:transform .2s">▼</span>
+        </div>
       </div>
-      <a href="/catalog/{{ cat.id }}" class="btn btn-secondary btn-sm">View</a>
+
+      {# Expandable detail panel #}
+      <div id="detail-{{ cat.id }}" style="display:none;border-top:1.5px solid var(--border)">
+        <div style="padding:20px">
+
+          {# Info grid #}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:20px">
+            <div style="background:var(--surface);border-radius:10px;padding:14px">
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Created</div>
+              <div style="font-weight:600;font-size:.88rem">{{ cat.created_at.strftime('%d %b %Y') }}</div>
+            </div>
+            <div style="background:var(--surface);border-radius:10px;padding:14px">
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Pages</div>
+              <div style="font-weight:600;font-size:.88rem">{{ cat.page_count }} product{{ 's' if cat.page_count != 1 }}</div>
+            </div>
+            <div style="background:var(--surface);border-radius:10px;padding:14px">
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">PDF Downloads</div>
+              <div style="font-weight:600;font-size:.88rem">{{ cat.pdf_downloads or 0 }}</div>
+            </div>
+            <div style="background:var(--surface);border-radius:10px;padding:14px">
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px">Status</div>
+              <div style="font-weight:600;font-size:.88rem">{{ 'Published ✓' if cat.is_published else 'Draft' }}</div>
+            </div>
+          </div>
+
+          {# Share link (published only) #}
+          {% if cat.is_published %}
+          <div style="background:var(--surface);border-radius:10px;padding:16px;margin-bottom:16px">
+            <div style="font-size:.7rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Share Link</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <code style="flex:1;min-width:0;font-size:.78rem;background:var(--surface2);padding:8px 12px;border-radius:8px;border:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block" id="link-{{ cat.id }}">{{ request.host_url }}catalog/{{ cat.id }}</code>
+              <button onclick="copyLink('link-{{ cat.id }}', this)" class="btn btn-secondary btn-sm" style="flex-shrink:0">📋 Copy</button>
+              <a href="/catalog/{{ cat.id }}" target="_blank" class="btn btn-secondary btn-sm" style="flex-shrink:0">🔗 Open</a>
+            </div>
+          </div>
+          {% endif %}
+
+          {# Action buttons #}
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="/workspace/{{ cat.id }}" class="btn {% if not cat.is_published %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">
+              ✏️ {% if not cat.is_published %}Edit &amp; Build{% else %}Edit{% endif %}
+            </a>
+            <a href="/catalog/{{ cat.id }}" target="_blank" class="btn btn-secondary btn-sm">👁 View Catalog</a>
+            {% if cat.is_published %}
+            <a href="/catalog/{{ cat.id }}/download" class="btn btn-secondary btn-sm">⬇ Download PDF</a>
+            {% endif %}
+            <form method="POST" action="/catalog/{{ cat.id }}/delete" style="margin:0"
+                  onsubmit="return confirm('Delete {{ cat.name }}? This cannot be undone.')">
+              <button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,.1);color:var(--danger);border:1.5px solid rgba(239,68,68,.25)">🗑 Delete</button>
+            </form>
+          </div>
+
+        </div>
+      </div>
     </div>
     {% endfor %}
   </div>
+
   {% else %}
-  <div class="empty-state">
-    <div class="icon">&#128218;</div>
-    <p>No catalogs yet — <a href="/">create your first one</a>.</p>
+  <div class="empty-state" style="margin-top:16px">
+    <div class="icon">📚</div>
+    <p style="margin-bottom:16px">No catalogs yet — create your first one and start sharing!</p>
+    <form method="POST" action="/catalog/new">
+      <button type="submit" class="btn btn-primary">+ Create My First Catalog</button>
+    </form>
   </div>
   {% endif %}
 
-  <!-- Account -->
-  <div class="section-header" style="margin-top:40px"><h3>Account</h3></div>
-  <div class="info-row"><span>Name</span><strong>{{ user.name }}</strong></div>
-  <div class="info-row"><span>Email</span><strong>{{ user.email }}</strong></div>
-  <div class="info-row"><span>Member since</span><strong>{{ user.created_at.strftime('%d %b %Y') }}</strong></div>
+  {# ── Account summary ── #}
+  <div class="section-header" style="margin-top:48px">
+    <h3>Account Details</h3>
+    <a href="/profile" class="btn btn-secondary btn-sm">Edit Profile</a>
+  </div>
+  <div style="background:var(--surface2);border-radius:14px;overflow:hidden;border:1.5px solid var(--border)">
+    {% set rows = [
+      ('Name', user.name),
+      ('Email', user.email),
+      ('Business Name', user.business_name or '—'),
+      ('WhatsApp', user.whatsapp or '—'),
+      ('Location', user.location or '—'),
+      ('Member Since', user.created_at.strftime('%d %b %Y')),
+    ] %}
+    {% for label, val in rows %}
+    <div style="display:flex;align-items:center;gap:16px;padding:14px 22px;{% if not loop.last %}border-bottom:1px solid var(--border){% endif %}">
+      <div style="flex:0 0 130px;font-size:.82rem;color:var(--muted);font-weight:500">{{ label }}</div>
+      <div style="font-weight:600;font-size:.9rem">{{ val }}</div>
+    </div>
+    {% endfor %}
+  </div>
 
 </div>
+
+<script>
+function toggleCatalog(id) {
+  var detail = document.getElementById('detail-' + id);
+  var chev   = document.getElementById('chev-' + id);
+  var hdr    = document.getElementById('cat-hdr-' + id);
+  var open   = detail.style.display === 'none';
+  detail.style.display = open ? 'block' : 'none';
+  chev.textContent = open ? '▲' : '▼';
+  hdr.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function copyLink(elemId, btn) {
+  var text = document.getElementById(elemId).textContent.trim();
+  navigator.clipboard.writeText(text).then(function() {
+    var orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    btn.style.color = 'var(--success)';
+    setTimeout(function() { btn.textContent = orig; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
 {% endblock %}
