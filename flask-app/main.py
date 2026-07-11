@@ -578,9 +578,15 @@ def require_profile_complete():
     if request.endpoint in _PROFILE_EXEMPT or (request.endpoint or '').startswith('admin'):
         return
     user = db.session.get(User, session['user_id'])
-    if user and not user.profile_complete:
-        flash('Please complete your profile before continuing.', 'info')
-        return redirect(url_for('profile'))
+    if user:
+        # Auto-downgrade expired paid plans on every request — no cron needed
+        if user.check_and_expire_plan():
+            db.session.commit()
+            flash('Your paid plan has expired and has been downgraded to Free. '
+                  'Visit the Pricing page to renew anytime.', 'warning')
+        if not user.profile_complete:
+            flash('Please complete your profile before continuing.', 'info')
+            return redirect(url_for('profile'))
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -1768,6 +1774,154 @@ def admin_reject_payment(pr_id):
     return redirect(url_for('admin'))
 
 
+# ── Admin billing management ───────────────────────────────────────────────────
+
+@app.route('/admin/billing')
+@admin_required
+def admin_billing():
+    now_dt = datetime.utcnow()
+    seven_days_out  = now_dt + timedelta(days=7)
+    thirty_days_out = now_dt + timedelta(days=30)
+
+    # Active paid subscribers, sorted soonest-expiring first
+    active_paid = User.query.filter(
+        User.plan.in_(['basic', 'pro']),
+        User.plan_expires > now_dt,
+        User.is_admin == False,
+        User.is_moderator == False,
+    ).order_by(User.plan_expires).all()
+
+    expiring_urgent = [u for u in active_paid if u.plan_expires <= seven_days_out]
+    expiring_soon   = [u for u in active_paid if seven_days_out < u.plan_expires <= thirty_days_out]
+    expiring_later  = [u for u in active_paid if u.plan_expires > thirty_days_out]
+
+    # Vendors who once had a paid plan (approved payment exists) but are now on free
+    lapsed_ids = {pr.user_id for pr in PaymentRequest.query.filter_by(status='approved').all()}
+    lapsed = [u for u in User.query.filter(
+        User.id.in_(lapsed_ids), User.plan == 'free',
+        User.is_admin == False, User.is_suspended == False
+    ).order_by(User.name).all()]
+
+    # Pending payment requests awaiting admin action
+    pending_prs = PaymentRequest.query.filter_by(status='pending')\
+                               .order_by(PaymentRequest.submitted_at).all()
+
+    # Full approved payment history, newest first
+    approved_prs = PaymentRequest.query.filter_by(status='approved')\
+                                 .order_by(PaymentRequest.resolved_at.desc()).all()
+
+    # Revenue totals
+    total_received = sum(p.total_amount_kina for p in approved_prs)
+    pending_kina   = sum(
+        int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0) * (p.months_paid or 1)
+        for p in pending_prs
+    )
+
+    # Per-user last payment dict  {user_id: PaymentRequest}
+    last_payment = {}
+    for pr in approved_prs:
+        if pr.user_id not in last_payment:
+            last_payment[pr.user_id] = pr
+
+    pending_count = PaymentRequest.query.filter_by(status='pending').count()
+    return render_template(
+        'admin_billing.html',
+        admin_active='billing',
+        active_paid=active_paid,
+        expiring_urgent=expiring_urgent,
+        expiring_soon=expiring_soon,
+        expiring_later=expiring_later,
+        lapsed=lapsed,
+        pending_prs=pending_prs,
+        approved_prs=approved_prs,
+        total_received=total_received,
+        pending_kina=pending_kina,
+        last_payment=last_payment,
+        now=now_dt,
+        pending_count=pending_count,
+    )
+
+
+@app.route('/admin/user/<int:uid>/set-plan', methods=['POST'])
+@admin_required
+def admin_set_plan(uid):
+    """Admin directly sets a user's plan and duration — for in-person/cash payments."""
+    target = db.session.get(User, uid)
+    if not target:
+        flash('User not found.', 'error')
+        return redirect(url_for('admin_billing'))
+
+    new_plan   = request.form.get('plan', 'free')
+    months     = int(request.form.get('months', '1') or 1)
+    months     = max(1, min(24, months))
+    notes      = request.form.get('notes', '').strip()
+    amount_str = request.form.get('amount', '').strip()  # optional manual amount override
+    now_dt     = datetime.utcnow()
+
+    plan_prices = {'free': 0, 'basic': 20, 'pro': 50}
+
+    if new_plan == 'free':
+        target.plan         = 'free'
+        target.plan_expires = None
+        target.plan_start   = None
+        db.session.commit()
+        log_admin_action(session['user_id'], 'plan_set_free', 'user', uid,
+                         f'Downgraded {target.name} to Free{(" — " + notes) if notes else ""}')
+        flash(f'{target.name} downgraded to Free plan.', 'success')
+        return redirect(url_for('admin_billing'))
+
+    # Extend from current expiry if on same plan and not yet expired
+    if target.plan == new_plan and target.plan_expires and target.plan_expires > now_dt:
+        new_expires  = target.plan_expires + timedelta(days=30 * months)
+        plan_message = f'extended by {months} month(s) → expires {new_expires.strftime("%d %b %Y")}'
+    else:
+        target.plan_start = now_dt
+        new_expires       = now_dt + timedelta(days=30 * months)
+        plan_message      = f'set to {new_plan.title()} for {months} month(s) → expires {new_expires.strftime("%d %b %Y")}'
+
+    target.plan         = new_plan
+    target.plan_expires = new_expires
+    target.monthly_builds_used = 0
+    today = now_dt.date()
+    target.monthly_reset_date = date(today.year + 1, 1, 1) if today.month == 12 \
+                                else date(today.year, today.month + 1, 1)
+
+    # Record as a payment request so it shows in payment history
+    per_month = int(amount_str.replace('K','')) if amount_str else plan_prices.get(new_plan, 0)
+    pr = PaymentRequest(
+        user_id        = uid,
+        plan           = new_plan,
+        amount         = f'K{per_month}',
+        months_paid    = months,
+        payment_method = 'admin_override',
+        reference      = notes or 'Manual admin adjustment',
+        status         = 'approved',
+        submitted_at   = now_dt,
+        resolved_at    = now_dt,
+        notes          = notes or 'Set directly by admin',
+    )
+    db.session.add(pr)
+    db.session.commit()
+
+    log_admin_action(session['user_id'], 'plan_set', 'user', uid,
+                     f'{target.name}: {plan_message}{(" — " + notes) if notes else ""}')
+    log_activity(uid, 'plan_upgraded',
+                 f'{new_plan.title()} plan {plan_message} (admin adjustment)')
+
+    send_email(
+        target.email,
+        f'[CatalogKit] Your {new_plan.title()} plan is now active!',
+        f"Hi {target.name},\n\n"
+        f"Your {new_plan.title()} plan has been {plan_message}.\n\n"
+        f"Log in to continue building your catalogs: https://www.catalogkit.org\n\n"
+        f"Thank you!\n— The CatalogKit Team"
+    )
+
+    flash(f'{target.name} → {plan_message}.', 'success')
+    redirect_to = request.form.get('redirect_to', 'billing')
+    return redirect(url_for('admin_billing') if redirect_to == 'billing' else url_for('admin'))
+
+
 # ── Done-For-You / Agency setup ───────────────────────────────────────────────
 
 @app.route('/assisted-setup', methods=['GET', 'POST'])
@@ -2509,14 +2663,44 @@ def export_users_xlsx():
 @app.route('/admin/export/finance.xlsx')
 @admin_required
 def export_finance_xlsx():
-    headers = ['Date', 'Type', 'User / Business', 'Plan', 'Amount (K)', 'Method', 'Status']
+    headers = [
+        'Date Approved', 'Type', 'Vendor Name', 'Email', 'Business',
+        'Plan', 'Rate (K/mo)', 'Months Paid', 'Total (K)',
+        'Method', 'Reference', 'Status',
+        'Plan Start', 'Plan Expires', 'Next Payment Due',
+    ]
     rows = []
+    now_dt = datetime.utcnow()
     for p in PaymentRequest.query.order_by(PaymentRequest.submitted_at.desc()).all():
-        rows.append([p.submitted_at.strftime('%Y-%m-%d'), 'Plan Payment',
-                    p.user.name if p.user else '', p.plan, p.amount, p.payment_method, p.status])
+        u = p.user
+        resolved = p.resolved_at or p.submitted_at
+        plan_expires = u.plan_expires.strftime('%Y-%m-%d') if u and u.plan_expires else ''
+        plan_start   = u.plan_start.strftime('%Y-%m-%d')   if u and u.plan_start   else ''
+        next_due = plan_expires  # For manual billing, next_due == expiry date
+        rows.append([
+            resolved.strftime('%Y-%m-%d'),
+            'Plan Payment',
+            u.name         if u else '',
+            u.email        if u else '',
+            u.business_name if u and u.business_name else '',
+            p.plan,
+            p.amount,
+            p.months_paid or 1,
+            p.total_amount_kina,
+            p.payment_method,
+            p.reference or '',
+            p.status,
+            plan_start,
+            plan_expires,
+            next_due,
+        ])
     for a in AgencyRequest.query.order_by(AgencyRequest.submitted_at.desc()).all():
-        rows.append([a.submitted_at.strftime('%Y-%m-%d'), 'Done-For-You', a.business_name,
-                    a.catalog_plan, a.total_due, 'Agent visit', a.status])
+        rows.append([
+            a.submitted_at.strftime('%Y-%m-%d'), 'Done-For-You',
+            a.business_name, '', '',
+            a.catalog_plan, '', 1, a.total_due,
+            'Agent visit', '', a.status, '', '', '',
+        ])
     log_admin_action(session['user_id'], 'export_finance', detail=f'{len(rows)} rows exported to Excel')
     return build_xlsx_response('catalogkit-finance.xlsx', headers, rows)
 

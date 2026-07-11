@@ -30,6 +30,10 @@
     <a href="/admin#users" class="admin-nav-item {% if admin_active == 'users' %}active{% endif %}">
       <span class="admin-nav-icon">👥</span> Users
     </a>
+    <a href="/admin/billing" class="admin-nav-item {% if admin_active == 'billing' %}active{% endif %}">
+      <span class="admin-nav-icon">💳</span> Billing
+      {% if pending_count %}<span class="admin-nav-badge">{{ pending_count }}</span>{% endif %}
+    </a>
     <a href="/admin#agency" class="admin-nav-item {% if admin_active == 'agency' %}active{% endif %}">
       <span class="admin-nav-icon">🏪</span> Setup Requests
     </a>

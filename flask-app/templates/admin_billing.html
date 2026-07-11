@@ -1,0 +1,542 @@
+{% extends 'admin_base.html' %}
+{% block admin_title %}Billing{% endblock %}
+{% block page_title %}Billing Management{% endblock %}
+{% block page_crumb %}Subscriptions, payments, and plan renewals{% endblock %}
+
+{% block topbar_right %}
+  <a href="/admin/export/finance.xlsx" class="btn btn-secondary btn-sm">⬇ Finance Excel</a>
+  <a href="/admin/reports?tab=finance" class="btn btn-secondary btn-sm">📈 Reports</a>
+{% endblock %}
+
+{% block admin_body %}
+
+{# ── Summary stat cards ── #}
+<div class="admin-stat-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:24px">
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">✅</span>
+    <div class="admin-stat-val" style="color:var(--success)">{{ active_paid | length }}</div>
+    <div class="admin-stat-label">Active Paid</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">🚨</span>
+    <div class="admin-stat-val" style="{% if expiring_urgent %}color:var(--danger){% endif %}">{{ expiring_urgent | length }}</div>
+    <div class="admin-stat-label">Expiring ≤ 7 Days</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">⏰</span>
+    <div class="admin-stat-val" style="{% if expiring_soon %}color:var(--warning){% endif %}">{{ expiring_soon | length }}</div>
+    <div class="admin-stat-label">Expiring ≤ 30 Days</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">🕒</span>
+    <div class="admin-stat-val" style="{% if pending_prs %}color:var(--accent-text){% endif %}">{{ pending_prs | length }}</div>
+    <div class="admin-stat-label">Pending Approval</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">💵</span>
+    <div class="admin-stat-val">K{{ total_received }}</div>
+    <div class="admin-stat-label">Total Received</div>
+  </div>
+
+  <div class="admin-stat-card">
+    <span class="admin-stat-icon">😴</span>
+    <div class="admin-stat-val">{{ lapsed | length }}</div>
+    <div class="admin-stat-label">Lapsed (Re-engage)</div>
+  </div>
+
+</div>
+
+{# ── SECTION 1: Pending approvals (action required) ── #}
+{% if pending_prs %}
+<div class="admin-section" style="border-color:var(--accent);margin-bottom:24px">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      🕒 Pending Payment Approvals
+      <span class="chip chip-blue">{{ pending_prs | length }} awaiting action</span>
+    </div>
+  </div>
+  <div class="admin-section-body" style="padding:0">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Vendor</th><th>Plan</th><th>Months</th><th>Total (K)</th><th>Method</th><th>Reference</th><th>Submitted</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for pr in pending_prs %}
+          {% set months = pr.months_paid or 1 %}
+          {% set per_mo = pr.amount | replace('K','') | int(0) %}
+          {% set total  = per_mo * months %}
+          <tr style="background:rgba(108,99,255,.04)">
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ pr.user.name }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ pr.user.email }}</div>
+              {% if pr.user.whatsapp %}
+              <div style="font-size:.74rem">
+                <a href="https://wa.me/{{ pr.user.whatsapp | replace(' ','') | replace('+','') | replace('-','') }}"
+                   target="_blank" style="color:#22c55e;text-decoration:none">📱 {{ pr.user.whatsapp }}</a>
+              </div>
+              {% endif %}
+            </td>
+            <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
+            <td style="text-align:center">
+              <strong style="color:var(--accent-text);font-size:1.1rem">{{ months }}</strong>
+              <div style="font-size:.72rem;color:var(--muted)">month{{ 's' if months != 1 }}</div>
+            </td>
+            <td><strong style="font-size:1.05rem">K{{ total }}</strong></td>
+            <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
+            <td style="font-size:.78rem;color:var(--muted);max-width:140px;word-break:break-all">{{ pr.reference or '—' }}</td>
+            <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">{{ pr.submitted_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <div style="display:flex;gap:6px;flex-direction:column">
+                <form method="POST" action="/admin/payment/{{ pr.id }}/approve">
+                  <input type="hidden" name="notes" value="">
+                  <button class="btn btn-success btn-sm" style="width:100%"
+                          onclick="return confirm('Approve K{{ total }} payment for {{ pr.user.name }}?')">
+                    ✓ Approve K{{ total }}
+                  </button>
+                </form>
+                <form method="POST" action="/admin/payment/{{ pr.id }}/reject">
+                  <input type="hidden" name="notes" value="">
+                  <button class="btn btn-danger btn-sm" style="width:100%"
+                          onclick="return confirm('Reject payment #{{ pr.id }}?')">
+                    ✗ Reject
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── SECTION 2: Active subscriptions ── #}
+<div class="admin-section" style="margin-bottom:24px">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      📋 Active Subscriptions
+      <span class="chip chip-gray">{{ active_paid | length }}</span>
+    </div>
+    <span style="font-size:.78rem;color:var(--muted)">Sorted by expiry · soonest first</span>
+  </div>
+
+  {% if active_paid %}
+  <div class="admin-section-body" style="padding:0">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Vendor</th><th>Plan</th><th>Started</th><th>Expires / Next Due</th><th>Days Left</th><th>Last Payment</th><th>Builds This Month</th><th>Manage</th></tr>
+        </thead>
+        <tbody>
+
+          {# Critical ≤7 days #}
+          {% for u in expiring_urgent %}
+          {% set days_left = (u.plan_expires.date() - now.date()).days %}
+          {% set lp = last_payment.get(u.id) %}
+          <tr style="background:rgba(239,68,68,.07);border-left:3px solid var(--danger)">
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ u.name }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ u.email }}</div>
+              {% if u.business_name %}<div style="font-size:.72rem;color:var(--muted)">{{ u.business_name }}</div>{% endif %}
+              {% if u.whatsapp %}
+              <a href="https://wa.me/{{ u.whatsapp | replace(' ','') | replace('+','') | replace('-','') }}?text={{ ('Hi ' ~ u.name.split()[0] ~ ', your CatalogKit ' ~ u.plan | title ~ ' plan expires in ' ~ days_left ~ ' day(s). Renew at www.catalogkit.org/pricing to keep your access. — CatalogKit Team') | urlencode }}"
+                 target="_blank" style="font-size:.72rem;color:#22c55e;text-decoration:none;display:block;margin-top:2px">📲 WhatsApp reminder</a>
+              {% endif %}
+            </td>
+            <td><span class="chip chip-{{ 'yellow' if u.plan == 'pro' else 'blue' }}">{{ u.plan | title }}</span></td>
+            <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ u.plan_start.strftime('%d %b %Y') if u.plan_start else '—' }}</td>
+            <td style="white-space:nowrap">
+              <strong style="color:var(--danger)">{{ u.plan_expires.strftime('%d %b %Y') }}</strong>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:2px">⬆ Renew by this date</div>
+            </td>
+            <td>
+              <span style="display:inline-block;background:rgba(239,68,68,.15);color:var(--danger);font-weight:800;font-size:.9rem;padding:4px 10px;border-radius:8px">{{ days_left }}d</span>
+            </td>
+            <td style="font-size:.8rem">
+              {% if lp %}
+                K{{ lp.total_amount_kina }} · {{ lp.months_paid or 1 }}mo<br>
+                <span style="color:var(--muted);font-size:.72rem">{{ lp.resolved_at.strftime('%d %b %Y') if lp.resolved_at else '—' }}</span>
+              {% else %}—{% endif %}
+            </td>
+            <td style="text-align:center">
+              {% if u.monthly_limit %}
+                {{ u.monthly_builds_used or 0 }}/{{ u.monthly_limit }}
+              {% else %}∞{% endif %}
+            </td>
+            <td>
+              <button onclick="openSetPlanModal({{ u.id }}, '{{ u.name | replace("'","") }}', '{{ u.plan }}')" class="btn btn-primary btn-sm">⟳ Extend</button>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {# Expiring 8–30 days #}
+          {% for u in expiring_soon %}
+          {% set days_left = (u.plan_expires.date() - now.date()).days %}
+          {% set lp = last_payment.get(u.id) %}
+          <tr style="background:rgba(245,158,11,.05);border-left:3px solid var(--warning)">
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ u.name }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ u.email }}</div>
+              {% if u.business_name %}<div style="font-size:.72rem;color:var(--muted)">{{ u.business_name }}</div>{% endif %}
+              {% if u.whatsapp %}
+              <a href="https://wa.me/{{ u.whatsapp | replace(' ','') | replace('+','') | replace('-','') }}?text={{ ('Hi ' ~ u.name.split()[0] ~ ', your CatalogKit ' ~ u.plan | title ~ ' plan expires in ' ~ days_left ~ ' days. Renew at www.catalogkit.org/pricing — CatalogKit Team') | urlencode }}"
+                 target="_blank" style="font-size:.72rem;color:#22c55e;text-decoration:none;display:block;margin-top:2px">📲 WhatsApp reminder</a>
+              {% endif %}
+            </td>
+            <td><span class="chip chip-{{ 'yellow' if u.plan == 'pro' else 'blue' }}">{{ u.plan | title }}</span></td>
+            <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ u.plan_start.strftime('%d %b %Y') if u.plan_start else '—' }}</td>
+            <td style="white-space:nowrap">
+              <strong style="color:var(--warning)">{{ u.plan_expires.strftime('%d %b %Y') }}</strong>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:2px">⬆ Renew by this date</div>
+            </td>
+            <td>
+              <span style="display:inline-block;background:rgba(245,158,11,.15);color:var(--warning);font-weight:700;font-size:.88rem;padding:4px 10px;border-radius:8px">{{ days_left }}d</span>
+            </td>
+            <td style="font-size:.8rem">
+              {% if lp %}
+                K{{ lp.total_amount_kina }} · {{ lp.months_paid or 1 }}mo<br>
+                <span style="color:var(--muted);font-size:.72rem">{{ lp.resolved_at.strftime('%d %b %Y') if lp.resolved_at else '—' }}</span>
+              {% else %}—{% endif %}
+            </td>
+            <td style="text-align:center">
+              {% if u.monthly_limit %}{{ u.monthly_builds_used or 0 }}/{{ u.monthly_limit }}
+              {% else %}∞{% endif %}
+            </td>
+            <td>
+              <button onclick="openSetPlanModal({{ u.id }}, '{{ u.name | replace("'","") }}', '{{ u.plan }}')" class="btn btn-secondary btn-sm">⟳ Extend</button>
+            </td>
+          </tr>
+          {% endfor %}
+
+          {# Safe — more than 30 days remaining #}
+          {% for u in expiring_later %}
+          {% set days_left = (u.plan_expires.date() - now.date()).days %}
+          {% set lp = last_payment.get(u.id) %}
+          <tr>
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ u.name }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ u.email }}</div>
+              {% if u.business_name %}<div style="font-size:.72rem;color:var(--muted)">{{ u.business_name }}</div>{% endif %}
+            </td>
+            <td><span class="chip chip-{{ 'yellow' if u.plan == 'pro' else 'blue' }}">{{ u.plan | title }}</span></td>
+            <td style="font-size:.8rem;color:var(--muted);white-space:nowrap">{{ u.plan_start.strftime('%d %b %Y') if u.plan_start else '—' }}</td>
+            <td style="white-space:nowrap">
+              <strong>{{ u.plan_expires.strftime('%d %b %Y') }}</strong>
+              <div style="font-size:.72rem;color:var(--muted);margin-top:2px">Next payment due</div>
+            </td>
+            <td>
+              <span style="display:inline-block;background:rgba(22,163,74,.1);color:var(--success);font-weight:600;font-size:.85rem;padding:4px 10px;border-radius:8px">{{ days_left }}d</span>
+            </td>
+            <td style="font-size:.8rem">
+              {% if lp %}
+                K{{ lp.total_amount_kina }} · {{ lp.months_paid or 1 }}mo<br>
+                <span style="color:var(--muted);font-size:.72rem">{{ lp.resolved_at.strftime('%d %b %Y') if lp.resolved_at else '—' }}</span>
+              {% else %}—{% endif %}
+            </td>
+            <td style="text-align:center">
+              {% if u.monthly_limit %}{{ u.monthly_builds_used or 0 }}/{{ u.monthly_limit }}
+              {% else %}∞{% endif %}
+            </td>
+            <td>
+              <button onclick="openSetPlanModal({{ u.id }}, '{{ u.name | replace("'","") }}', '{{ u.plan }}')" class="btn btn-secondary btn-sm">⟳ Extend</button>
+            </td>
+          </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="admin-empty">
+    <div class="ae-icon">📭</div>
+    <p>No active paid subscribers right now.</p>
+  </div>
+  {% endif %}
+</div>
+
+{# ── SECTION 3: Lapsed vendors (had paid plan, now free) ── #}
+{% if lapsed %}
+<div class="admin-section" style="margin-bottom:24px">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      😴 Lapsed Vendors — Re-engage
+      <span class="chip chip-gray">{{ lapsed | length }}</span>
+    </div>
+    <span style="font-size:.78rem;color:var(--muted)">Were on a paid plan, now on Free — contact to renew</span>
+  </div>
+  <div class="admin-section-body" style="padding:0">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Vendor</th><th>Last Payment</th><th>Was on Plan</th><th>Contact</th><th>Reinstate</th></tr>
+        </thead>
+        <tbody>
+          {% for u in lapsed %}
+          {% set lp = last_payment.get(u.id) %}
+          <tr>
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ u.name }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ u.email }}</div>
+              {% if u.business_name %}<div style="font-size:.72rem;color:var(--muted)">{{ u.business_name }}</div>{% endif %}
+            </td>
+            <td style="font-size:.83rem">
+              {% if lp %}
+                K{{ lp.total_amount_kina }} ({{ lp.months_paid or 1 }}mo)<br>
+                <span style="color:var(--muted);font-size:.72rem">{{ lp.resolved_at.strftime('%d %b %Y') if lp.resolved_at else '—' }}</span>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if lp %}
+                <span class="chip chip-{{ 'yellow' if lp.plan == 'pro' else 'blue' }}">{{ lp.plan | title }}</span>
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if u.whatsapp %}
+              <a href="https://wa.me/{{ u.whatsapp | replace(' ','') | replace('+','') | replace('-','') }}?text={{ ('Hi ' ~ u.name.split()[0] ~ ', we miss you on CatalogKit! Your ' ~ (lp.plan | title if lp else 'paid') ~ ' plan has lapsed. You can renew at www.catalogkit.org/pricing — CatalogKit Team') | urlencode }}"
+                 target="_blank" class="btn btn-sm" style="background:#25d366;color:#fff;border:none">📲 WhatsApp</a>
+              {% else %}
+              <span style="color:var(--muted);font-size:.78rem">No WhatsApp</span>
+              {% endif %}
+            </td>
+            <td>
+              <button onclick="openSetPlanModal({{ u.id }}, '{{ u.name | replace("'","") }}', 'basic')" class="btn btn-secondary btn-sm">⟳ Reinstate</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── SECTION 4: Full payment history ── #}
+<div class="admin-section" style="margin-bottom:24px">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      🧾 Full Payment History
+      <span class="chip chip-gray">{{ approved_prs | length }} payments</span>
+    </div>
+    <a href="/admin/export/finance.xlsx" class="btn btn-secondary btn-sm">⬇ Export Excel</a>
+  </div>
+  {% if approved_prs %}
+  <div class="admin-section-body" style="padding:0">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Date</th><th>Vendor</th><th>Plan</th><th>Months</th><th>Total Paid</th><th>Method</th><th>Reference</th><th>Approved By</th></tr>
+        </thead>
+        <tbody>
+          {% for pr in approved_prs %}
+          <tr>
+            <td style="font-size:.83rem;white-space:nowrap;color:var(--muted)">
+              {{ pr.resolved_at.strftime('%d %b %Y') if pr.resolved_at else pr.submitted_at.strftime('%d %b %Y') }}
+            </td>
+            <td>
+              <div style="font-weight:600;font-size:.875rem">{{ pr.user.name if pr.user else '(deleted)' }}</div>
+              <div style="font-size:.72rem;color:var(--muted)">{{ pr.user.email if pr.user else '' }}</div>
+            </td>
+            <td><span class="chip chip-{{ 'yellow' if pr.plan == 'pro' else 'blue' }}">{{ pr.plan | title }}</span></td>
+            <td style="text-align:center;font-weight:700">{{ pr.months_paid or 1 }}</td>
+            <td><strong>K{{ pr.total_amount_kina }}</strong><br><span style="font-size:.72rem;color:var(--muted)">{{ pr.amount }}/mo</span></td>
+            <td style="font-size:.83rem">
+              {% if pr.payment_method == 'admin_override' %}
+                <span style="color:var(--muted);font-style:italic">Admin set</span>
+              {% else %}
+                {{ pr.payment_method | replace('_',' ') | title }}
+              {% endif %}
+            </td>
+            <td style="font-size:.78rem;color:var(--muted);max-width:140px;word-break:break-all">{{ pr.reference or '—' }}</td>
+            <td style="font-size:.78rem;color:var(--muted)">
+              {% if pr.notes %}{{ pr.notes[:60] }}{% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="admin-empty">
+    <div class="ae-icon">📭</div>
+    <p>No approved payments yet.</p>
+  </div>
+  {% endif %}
+</div>
+
+
+{# ── Set Plan Modal ── #}
+<div id="set-plan-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0;font-size:1.1rem;font-weight:700">⟳ Set / Extend Plan</h3>
+      <button onclick="closeSetPlanModal()" style="background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer">✕</button>
+    </div>
+
+    <div id="set-plan-vendor-name" style="font-size:.88rem;color:var(--muted);margin-bottom:20px;padding:10px 14px;background:var(--surface2);border-radius:8px"></div>
+
+    <form id="set-plan-form" method="POST" action="">
+
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Plan</label>
+        <select name="plan" id="sp-plan" onchange="updatePlanPreview()"
+                style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit">
+          <option value="basic">Basic — K20/month</option>
+          <option value="pro">Pro — K50/month</option>
+          <option value="free">Downgrade to Free (immediate)</option>
+        </select>
+      </div>
+
+      <div id="sp-months-row" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Months Paid</label>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          {% for m in [1, 2, 3, 6, 12] %}
+          <label style="cursor:pointer">
+            <input type="radio" name="months" value="{{ m }}" {% if m == 1 %}checked{% endif %} onchange="updatePlanPreview()" style="display:none" class="sp-month-radio">
+            <span class="sp-month-btn {{ 'selected' if m == 1 }}" data-months="{{ m }}">{{ m }} mo</span>
+          </label>
+          {% endfor %}
+        </div>
+        <div style="margin-top:8px">
+          <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Or enter months:</label>
+          <input type="number" name="months_custom" id="sp-months-custom" min="1" max="24" placeholder="1–24"
+                 oninput="updatePlanPreview()"
+                 style="width:80px;margin-left:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.88rem;font-family:inherit">
+        </div>
+      </div>
+
+      <div id="sp-amount-row" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Amount Received (K) <span style="font-weight:400;color:var(--muted);text-transform:none">(optional override)</span></label>
+        <input type="text" name="amount" id="sp-amount" placeholder="e.g. 40"
+               style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit;margin-top:6px">
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Notes / Reference <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <input type="text" name="notes" placeholder="e.g. Cash paid at market — receipt #1234"
+               style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit;margin-top:6px">
+      </div>
+
+      <input type="hidden" name="redirect_to" value="billing">
+
+      {# Preview calculation #}
+      <div id="sp-preview" style="background:var(--surface2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.88rem">
+        <div style="font-weight:700;margin-bottom:6px">Summary</div>
+        <div id="sp-preview-text" style="color:var(--muted)">Select plan and months to see summary.</div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary" style="flex:1;padding:13px;font-weight:700" id="sp-submit-btn">Apply Plan</button>
+        <button type="button" class="btn btn-secondary" style="padding:13px 18px" onclick="closeSetPlanModal()">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+<style>
+.sp-month-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.sp-month-btn.selected, .sp-month-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+  background: rgba(108,99,255,.1);
+}
+</style>
+
+<script>
+var SP_PRICES = {basic: 20, pro: 50, free: 0};
+
+function openSetPlanModal(uid, name, currentPlan) {
+  document.getElementById('set-plan-modal').style.display = 'flex';
+  document.getElementById('set-plan-form').action = '/admin/user/' + uid + '/set-plan';
+  document.getElementById('set-plan-vendor-name').textContent = '👤 ' + name;
+  var planSel = document.getElementById('sp-plan');
+  if (currentPlan && planSel) {
+    planSel.value = currentPlan;
+  }
+  document.getElementById('sp-months-custom').value = '';
+  document.querySelectorAll('.sp-month-radio').forEach(function(r) { r.checked = r.value === '1'; });
+  document.querySelectorAll('.sp-month-btn').forEach(function(b) {
+    b.classList.toggle('selected', b.dataset.months === '1');
+  });
+  updatePlanPreview();
+}
+
+function closeSetPlanModal() {
+  document.getElementById('set-plan-modal').style.display = 'none';
+}
+
+function updatePlanPreview() {
+  var plan   = document.getElementById('sp-plan').value;
+  var custom = parseInt(document.getElementById('sp-months-custom').value);
+  var months = custom > 0 ? custom : (parseInt(document.querySelector('.sp-month-radio:checked')?.value) || 1);
+  var price  = SP_PRICES[plan] || 0;
+  var total  = price * months;
+
+  // Update month button styles
+  document.querySelectorAll('.sp-month-btn').forEach(function(b) {
+    b.classList.toggle('selected', parseInt(b.dataset.months) === months && !custom);
+  });
+
+  var monthsRow  = document.getElementById('sp-months-row');
+  var amountRow  = document.getElementById('sp-amount-row');
+  var previewDiv = document.getElementById('sp-preview-text');
+  var submitBtn  = document.getElementById('sp-submit-btn');
+
+  if (plan === 'free') {
+    monthsRow.style.display = 'none';
+    amountRow.style.display = 'none';
+    previewDiv.innerHTML = '<span style="color:var(--danger)">⚠ This will immediately downgrade the vendor to the Free plan. Their current plan will end.</span>';
+    submitBtn.textContent = 'Downgrade to Free';
+  } else {
+    monthsRow.style.display = 'block';
+    amountRow.style.display = 'block';
+    var expiry = new Date();
+    expiry.setDate(expiry.getDate() + months * 30);
+    var expStr = expiry.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+    previewDiv.innerHTML =
+      '<strong>' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan</strong> · ' +
+      months + ' month' + (months !== 1 ? 's' : '') + ' · ' +
+      '<strong>K' + total + ' total</strong><br>' +
+      '<span style="color:var(--muted)">Expires / next due: <strong>' + expStr + '</strong></span>';
+    submitBtn.textContent = 'Apply — K' + total + ' · ' + months + 'mo';
+  }
+}
+
+// Month button selection
+document.addEventListener('change', function(e) {
+  if (e.target.classList.contains('sp-month-radio')) {
+    document.getElementById('sp-months-custom').value = '';
+    updatePlanPreview();
+  }
+});
+
+// Close modal on backdrop click
+document.getElementById('set-plan-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeSetPlanModal();
+});
+</script>
+
+{% endblock %}
