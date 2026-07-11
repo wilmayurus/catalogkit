@@ -100,68 +100,78 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
       transition={{ duration: 0.6 }}
     >
       {portrait ? (
-        /* ── Portrait: phone frame on top, pain point below ── */
-        <div className="absolute inset-0 flex flex-col px-[4cqw] pt-[2cqh] pb-[2cqh] gap-[2.5cqh]">
+        /* ── Portrait: two clearly bounded halves ── */
+        <div className="absolute inset-0 flex flex-col">
 
-          {/* Context label above the phone */}
-          <motion.div
-            className="flex-shrink-0 text-center"
-            initial={{ opacity: 0, y: -8 }}
-            animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.5 }}
-          >
-            <span className="text-[2.8cqw] font-black text-[#f97316] font-display leading-none bg-[#f97316]/10 px-[3cqw] py-[0.8cqh] rounded-full border border-[#f97316]/30">
-              📱 PNG vendors flooding WhatsApp groups with photos...
-            </span>
-          </motion.div>
-
-          {/* Phone frame wrapping the chat */}
-          <motion.div
-            className="flex-shrink-0 flex flex-col overflow-hidden"
-            style={{
-              height: '40cqh',
-              borderRadius: '2.5cqw',
-              border: '0.35cqw solid rgba(37,211,102,0.55)',
-              boxShadow: '0 0 0 0.15cqw rgba(37,211,102,0.18), 0 4px 32px rgba(0,0,0,0.6)',
-              background: '#1a1a2e',
-            }}
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={phase >= 1 ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5 }}
-          >
-            {chatHeader}
-            {chatBody('w-[20cqw]')}
-            <AnimatePresence>
-              {phase >= 2 && (
-                <motion.div
-                  className="absolute bg-[#f97316] text-white text-[1.8cqw] font-black px-[1.5cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
-                  style={{ top: '20cqh', right: '6cqw' }}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: [0, 1.2, 1], opacity: 1 }}
-                  transition={{ type: 'spring', bounce: 0.6 }}
-                >
-                  20+ 📸
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-
-          {/* Pain point section */}
-          <div className="flex-1 flex flex-col items-center justify-center px-[3cqw] gap-[2.5cqh]">
+          {/* TOP HALF — WhatsApp chat, dark navy card */}
+          <div className="flex flex-col px-[4cqw] pt-[2cqh] pb-[1.5cqh] gap-[1.5cqh]" style={{ flex: '0 0 50%' }}>
+            {/* Label */}
             <motion.div
-              className="text-center"
-              initial={{ opacity: 0, y: 15 }}
-              animate={phase >= 2 ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6 }}
+              className="flex-shrink-0 text-center"
+              initial={{ opacity: 0, y: -8 }}
+              animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5 }}
             >
-              <div className="text-[7cqw] mb-[1.5cqh]">😩</div>
+              <span className="text-[2.8cqw] font-black text-[#f97316] font-display bg-[#f97316]/10 px-[3cqw] py-[0.8cqh] rounded-full border border-[#f97316]/30">
+                📱 PNG vendors flooding WhatsApp groups with photos...
+              </span>
+            </motion.div>
+
+            {/* Phone frame */}
+            <motion.div
+              className="flex-1 flex flex-col overflow-hidden"
+              style={{
+                borderRadius: '2.5cqw',
+                border: '0.35cqw solid rgba(37,211,102,0.6)',
+                boxShadow: '0 0 0 0.15cqw rgba(37,211,102,0.15), 0 4px 24px rgba(0,0,0,0.7)',
+                background: '#1a1a2e',
+              }}
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={phase >= 1 ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.5 }}
+            >
+              {chatHeader}
+              {chatBody('w-[20cqw]')}
+              <AnimatePresence>
+                {phase >= 2 && (
+                  <motion.div
+                    className="absolute bg-[#f97316] text-white text-[1.8cqw] font-black px-[1.5cqw] py-[0.5cqh] rounded-full shadow-xl z-10"
+                    style={{ top: '18cqh', right: '6cqw' }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: [0, 1.2, 1], opacity: 1 }}
+                    transition={{ type: 'spring', bounce: 0.6 }}
+                  >
+                    20+ 📸
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
+
+          {/* DIVIDER — makes the split unmistakable */}
+          <div className="flex-shrink-0 flex items-center gap-[2cqw] px-[6cqw]">
+            <div className="flex-1 h-[0.2cqh] bg-white/15" />
+            <span className="text-[2.5cqw] text-white/30 font-bold">↓</span>
+            <div className="flex-1 h-[0.2cqh] bg-white/15" />
+          </div>
+
+          {/* BOTTOM HALF — pain point, slightly lighter card */}
+          <motion.div
+            className="flex-1 flex flex-col items-center justify-center px-[5cqw] pb-[2cqh] gap-[2cqh]"
+            style={{ background: '#0D0D0D' }}
+            initial={{ opacity: 0 }}
+            animate={phase >= 2 ? { opacity: 1 } : {}}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="text-center">
+              <div className="text-[7cqw] mb-[1cqh]">😩</div>
               <h2 className="text-[5.5cqw] font-black text-white font-display leading-tight text-center">
                 20 images dropped<br />in the group.
               </h2>
-              <p className="text-[3.2cqw] text-white/55 font-medium mt-[1.5cqh] leading-snug text-center">
+              <p className="text-[3.2cqw] text-white/55 font-medium mt-[1.2cqh] leading-snug text-center">
                 No prices. No contact.<br />Just… photos.
               </p>
-            </motion.div>
+            </div>
 
             <motion.p
               className="text-[3cqw] text-white/40 italic text-center leading-snug"
@@ -182,7 +192,7 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
                 There's a better way.
               </p>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       ) : (
         /* ── Landscape: original side-by-side ── */
