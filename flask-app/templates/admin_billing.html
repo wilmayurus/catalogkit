@@ -4,6 +4,7 @@
 {% block page_crumb %}Subscriptions, payments, and plan renewals{% endblock %}
 
 {% block topbar_right %}
+  <button onclick="openRecordPaymentModal()" class="btn btn-primary btn-sm">+ Record Payment</button>
   <a href="/admin/export/finance.xlsx" class="btn btn-secondary btn-sm">⬇ Finance Excel</a>
   <a href="/admin/reports?tab=finance" class="btn btn-secondary btn-sm">📈 Reports</a>
 {% endblock %}
@@ -33,8 +34,8 @@
 
   <div class="admin-stat-card">
     <span class="admin-stat-icon">🕒</span>
-    <div class="admin-stat-val" style="{% if pending_prs %}color:var(--accent-text){% endif %}">{{ pending_prs | length }}</div>
-    <div class="admin-stat-label">Pending Approval</div>
+    <div class="admin-stat-val" style="{% if pending_count %}color:var(--accent-text){% endif %}">{{ pending_count }}</div>
+    <div class="admin-stat-label">Pending / Unconfirmed</div>
   </div>
 
   <div class="admin-stat-card">
@@ -105,6 +106,73 @@
                   <button class="btn btn-danger btn-sm" style="width:100%"
                           onclick="return confirm('Reject payment #{{ pr.id }}?')">
                     ✗ Reject
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── SECTION 1b: Admin-logged payments awaiting receipt confirmation ── #}
+{% if pending_confirmation_prs %}
+<div class="admin-section" style="border-color:var(--warning);margin-bottom:24px">
+  <div class="admin-section-head">
+    <div class="admin-section-title">
+      📋 Pending Receipt Confirmation
+      <span class="chip chip-yellow">{{ pending_confirmation_prs | length }} awaiting confirmation</span>
+    </div>
+    <span style="font-size:.78rem;color:var(--muted)">Logged by admin — confirm once you've verified receipt</span>
+  </div>
+  <div class="admin-section-body" style="padding:0">
+    <div class="admin-tbl-wrap">
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Vendor</th><th>Plan</th><th>Months</th><th>Total (K)</th><th>Date Paid</th><th>Method</th><th>Reference</th><th>Description / Notes</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for pr in pending_confirmation_prs %}
+          {% set months = pr.months_paid or 1 %}
+          {% set per_mo = pr.amount | replace('K','') | int(0) %}
+          {% set total  = per_mo * months %}
+          <tr style="background:rgba(245,158,11,.06);border-left:3px solid var(--warning)">
+            <td>
+              <div style="font-weight:700;font-size:.875rem">{{ pr.user.name if pr.user else '(deleted)' }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ pr.user.email if pr.user else '' }}</div>
+            </td>
+            <td><strong>{{ pr.plan | title }}</strong><br><span style="color:var(--muted);font-size:.8rem">{{ pr.amount }}/mo</span></td>
+            <td style="text-align:center">
+              <strong style="color:var(--accent-text);font-size:1.05rem">{{ months }}</strong>
+              <div style="font-size:.72rem;color:var(--muted)">month{{ 's' if months != 1 }}</div>
+            </td>
+            <td><strong>K{{ total }}</strong></td>
+            <td style="font-size:.83rem;white-space:nowrap">
+              {% if pr.payment_date %}
+                {{ pr.payment_date.strftime('%d %b %Y') }}
+              {% else %}
+                <span style="color:var(--muted)">—</span>
+              {% endif %}
+            </td>
+            <td style="font-size:.83rem">{{ pr.payment_method | replace('_',' ') | title }}</td>
+            <td style="font-size:.78rem;color:var(--muted);max-width:130px;word-break:break-all">{{ pr.reference or '—' }}</td>
+            <td style="font-size:.78rem;color:var(--muted);max-width:150px">{{ pr.notes or '—' }}</td>
+            <td>
+              <div style="display:flex;gap:6px;flex-direction:column">
+                <form method="POST" action="/admin/payment/{{ pr.id }}/confirm">
+                  <button class="btn btn-success btn-sm" style="width:100%"
+                          onclick="return confirm('Confirm receipt of K{{ total }} and activate the {{ pr.plan | title }} plan?')">
+                    ✓ Confirm Receipt
+                  </button>
+                </form>
+                <form method="POST" action="/admin/payment/{{ pr.id }}/delete-pending">
+                  <button class="btn btn-danger btn-sm" style="width:100%"
+                          onclick="return confirm('Delete this pending payment record?')">
+                    ✕ Delete
                   </button>
                 </form>
               </div>
@@ -333,13 +401,20 @@
     <div class="admin-tbl-wrap">
       <table class="admin-tbl">
         <thead>
-          <tr><th>Date</th><th>Vendor</th><th>Plan</th><th>Months</th><th>Total Paid</th><th>Method</th><th>Reference</th><th>Approved By</th></tr>
+          <tr><th>Date Paid</th><th>Confirmed</th><th>Vendor</th><th>Plan</th><th>Months</th><th>Total Paid</th><th>Method</th><th>Reference</th><th>Notes</th></tr>
         </thead>
         <tbody>
           {% for pr in approved_prs %}
           <tr>
-            <td style="font-size:.83rem;white-space:nowrap;color:var(--muted)">
-              {{ pr.resolved_at.strftime('%d %b %Y') if pr.resolved_at else pr.submitted_at.strftime('%d %b %Y') }}
+            <td style="font-size:.83rem;white-space:nowrap">
+              {% if pr.payment_date %}
+                <strong>{{ pr.payment_date.strftime('%d %b %Y') }}</strong>
+              {% else %}
+                <span style="color:var(--muted)">—</span>
+              {% endif %}
+            </td>
+            <td style="font-size:.78rem;color:var(--muted);white-space:nowrap">
+              {{ pr.resolved_at.strftime('%d %b %Y') if pr.resolved_at else '—' }}
             </td>
             <td>
               <div style="font-weight:600;font-size:.875rem">{{ pr.user.name if pr.user else '(deleted)' }}</div>
@@ -355,8 +430,8 @@
                 {{ pr.payment_method | replace('_',' ') | title }}
               {% endif %}
             </td>
-            <td style="font-size:.78rem;color:var(--muted);max-width:140px;word-break:break-all">{{ pr.reference or '—' }}</td>
-            <td style="font-size:.78rem;color:var(--muted)">
+            <td style="font-size:.78rem;color:var(--muted);max-width:130px;word-break:break-all">{{ pr.reference or '—' }}</td>
+            <td style="font-size:.78rem;color:var(--muted);max-width:150px">
               {% if pr.notes %}{{ pr.notes[:60] }}{% else %}—{% endif %}
             </td>
           </tr>
@@ -371,6 +446,130 @@
     <p>No approved payments yet.</p>
   </div>
   {% endif %}
+</div>
+
+
+{# ── Record Payment Modal ── #}
+<div id="record-payment-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0;font-size:1.1rem;font-weight:700">📥 Record Incoming Payment</h3>
+      <button onclick="closeRecordPaymentModal()" style="background:none;border:none;font-size:1.2rem;color:var(--muted);cursor:pointer">✕</button>
+    </div>
+
+    <p style="font-size:.82rem;color:var(--muted);margin:0 0 20px">Use this to log a payment received via WhatsApp or email before activating the plan.</p>
+
+    <form method="POST" action="/admin/record-payment">
+
+      {# Vendor search + select #}
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Vendor</label>
+        <input type="text" id="rp-vendor-search" placeholder="Type to search vendors…"
+               oninput="filterRpVendors()"
+               style="width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px 8px 0 0;color:var(--text);font-size:.88rem;font-family:inherit;margin-top:6px;box-sizing:border-box">
+        <select name="user_id" id="rp-vendor-select" required size="4"
+                style="width:100%;padding:6px;background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;color:var(--text);font-size:.88rem;font-family:inherit">
+          {% for v in all_vendors %}
+          <option value="{{ v.id }}">{{ v.name }}{% if v.business_name %} — {{ v.business_name }}{% endif %} ({{ v.email }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {# Plan #}
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Plan</label>
+        <select name="plan" id="rp-plan" onchange="updateRpPreview()"
+                style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit;margin-top:6px">
+          <option value="basic">Basic — K20/month</option>
+          <option value="pro">Pro — K50/month</option>
+        </select>
+      </div>
+
+      {# Months #}
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Months Paid</label>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          {% for m in [1, 2, 3, 6, 12] %}
+          <label style="cursor:pointer">
+            <input type="radio" name="months" value="{{ m }}" {% if m == 1 %}checked{% endif %} onchange="updateRpPreview()" style="display:none" class="rp-month-radio">
+            <span class="sp-month-btn {{ 'selected' if m == 1 }}" data-months="{{ m }}">{{ m }} mo</span>
+          </label>
+          {% endfor %}
+        </div>
+        <div style="margin-top:8px">
+          <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Or enter months:</label>
+          <input type="number" name="months_custom" id="rp-months-custom" min="1" max="24" placeholder="1–24"
+                 oninput="updateRpPreview()"
+                 style="width:80px;margin-left:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.88rem;font-family:inherit">
+        </div>
+      </div>
+
+      {# Payment date #}
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Date Payment Was Made</label>
+        <input type="date" name="payment_date" id="rp-payment-date" required
+               style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit;margin-top:6px;box-sizing:border-box">
+      </div>
+
+      {# Payment method #}
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Payment Method</label>
+        <select name="payment_method"
+                style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit;margin-top:6px">
+          <option value="cash">Cash</option>
+          <option value="mobile_money">Mobile Money</option>
+          <option value="internet_banking">Internet Banking</option>
+          <option value="bank_transfer">Bank Transfer</option>
+        </select>
+      </div>
+
+      {# Reference number #}
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Reference Number <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <input type="text" name="reference" placeholder="e.g. Receipt #1234, transaction ID, BSP ref…"
+               style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit;margin-top:6px;box-sizing:border-box">
+      </div>
+
+      {# Description / notes #}
+      <div class="field" style="margin-bottom:20px">
+        <label style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Description / Notes <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <input type="text" name="notes" placeholder="e.g. Paid via WhatsApp screenshot, confirmed by Wilma"
+               style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit;margin-top:6px;box-sizing:border-box">
+      </div>
+
+      {# Summary preview #}
+      <div id="rp-preview" style="background:var(--surface2);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:.88rem">
+        <div style="font-weight:700;margin-bottom:6px">Summary</div>
+        <div id="rp-preview-text" style="color:var(--muted)">Select plan and months to see summary.</div>
+      </div>
+
+      {# Status choice #}
+      <div style="margin-bottom:20px;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px">
+        <div style="font-size:.82rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">After saving, what should happen?</div>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:10px">
+          <input type="radio" name="activate_now" value="0" checked style="margin-top:3px">
+          <div>
+            <div style="font-weight:600;font-size:.88rem">Save as Pending Confirmation</div>
+            <div style="font-size:.78rem;color:var(--muted)">Log the details now — confirm receipt later to activate the plan</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+          <input type="radio" name="activate_now" value="1" style="margin-top:3px">
+          <div>
+            <div style="font-weight:600;font-size:.88rem">Confirm Receipt &amp; Activate Plan Now</div>
+            <div style="font-size:.78rem;color:var(--muted)">Payment confirmed — activate the plan immediately on the vendor's profile</div>
+          </div>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button type="submit" class="btn btn-primary" style="flex:1;padding:13px;font-weight:700" id="rp-submit-btn">Save Payment Record</button>
+        <button type="button" class="btn btn-secondary" style="padding:13px 18px" onclick="closeRecordPaymentModal()">Cancel</button>
+      </div>
+
+    </form>
+  </div>
 </div>
 
 
@@ -536,6 +735,82 @@ document.addEventListener('change', function(e) {
 // Close modal on backdrop click
 document.getElementById('set-plan-modal').addEventListener('click', function(e) {
   if (e.target === this) closeSetPlanModal();
+});
+
+// ── Record Payment Modal ──
+var RP_PRICES = {basic: 20, pro: 50};
+
+function openRecordPaymentModal() {
+  var modal = document.getElementById('record-payment-modal');
+  modal.style.display = 'flex';
+  // Default payment date to today
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('rp-payment-date').value = today;
+  document.getElementById('rp-vendor-search').value = '';
+  document.getElementById('rp-months-custom').value = '';
+  document.querySelectorAll('.rp-month-radio').forEach(function(r) { r.checked = r.value === '1'; });
+  filterRpVendors();
+  updateRpPreview();
+}
+
+function closeRecordPaymentModal() {
+  document.getElementById('record-payment-modal').style.display = 'none';
+}
+
+function filterRpVendors() {
+  var q = document.getElementById('rp-vendor-search').value.toLowerCase();
+  var opts = document.getElementById('rp-vendor-select').options;
+  for (var i = 0; i < opts.length; i++) {
+    var match = opts[i].text.toLowerCase().indexOf(q) !== -1;
+    opts[i].style.display = match ? '' : 'none';
+    if (!match && opts[i].selected) opts[i].selected = false;
+  }
+  // Auto-select first visible if nothing selected
+  var sel = document.getElementById('rp-vendor-select');
+  var hasSelected = false;
+  for (var i = 0; i < opts.length; i++) {
+    if (opts[i].selected) { hasSelected = true; break; }
+  }
+  if (!hasSelected) {
+    for (var i = 0; i < opts.length; i++) {
+      if (opts[i].style.display !== 'none') { opts[i].selected = true; break; }
+    }
+  }
+}
+
+function updateRpPreview() {
+  var plan   = document.getElementById('rp-plan').value;
+  var custom = parseInt(document.getElementById('rp-months-custom').value);
+  var months = custom > 0 ? custom : (parseInt(document.querySelector('.rp-month-radio:checked')?.value) || 1);
+  var price  = RP_PRICES[plan] || 0;
+  var total  = price * months;
+
+  document.querySelectorAll('#record-payment-modal .sp-month-btn').forEach(function(b) {
+    b.classList.toggle('selected', parseInt(b.dataset.months) === months && !custom);
+  });
+
+  var expiry = new Date();
+  expiry.setDate(expiry.getDate() + months * 30);
+  var expStr = expiry.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+
+  document.getElementById('rp-preview-text').innerHTML =
+    '<strong>' + plan.charAt(0).toUpperCase() + plan.slice(1) + ' plan</strong> · ' +
+    months + ' month' + (months !== 1 ? 's' : '') + ' · ' +
+    '<strong>K' + total + ' total</strong><br>' +
+    '<span style="color:var(--muted)">Plan would cover until approx: <strong>' + expStr + '</strong></span>';
+
+  document.getElementById('rp-submit-btn').textContent = 'Save — K' + total + ' · ' + months + 'mo';
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.classList.contains('rp-month-radio')) {
+    document.getElementById('rp-months-custom').value = '';
+    updateRpPreview();
+  }
+});
+
+document.getElementById('record-payment-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeRecordPaymentModal();
 });
 </script>
 

@@ -365,7 +365,8 @@ class PaymentRequest(db.Model):
     payment_method = db.Column(db.String(50),  nullable=False)   # 'cash' | 'mobile_money' | 'internet_banking'
     reference      = db.Column(db.String(255), nullable=True)    # transaction ref / receipt number
     status         = db.Column(db.String(20),  default='pending') # 'pending' | 'approved' | 'rejected'
-    notes          = db.Column(db.String(500), nullable=True)    # admin notes
+    notes          = db.Column(db.String(500), nullable=True)    # admin notes / description
+    payment_date   = db.Column(db.Date, nullable=True)           # actual date vendor paid (admin-recorded)
     submitted_at   = db.Column(db.DateTime, default=datetime.utcnow)
     resolved_at    = db.Column(db.DateTime, nullable=True)
     user           = db.relationship('User', backref=db.backref('payment_requests', lazy=True))
@@ -1802,9 +1803,13 @@ def admin_billing():
         User.is_admin == False, User.is_suspended == False
     ).order_by(User.name).all()]
 
-    # Pending payment requests awaiting admin action
+    # Pending payment requests submitted by vendors via the website
     pending_prs = PaymentRequest.query.filter_by(status='pending')\
                                .order_by(PaymentRequest.submitted_at).all()
+
+    # Admin-logged payments awaiting receipt confirmation
+    pending_confirmation_prs = PaymentRequest.query.filter_by(status='pending_confirmation')\
+                               .order_by(PaymentRequest.submitted_at.desc()).all()
 
     # Full approved payment history, newest first
     approved_prs = PaymentRequest.query.filter_by(status='approved')\
@@ -1814,7 +1819,7 @@ def admin_billing():
     total_received = sum(p.total_amount_kina for p in approved_prs)
     pending_kina   = sum(
         int(''.join(c for c in (p.amount or '0') if c.isdigit()) or 0) * (p.months_paid or 1)
-        for p in pending_prs
+        for p in pending_prs + pending_confirmation_prs
     )
 
     # Per-user last payment dict  {user_id: PaymentRequest}
@@ -1823,7 +1828,11 @@ def admin_billing():
         if pr.user_id not in last_payment:
             last_payment[pr.user_id] = pr
 
-    pending_count = PaymentRequest.query.filter_by(status='pending').count()
+    # All active (non-suspended) vendors for the Record Payment modal
+    all_vendors = User.query.filter_by(is_admin=False, is_moderator=False, is_suspended=False)\
+                  .order_by(User.name).all()
+
+    pending_count = len(pending_prs) + len(pending_confirmation_prs)
     return render_template(
         'admin_billing.html',
         admin_active='billing',
@@ -1833,10 +1842,12 @@ def admin_billing():
         expiring_later=expiring_later,
         lapsed=lapsed,
         pending_prs=pending_prs,
+        pending_confirmation_prs=pending_confirmation_prs,
         approved_prs=approved_prs,
         total_received=total_received,
         pending_kina=pending_kina,
         last_payment=last_payment,
+        all_vendors=all_vendors,
         now=now_dt,
         pending_count=pending_count,
     )
@@ -1920,6 +1931,161 @@ def admin_set_plan(uid):
     flash(f'{target.name} → {plan_message}.', 'success')
     redirect_to = request.form.get('redirect_to', 'billing')
     return redirect(url_for('admin_billing') if redirect_to == 'billing' else url_for('admin'))
+
+
+@app.route('/admin/record-payment', methods=['POST'])
+@admin_required
+def admin_record_payment():
+    """Admin manually logs a payment received via WhatsApp or email."""
+    uid         = request.form.get('user_id', type=int)
+    plan        = request.form.get('plan', 'basic')
+    months      = max(1, min(24, int(request.form.get('months', '1') or 1)))
+    method      = request.form.get('payment_method', 'cash')
+    reference   = request.form.get('reference', '').strip() or None
+    notes       = request.form.get('notes', '').strip() or None
+    activate_now = request.form.get('activate_now') == '1'
+    payment_date_str = request.form.get('payment_date', '').strip()
+
+    target = db.session.get(User, uid)
+    if not target:
+        flash('Vendor not found.', 'error')
+        return redirect(url_for('admin_billing'))
+
+    payment_date = None
+    if payment_date_str:
+        try:
+            from datetime import date as date_type
+            payment_date = datetime.strptime(payment_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+
+    plan_prices = {'basic': 20, 'pro': 50}
+    per_month   = plan_prices.get(plan, 20)
+    now_dt      = datetime.utcnow()
+    months_label = f'{months} month' + ('' if months == 1 else 's')
+
+    pr = PaymentRequest(
+        user_id        = uid,
+        plan           = plan,
+        amount         = f'K{per_month}',
+        months_paid    = months,
+        payment_method = method,
+        reference      = reference,
+        notes          = notes,
+        payment_date   = payment_date,
+        status         = 'approved' if activate_now else 'pending_confirmation',
+        submitted_at   = now_dt,
+        resolved_at    = now_dt if activate_now else None,
+    )
+    db.session.add(pr)
+
+    if activate_now:
+        if target.plan == plan and target.plan_expires and target.plan_expires > now_dt:
+            new_expires = target.plan_expires + timedelta(days=30 * months)
+        else:
+            target.plan_start = now_dt
+            new_expires = now_dt + timedelta(days=30 * months)
+        target.plan           = plan
+        target.plan_expires   = new_expires
+        target.monthly_builds_used = 0
+        today = now_dt.date()
+        target.monthly_reset_date = date(today.year + 1, 1, 1) if today.month == 12 \
+                                    else date(today.year, today.month + 1, 1)
+        if not target.catalogs:
+            db.session.add(Catalog(user_id=target.id, name='My Catalog'))
+        db.session.commit()
+        log_admin_action(session['user_id'], 'payment_recorded_activated', 'payment_request', pr.id,
+                         f'Recorded + activated {plan} × {months_label} for {target.name}')
+        log_activity(target.id, 'plan_upgraded',
+                     f'{plan.title()} plan activated ({months_label}) via admin-recorded payment')
+        send_email(
+            target.email,
+            f'[CatalogKit] Your {plan.title()} plan is now active!',
+            f"Hi {target.name},\n\n"
+            f"We've confirmed your payment of K{per_month * months} ({months_label}).\n\n"
+            f"Your {plan.title()} plan is now active and expires {new_expires.strftime('%d %b %Y')}.\n\n"
+            f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
+            f"Thank you!\n— The CatalogKit Team"
+        )
+        flash(f'Payment recorded and {plan.title()} plan activated for {target.name}.', 'success')
+    else:
+        db.session.commit()
+        log_admin_action(session['user_id'], 'payment_logged', 'payment_request', pr.id,
+                         f'Logged pending payment: {plan} × {months_label} for {target.name}')
+        flash(f'Payment logged as "Pending Confirmation" for {target.name}.', 'success')
+
+    return redirect(url_for('admin_billing'))
+
+
+@app.route('/admin/payment/<int:pr_id>/confirm', methods=['POST'])
+@admin_required
+def admin_confirm_payment(pr_id):
+    """Confirm receipt of a pending_confirmation payment and activate the plan."""
+    pr = db.session.get(PaymentRequest, pr_id)
+    if not pr or pr.status != 'pending_confirmation':
+        flash('Payment record not found or already processed.', 'error')
+        return redirect(url_for('admin_billing'))
+
+    pr.status      = 'approved'
+    pr.resolved_at = datetime.utcnow()
+
+    user = db.session.get(User, pr.user_id)
+    if user:
+        months_paid  = pr.months_paid or 1
+        now_dt       = datetime.utcnow()
+        months_label = f'{months_paid} month' + ('' if months_paid == 1 else 's')
+        if user.plan == pr.plan and user.plan_expires and user.plan_expires > now_dt:
+            new_expires = user.plan_expires + timedelta(days=30 * months_paid)
+        else:
+            user.plan_start = now_dt
+            new_expires = now_dt + timedelta(days=30 * months_paid)
+        user.plan           = pr.plan
+        user.plan_expires   = new_expires
+        user.monthly_builds_used = 0
+        today = now_dt.date()
+        user.monthly_reset_date = date(today.year + 1, 1, 1) if today.month == 12 \
+                                   else date(today.year, today.month + 1, 1)
+        if not user.catalogs:
+            db.session.add(Catalog(user_id=user.id, name='My Catalog'))
+        db.session.commit()
+        per_month_int = int(''.join(c for c in (pr.amount or '0') if c.isdigit()) or 0)
+        total_kina    = per_month_int * months_paid
+        log_admin_action(session['user_id'], 'payment_confirmed', 'payment_request', pr.id,
+                         f'Confirmed receipt + activated {pr.plan} × {months_label} for {user.name}')
+        log_activity(user.id, 'plan_upgraded',
+                     f'{pr.plan.title()} plan activated ({months_label}) — receipt confirmed')
+        send_email(
+            user.email,
+            f'[CatalogKit] Your {pr.plan.title()} plan is now active!',
+            f"Hi {user.name},\n\n"
+            f"We've confirmed your payment of K{total_kina} ({pr.amount}/month × {months_label}).\n\n"
+            f"Your {pr.plan.title()} plan is now active and expires {new_expires.strftime('%d %b %Y')}.\n\n"
+            f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
+            f"Thank you!\n— The CatalogKit Team"
+        )
+        flash(f'Receipt confirmed — {pr.plan.title()} plan activated for {user.name}.', 'success')
+    else:
+        db.session.commit()
+        flash('Payment confirmed (vendor account not found).', 'warning')
+
+    return redirect(url_for('admin_billing'))
+
+
+@app.route('/admin/payment/<int:pr_id>/delete-pending', methods=['POST'])
+@admin_required
+def admin_delete_pending_payment(pr_id):
+    """Remove a pending_confirmation payment record (e.g. logged in error)."""
+    pr = db.session.get(PaymentRequest, pr_id)
+    if not pr or pr.status != 'pending_confirmation':
+        flash('Record not found or already processed.', 'error')
+        return redirect(url_for('admin_billing'))
+    user = db.session.get(User, pr.user_id)
+    log_admin_action(session['user_id'], 'payment_deleted', 'payment_request', pr.id,
+                     f'Deleted pending payment record #{pr.id}' + (f' for {user.name}' if user else ''))
+    db.session.delete(pr)
+    db.session.commit()
+    flash('Payment record deleted.', 'success')
+    return redirect(url_for('admin_billing'))
 
 
 # ── Done-For-You / Agency setup ───────────────────────────────────────────────
