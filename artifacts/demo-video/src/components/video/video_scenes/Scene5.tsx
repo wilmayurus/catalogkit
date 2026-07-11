@@ -93,12 +93,12 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
 
           {/* FREE badge */}
           <motion.div
-            className="bg-[#f97316] text-white px-[6cqw] py-[2cqh] rounded-full shadow-2xl"
+            className="bg-[#f97316] text-white px-[5cqw] py-[1.6cqh] rounded-full shadow-2xl"
             initial={{ y: 15, opacity: 0, scale: 0.9 }}
             animate={phase >= 4 ? { y: 0, opacity: 1, scale: 1 } : {}}
             transition={{ type: 'spring', damping: 16 }}
           >
-            <span className="text-[5.5cqw] font-black font-display tracking-wide">FREE TO START</span>
+            <span className="text-[4.5cqw] font-black font-display tracking-wide">FREE TO START</span>
           </motion.div>
 
           {/* URL */}
@@ -176,12 +176,12 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
           </motion.div>
 
           <motion.div
-            className="bg-[#f97316] text-white px-[5cqw] py-[2.2cqh] rounded-full shadow-2xl mb-[1cqh]"
+            className="bg-[#f97316] text-white px-[4cqw] py-[1.6cqh] rounded-full shadow-2xl mb-[1cqh]"
             initial={{ y: 20, opacity: 0, scale: 0.9 }}
             animate={phase >= 4 ? { y: 0, opacity: 1, scale: 1 } : {}}
             transition={{ type: 'spring', damping: 16 }}
           >
-            <span className="text-[4.5cqw] font-black font-display tracking-wide">FREE TO START</span>
+            <span className="text-[3.8cqw] font-black font-display tracking-wide">FREE TO START</span>
           </motion.div>
 
           <motion.div
