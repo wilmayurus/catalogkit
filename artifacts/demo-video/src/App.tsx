@@ -140,7 +140,13 @@ function App() {
           <VideoTemplate key={videoKey} />
           {/* Persistent footer — outside scene motion divs so it's always visible */}
           <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pointer-events-none z-[100]" style={{ paddingBottom: '0.8cqh' }}>
-            <span style={{ fontSize: '1.1cqw', fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.04em' }}>© CatalogKit</span>
+            <span style={{
+              fontSize: '1.1cqw', fontWeight: 700, letterSpacing: '0.04em',
+              color: 'rgba(255,255,255,0.9)',
+              background: 'rgba(0,0,0,0.45)',
+              borderRadius: '20px',
+              padding: '0.2cqh 1.2cqw',
+            }}>© CatalogKit</span>
           </div>
         </div>
 

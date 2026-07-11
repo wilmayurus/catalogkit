@@ -194,7 +194,7 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
 
           {/* BOTTOM: pain point — takes all remaining height */}
           <motion.div
-            className="flex-1 min-h-0 flex flex-col items-center justify-center px-[5cqw] pb-[2cqh] gap-[1.8cqh]"
+            className="flex-1 min-h-0 flex flex-col items-center justify-center px-[5cqw] pb-[5cqh] gap-[1.8cqh]"
             style={{ background: '#0D0D0D' }}
             initial={{ opacity: 0 }}
             animate={phase >= 2 ? { opacity: 1 } : {}}
