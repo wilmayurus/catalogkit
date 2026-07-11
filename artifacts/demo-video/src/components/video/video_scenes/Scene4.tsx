@@ -253,12 +253,9 @@ export function Scene4({ portrait }: { portrait?: boolean }) {
       </motion.div>
 
       {/* Copyright */}
-      <div className="absolute bottom-[1.2cqh] left-0 right-0 flex justify-center items-center gap-[0.8cqw] pointer-events-none z-50">
-        <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG" className="h-[1.4cqw] w-auto opacity-40" />
-        <span className="text-[1.3cqw] text-[#0D0D0D]/35 font-medium tracking-wide">
-          CatalogKit · Built in PNG for PNG · © 2026 · All Rights Reserved
-        </span>
-        <img src={`${import.meta.env.BASE_URL}images/png-flag.png`} alt="PNG" className="h-[1.4cqw] w-auto opacity-40" />
+      <div className="absolute bottom-[1cqh] left-0 right-0 flex flex-col items-center pointer-events-none z-50" style={{ gap: '0.15cqh' }}>
+        <span className="text-[1.35cqw] text-[#0D0D0D]/40 font-bold tracking-wide">CatalogKit 🇵🇬</span>
+        <span className="text-[1.1cqw] text-[#0D0D0D]/30 font-medium tracking-wide">Built in Papua New Guinea for Papua New Guinea</span>
       </div>
     </motion.div>
   );
