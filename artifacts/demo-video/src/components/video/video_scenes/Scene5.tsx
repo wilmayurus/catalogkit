@@ -206,7 +206,7 @@ export function Scene5({ portrait }: { portrait?: boolean }) {
 
       {/* Scene 5 footer — second line sits above the persistent App footer */}
       <div className="absolute bottom-0 left-0 right-0 flex justify-center pointer-events-none z-[90]" style={{ paddingBottom: '2cqh' }}>
-        <span style={{ fontSize: '0.9cqw', fontWeight: 500, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.03em' }}>Built in Papua New Guinea for Papua New Guinea</span>
+        <span style={{ fontSize: '0.9cqw', fontWeight: 500, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.03em' }}>🇵🇬 Built in Papua New Guinea for Papua New Guinea 🇵🇬</span>
       </div>
     </motion.div>
   );
