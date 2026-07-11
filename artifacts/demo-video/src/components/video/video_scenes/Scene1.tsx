@@ -266,19 +266,10 @@ export function Scene1({ portrait }: { portrait?: boolean }) {
           </div>
 
           {/* Vertical divider */}
-          <div className="relative flex-shrink-0 flex flex-col items-center justify-center" style={{ width: '2px' }}>
-            <div className="absolute inset-y-0 w-[1px]" style={{
+          <div className="relative flex-shrink-0" style={{ width: '1px' }}>
+            <div className="absolute inset-y-0 w-full" style={{
               background: 'linear-gradient(to bottom, transparent 0%, rgba(249,115,22,0.15) 20%, rgba(249,115,22,0.5) 50%, rgba(249,115,22,0.15) 80%, transparent 100%)',
             }} />
-            <motion.div
-              className="relative z-10 bg-[#111111] border border-[#f97316]/40 text-[#f97316] text-[1cqw] font-black px-[0.6cqw] py-[0.8cqh] rounded-full"
-              style={{ writingMode: 'vertical-rl', letterSpacing: '0.08em' }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={phase >= 2 ? { opacity: 1, scale: 1 } : {}}
-              transition={{ type: 'spring', delay: 0.3 }}
-            >
-              VS
-            </motion.div>
           </div>
 
           {/* Right: Pain point — darker background */}
