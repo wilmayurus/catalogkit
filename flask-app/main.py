@@ -2314,8 +2314,12 @@ def admin_edit_user(user_id):
         else:
             flash(f'{target.name}\'s profile has been updated.', 'success')
         return redirect(url_for('admin'))
+    payment_records = PaymentRequest.query.filter_by(user_id=target.id)\
+                      .filter(PaymentRequest.status.in_(['approved', 'pending_confirmation']))\
+                      .order_by(PaymentRequest.submitted_at.desc()).all()
     return render_template('admin_edit_user.html', u=target, me=me,
-                           admin_active='users', now=datetime.utcnow(), pending_count=0)
+                           admin_active='users', now=datetime.utcnow(), pending_count=0,
+                           payment_records=payment_records)
 
 @app.route('/admin/user/<int:user_id>/delete', methods=['POST'])
 @full_admin_required

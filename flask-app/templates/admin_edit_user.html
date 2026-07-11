@@ -180,6 +180,63 @@
 
   </form>
 
+  <!-- Payment History -->
+  <div class="admin-section" style="margin-bottom:24px;margin-top:8px">
+    <div class="admin-section-head">
+      <div class="admin-section-title">💳 Payment History</div>
+      {% if u.plan_expires %}
+      <span style="font-size:.82rem;color:var(--muted)">
+        Plan expires: <strong>{{ u.plan_expires.strftime('%d %b %Y') }}</strong>
+      </span>
+      {% endif %}
+    </div>
+    <div class="admin-section-body" style="padding:0">
+      {% if payment_records %}
+      <table class="admin-tbl">
+        <thead>
+          <tr><th>Status</th><th>Date Paid</th><th>Plan</th><th>Months</th><th>Total</th><th>Method</th><th>Reference</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          {% for pr in payment_records %}
+          <tr>
+            <td>
+              {% if pr.status == 'pending_confirmation' %}
+                <span class="chip chip-yellow" style="font-size:.72rem">Pending Confirmation</span>
+              {% else %}
+                <span class="chip chip-green" style="font-size:.72rem">✓ Received</span>
+              {% endif %}
+            </td>
+            <td style="font-size:.83rem;white-space:nowrap">
+              {% if pr.payment_date %}
+                <strong>{{ pr.payment_date.strftime('%d %b %Y') }}</strong>
+              {% elif pr.resolved_at %}
+                {{ pr.resolved_at.strftime('%d %b %Y') }}
+              {% else %}
+                <span style="color:var(--muted)">—</span>
+              {% endif %}
+            </td>
+            <td><span class="chip chip-{{ 'yellow' if pr.plan == 'pro' else 'blue' }}">{{ pr.plan | title }}</span></td>
+            <td style="text-align:center;font-weight:700">{{ pr.months_paid or 1 }}</td>
+            <td><strong>K{{ pr.total_amount_kina }}</strong><br><span style="font-size:.72rem;color:var(--muted)">{{ pr.amount }}/mo</span></td>
+            <td style="font-size:.83rem">
+              {% if pr.payment_method == 'admin_override' %}
+                <span style="color:var(--muted);font-style:italic">Admin set</span>
+              {% else %}
+                {{ pr.payment_method | replace('_',' ') | title }}
+              {% endif %}
+            </td>
+            <td style="font-size:.78rem;color:var(--muted);max-width:120px;word-break:break-all">{{ pr.reference or '—' }}</td>
+            <td style="font-size:.78rem;color:var(--muted);max-width:140px">{{ pr.notes or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div style="padding:20px 24px;color:var(--muted);font-size:.85rem">No payment records yet.</div>
+      {% endif %}
+    </div>
+  </div>
+
   <!-- Danger zone -->
   {% if u.id != me.id and not u.is_admin %}
   <div style="margin-top:32px;background:rgba(252,92,92,0.05);border:1px solid rgba(252,92,92,0.2);border-radius:var(--radius);padding:20px 24px">
