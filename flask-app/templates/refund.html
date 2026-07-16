@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Refund &amp; Cancellation Policy — CatalogKit{% endblock %}
+{% block body %}
+<div class="container" style="padding-top:40px;max-width:720px">
+
+  <div style="text-align:center;margin-bottom:48px">
+    <h1 style="font-size:2rem;font-weight:800;margin-bottom:12px">Refund &amp; Cancellation Policy</h1>
+    <p style="color:var(--muted);font-size:0.93rem;line-height:1.7">
+      Last updated: July 2026 &nbsp;·&nbsp; CatalogKit
+    </p>
+  </div>
+
+  <div style="background:var(--surface2);border-radius:12px;padding:18px 22px;margin-bottom:32px;font-size:0.9rem;color:var(--muted);line-height:1.7">
+    <strong style="color:var(--text)">Plain English summary:</strong> We want you to be happy with CatalogKit. If something goes wrong with your payment or your plan is not activated, we will fix it or refund you. Just message us on WhatsApp.
+  </div>
+
+  {% set sections = [
+    {
+      "id": "digital-delivery",
+      "title": "1. Service delivery",
+      "content": "CatalogKit is a <strong>digital service</strong>. When you upgrade to a paid plan (Basic or Pro), your plan is activated manually by our team — usually within a few hours of receiving your payment confirmation.<br><br>There is no physical product to ship. Your upgraded plan gives you access to more catalog builds immediately upon activation. You can start using your new plan features as soon as we confirm your plan is active."
+    },
+    {
+      "id": "cancellation",
+      "title": "2. Cancellation",
+      "content": "You can cancel your paid plan at any time by messaging us on WhatsApp or emailing us at <a href=\"mailto:info@catalogkit.org\" style=\"color:var(--accent-text)\">info@catalogkit.org</a>.<br><br>Because CatalogKit uses <strong>manual monthly payments</strong> (not automatic subscriptions), cancellation simply means you do not make a payment for the next month. There is nothing automatic to cancel.<br><br>Your plan will remain active until the end of the month you have already paid for."
+    },
+    {
+      "id": "refunds",
+      "title": "3. Refunds",
+      "content": "We offer refunds in the following situations:<br><br><ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px\"><li><strong>Payment received but plan not activated:</strong> If you paid and your plan was not activated within 24 hours, contact us immediately. We will either activate your plan or refund your payment in full.</li><li><strong>Duplicate payment:</strong> If you accidentally paid twice for the same month, we will refund the duplicate payment in full.</li><li><strong>Technical failure:</strong> If a fault on our side prevented you from using the service for a significant portion of the month you paid for, we will consider a partial or full refund at our discretion.</li></ul><br>Refunds are processed back through the same method you used to pay (mobile banking or bank transfer), within <strong>5 business days</strong> of us confirming the issue."
+    },
+    {
+      "id": "no-refund",
+      "title": "4. When refunds do not apply",
+      "content": "We do not offer refunds in the following situations:<br><br><ul style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px\"><li>You changed your mind after your plan was successfully activated.</li><li>You did not use your catalog builds during the month.</li><li>Your account was suspended due to a breach of our <a href=\"/terms\" style=\"color:var(--accent-text)\">Terms of Service</a>.</li></ul>"
+    },
+    {
+      "id": "how-to-request",
+      "title": "5. How to request a refund",
+      "content": "To request a refund or report a payment problem:<br><br><ol style=\"margin:8px 0 0 0;padding-left:20px;display:flex;flex-direction:column;gap:8px\"><li>Message us on <strong>WhatsApp: <a href=\"https://wa.me/67573817000\" style=\"color:var(--accent-text)\">+675 7381 7000</a></strong></li><li>Or email <a href=\"mailto:info@catalogkit.org\" style=\"color:var(--accent-text)\">info@catalogkit.org</a></li><li>Include your name, the email address on your account, and a description of the issue</li><li>Attach your payment receipt or screenshot if you have one</li></ol><br>We aim to respond to all refund requests within <strong>1 business day</strong>."
+    },
+    {
+      "id": "contact",
+      "title": "6. Contact us",
+      "content": "If you have any questions about this policy, please reach out:<br><br><strong>CatalogKit — Sapphire Consulting Services</strong><br>Port Moresby, Papua New Guinea<br><br>📱 WhatsApp: <a href=\"https://wa.me/67573817000\" style=\"color:var(--accent-text)\">+675 7381 7000</a><br>✉️ Email: <a href=\"mailto:info@catalogkit.org\" style=\"color:var(--accent-text)\">info@catalogkit.org</a>"
+    }
+  ] %}
+
+  {% for s in sections %}
+  <section style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:16px" aria-labelledby="refund-{{ s.id }}">
+    <h2 id="refund-{{ s.id }}" style="font-size:1rem;font-weight:700;margin-bottom:12px">{{ s.title }}</h2>
+    <div style="font-size:0.9rem;color:var(--muted);line-height:1.75">{{ s.content | safe }}</div>
+  </section>
+  {% endfor %}
+
+  <div style="text-align:center;padding:32px 0 40px">
+    <p style="font-size:0.87rem;color:var(--muted);margin-bottom:16px">
+      Payment issue or need a refund?
+    </p>
+    <a href="https://wa.me/67573817000?text={{ 'Hi, I have a question about a CatalogKit payment.' | urlencode }}"
+       target="_blank" rel="noopener noreferrer"
+       style="display:inline-flex;align-items:center;gap:8px;background:#25d366;color:#fff;text-decoration:none;border-radius:12px;padding:12px 22px;font-size:0.9rem;font-weight:700">
+      📱 Message us on WhatsApp
+    </a>
+  </div>
+
+</div>
+{% endblock %}

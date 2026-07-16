@@ -3080,6 +3080,13 @@ def terms():
     return render_template('terms.html')
 
 
+# ── Refund & Cancellation Policy ─────────────────────────────────────────────
+
+@app.route('/refund')
+def refund():
+    return render_template('refund.html')
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port, debug=False)
