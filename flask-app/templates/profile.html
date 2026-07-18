@@ -47,6 +47,32 @@
                value="{{ user.location or '' }}">
         <p class="text-muted" style="font-size:0.78rem;margin:4px 0 0">Shown on your catalog so customers know where to find you.</p>
       </div>
+
+      <div class="field">
+        <label>Business Category <span class="text-muted" style="font-weight:400;font-size:0.8rem">(optional)</span></label>
+        <select name="business_category" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.88rem;appearance:auto">
+          <option value="">— Select a category —</option>
+          {% for cat in ['Market Vendor / Stall', 'Retail Shop', 'Wholesale Supplier', 'Food & Catering', 'Crafts & Handmade', 'Agriculture & Farming', 'Service Business', 'Other'] %}
+          <option value="{{ cat }}" {% if user.business_category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Catalog Type <span class="text-muted" style="font-weight:400;font-size:0.8rem">(tick all that apply)</span></label>
+        {% set saved_cat_types = (user.catalog_type or '[]') | fromjson %}
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">
+          {% for ct in ['Products for Sale', 'Services Menu', 'Price List', 'Wholesale Catalogue', 'Food Menu', 'Event Promotions'] %}
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--surface);border:1px solid {% if ct in saved_cat_types %}var(--accent){% else %}var(--border){% endif %};border-radius:8px;padding:8px 12px;font-size:0.85rem">
+            <input type="checkbox" name="catalog_type" value="{{ ct }}"
+                   {% if ct in saved_cat_types %}checked{% endif %}
+                   style="width:15px;height:15px;accent-color:var(--accent);flex-shrink:0">
+            {{ ct }}
+          </label>
+          {% endfor %}
+        </div>
+        <p class="text-muted" style="font-size:0.78rem;margin:6px 0 0">Helps us understand what kind of catalog suits your business best.</p>
+      </div>
     </div>
 
     <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">

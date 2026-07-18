@@ -181,7 +181,9 @@ class User(db.Model):
     location      = db.Column(db.String(255), nullable=True)
     whatsapp      = db.Column(db.String(50),  nullable=True)
     phone         = db.Column(db.String(50),  nullable=True)
-    facebook_url     = db.Column(db.String(500), nullable=True)
+    facebook_url      = db.Column(db.String(500), nullable=True)
+    business_category = db.Column(db.String(100), nullable=True)
+    catalog_type      = db.Column(db.Text, nullable=True)   # JSON list
     payment_methods      = db.Column(db.Text, nullable=True)
     bank_account_details = db.Column(db.Text, nullable=True)
     delivery_methods     = db.Column(db.Text, nullable=True)
@@ -1588,7 +1590,10 @@ def profile():
         user.whatsapp = new_whatsapp
         user.phone    = new_phone
         user.email          = request.form.get('email', '').strip().lower() or user.email
-        user.facebook_url   = request.form.get('facebook_url', '').strip() or None
+        user.facebook_url       = request.form.get('facebook_url', '').strip() or None
+        user.business_category  = request.form.get('business_category', '').strip() or None
+        cat_types = request.form.getlist('catalog_type')
+        user.catalog_type = json.dumps(cat_types) if cat_types else None
         pay  = request.form.getlist('payment_methods')
         delv = request.form.getlist('delivery_methods')
         user.payment_methods      = json.dumps(pay)  if pay  else None
@@ -2362,8 +2367,11 @@ def admin_edit_user(user_id):
         target.business_name  = request.form.get('business_name', '').strip() or None
         target.contact_person = request.form.get('contact_person', '').strip() or None
         target.location       = request.form.get('location', '').strip() or None
-        target.whatsapp       = request.form.get('whatsapp', '').strip() or None
-        target.phone          = request.form.get('phone', '').strip() or None
+        target.whatsapp           = request.form.get('whatsapp', '').strip() or None
+        target.phone              = request.form.get('phone', '').strip() or None
+        target.business_category  = request.form.get('business_category', '').strip() or None
+        admin_cat_types = request.form.getlist('catalog_type')
+        target.catalog_type = json.dumps(admin_cat_types) if admin_cat_types else None
         new_password = request.form.get('new_password', '').strip()
         if new_password:
             target.password_hash = generate_password_hash(new_password)
