@@ -71,11 +71,7 @@
       {% else %}
       {# ── Editable ── #}
       <div class="field">
-        <label>Business Category
-          <span class="text-muted" style="font-weight:400;font-size:0.8rem">
-            — pick up to {{ cat_limit }} ({{ cat_limit - saved_biz_cats|length }} remaining)
-          </span>
-        </label>
+        <label>Business Category <span class="text-muted" style="font-weight:400;font-size:0.8rem">(tick all that apply)</span></label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
           {% for cat in biz_options %}
           {% set _checked = cat in saved_biz_cats %}
@@ -89,17 +85,10 @@
           </label>
           {% endfor %}
         </div>
-        {% if cat_limit == 1 %}
-        <p class="text-muted" style="font-size:0.78rem;margin:5px 0 0">Free plan: 1 category only. Upgrade to Basic for up to 5.</p>
-        {% endif %}
       </div>
 
       <div class="field">
-        <label>Catalog Type
-          <span class="text-muted" style="font-weight:400;font-size:0.8rem">
-            — tick all that apply (up to {{ cat_limit }}, {{ cat_limit - saved_cat_types|length }} remaining)
-          </span>
-        </label>
+        <label>Catalog Type <span class="text-muted" style="font-weight:400;font-size:0.8rem">(tick all that apply)</span></label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
           {% for ct in type_options %}
           {% set _checked = ct in saved_cat_types %}
@@ -113,9 +102,6 @@
           </label>
           {% endfor %}
         </div>
-        {% if cat_limit == 1 %}
-        <p class="text-muted" style="font-size:0.78rem;margin:5px 0 0">Free plan: 1 type only. Upgrade to Basic for up to 5.</p>
-        {% endif %}
       </div>
       {% endif %}
     </div>
