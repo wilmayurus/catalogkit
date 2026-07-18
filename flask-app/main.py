@@ -699,9 +699,9 @@ Sapphire Consulting Services · Port Moresby, PNG
 """
         )
 
-        # ── Notify info@catalogkit.org of new signup ───────────────────────
+        # ── Notify admin of new signup ─────────────────────────────────────
         send_email(
-            'info@catalogkit.org',
+            ADMIN_NOTIFY_EMAIL,
             f'[CatalogKit] New signup — {name}',
             f"A new user has registered on CatalogKit.\n\n"
             f"Name:  {name}\n"
@@ -1631,6 +1631,7 @@ def profile():
 # ── Plan selection & payment approval ────────────────────────────────────────
 
 PLAN_AMOUNTS = {'basic': 'K20', 'pro': 'K50'}
+ADMIN_NOTIFY_EMAIL = 'admin@catalogkit.org'   # all system alerts go here
 PAYMENT_METHOD_LABELS = {
     'mobile_money':      'Mobile Money (MiCash / BSP Kina)',
     'internet_banking':  'Internet Banking',
@@ -1727,7 +1728,7 @@ def payment_request():
         f"To approve, go to: https://www.catalogkit.org/admin\n"
         f"Request ID: #{pr.id}\n"
     )
-    send_email('info@catalogkit.org',
+    send_email(ADMIN_NOTIFY_EMAIL,
                f'[CatalogKit] Payment #{pr.id} — {user.name} → {plan.title()} K{total_kina} ({months_label})',
                body)
 
@@ -2164,19 +2165,17 @@ def assisted_setup():
                            whatsapp=whatsapp, preferred_datetime='', catalog_plan='free')
         db.session.add(ar)
         db.session.commit()
-        ae = admin_email()
-        if ae:
-            existing_acct = phone_in_use_by(whatsapp)
-            dup_note = (
-                f'\n⚠️  DUPLICATE WARNING: This WhatsApp is already linked to '
-                f'"{existing_acct.name}" ({existing_acct.email}) — may be a re-submission.\n'
-                if existing_acct else ''
-            )
-            send_email(ae,
-                f'CatalogKit — New Done-For-You request: {business_name}',
-                f'New Done-For-You setup request:\nName: {business_name}\n'
-                f'Location: {market_location}\nWhatsApp: {whatsapp}'
-                f'{dup_note}')
+        existing_acct = phone_in_use_by(whatsapp)
+        dup_note = (
+            f'\n⚠️  DUPLICATE WARNING: This WhatsApp is already linked to '
+            f'"{existing_acct.name}" ({existing_acct.email}) — may be a re-submission.\n'
+            if existing_acct else ''
+        )
+        send_email(ADMIN_NOTIFY_EMAIL,
+            f'CatalogKit — New Done-For-You request: {business_name}',
+            f'New Done-For-You setup request:\nName: {business_name}\n'
+            f'Location: {market_location}\nWhatsApp: {whatsapp}'
+            f'{dup_note}')
         return render_template('assisted_setup.html', success=True, ar=ar)
     return render_template('assisted_setup.html', success=False)
 
@@ -3022,12 +3021,10 @@ def support():
                                       author_name=user.name, body=message))
         db.session.commit()
         log_activity(user.id, 'support_ticket_created', subject[:200])
-        ae = admin_email()
-        if ae:
-            send_email(ae, f'[CatalogKit Support] New message from {user.name}: {subject}',
-                      f"{user.name} ({user.email}) sent a support message:\n\n"
-                      f"Subject: {subject}\n\n{message}\n\n"
-                      f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
+        send_email(ADMIN_NOTIFY_EMAIL, f'[CatalogKit Support] New message from {user.name}: {subject}',
+                  f"{user.name} ({user.email}) sent a support message:\n\n"
+                  f"Subject: {subject}\n\n{message}\n\n"
+                  f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
         flash("Your message has been sent — we'll reply here and by email.", 'success')
         return redirect(url_for('support_ticket', ticket_id=ticket.id))
     tickets = SupportTicket.query.filter_by(user_id=user.id).order_by(SupportTicket.created_at.desc()).all()
@@ -3050,11 +3047,9 @@ def support_ticket(ticket_id):
                 ticket.status = 'open'
             ticket.updated_at = datetime.utcnow()
             db.session.commit()
-            ae = admin_email()
-            if ae:
-                send_email(ae, f'[CatalogKit Support] {user.name} replied: {ticket.subject}',
-                          f"{user.name} ({user.email}) replied:\n\n{body}\n\n"
-                          f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
+            send_email(ADMIN_NOTIFY_EMAIL, f'[CatalogKit Support] {user.name} replied: {ticket.subject}',
+                      f"{user.name} ({user.email}) replied:\n\n{body}\n\n"
+                      f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
         return redirect(url_for('support_ticket', ticket_id=ticket.id))
     return render_template('support_ticket.html', user=user, ticket=ticket)
 
