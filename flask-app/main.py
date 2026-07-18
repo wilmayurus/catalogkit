@@ -648,17 +648,16 @@ def register():
         if User.query.filter_by(email=email).first():
             flash('An account with that email already exists.', 'error')
             return render_template('register.html')
-        # WhatsApp duplicate check — optional field but blocks if already registered
+        # WhatsApp duplicate check — warn only (shared numbers are common in PNG)
         wa_raw = request.form.get('whatsapp', '').strip()
         if wa_raw:
             clash = phone_in_use_by(wa_raw)
             if clash:
                 flash(
-                    'That WhatsApp number is already linked to an existing account. '
-                    'Please sign in instead, or contact us if you need help.',
-                    'error'
+                    'Note: that WhatsApp number is already linked to another account. '
+                    'If you share a number with a family member or another business, that\'s fine — your account has been created.',
+                    'warning'
                 )
-                return render_template('register.html')
         is_first = User.query.count() == 0
         user = User(name=name, email=email,
                     password_hash=generate_password_hash(password),
@@ -1589,22 +1588,20 @@ def profile():
     user = current_user()
     if request.method == 'POST':
         was_incomplete = not user.profile_complete
-        if not user.business_name_locked:
-            user.business_name = request.form.get('business_name', '').strip() or None
+        user.business_name  = request.form.get('business_name', '').strip() or None
         user.contact_person = request.form.get('contact_person', '').strip() or None
         user.location       = request.form.get('location', '').strip() or None
         new_whatsapp = request.form.get('whatsapp', '').strip() or None
         new_phone    = request.form.get('phone', '').strip() or None
-        # Duplicate phone/WhatsApp check — skip if the number belongs to this user already
+        # Duplicate phone/WhatsApp check — warn only (shared numbers are common in PNG)
         for raw in filter(None, [new_whatsapp, new_phone]):
             clash = phone_in_use_by(raw, exclude_user_id=user.id)
             if clash:
                 flash(
-                    f'That number ({raw}) is already linked to another account. '
-                    'Each account must use a unique phone and WhatsApp number.',
-                    'error'
+                    f'Note: {raw} is also linked to another account. '
+                    'If you share this number with a family member or another business, that\'s fine.',
+                    'warning'
                 )
-                return render_template('profile.html', user=user)
         user.whatsapp = new_whatsapp
         user.phone    = new_phone
         user.email          = request.form.get('email', '').strip().lower() or user.email
