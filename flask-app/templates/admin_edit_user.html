@@ -88,18 +88,23 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="field">
-            <label>Business Category</label>
-            <select name="business_category" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%;font-size:0.9rem">
-              <option value="">— Not set —</option>
+            <label>Business Category <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(admin: no limit)</span></label>
+            {% set saved_bc = (u.business_category or '[]') | fromjson %}
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
               {% for cat in ['Market Vendor / Stall', 'Retail Shop', 'Wholesale Supplier', 'Food & Catering', 'Crafts & Handmade', 'Agriculture & Farming', 'Service Business', 'Other'] %}
-              <option value="{{ cat }}" {% if u.business_category == cat %}selected{% endif %}>{{ cat }}</option>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem">
+                <input type="checkbox" name="business_category" value="{{ cat }}"
+                       {% if cat in saved_bc %}checked{% endif %}
+                       style="width:14px;height:14px;accent-color:var(--accent);flex-shrink:0">
+                {{ cat }}
+              </label>
               {% endfor %}
-            </select>
+            </div>
           </div>
           <div class="field">
-            <label>Catalog Type(s)</label>
+            <label>Catalog Type(s) <span style="font-size:0.75rem;color:var(--muted);font-weight:400">(admin: no limit)</span></label>
             {% set saved_ct = (u.catalog_type or '[]') | fromjson %}
-            <div style="display:flex;flex-direction:column;gap:6px;margin-top:2px">
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
               {% for ct in ['Products for Sale', 'Services Menu', 'Price List', 'Wholesale Catalogue', 'Food Menu', 'Event Promotions'] %}
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.85rem">
                 <input type="checkbox" name="catalog_type" value="{{ ct }}"

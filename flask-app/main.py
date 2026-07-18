@@ -182,7 +182,7 @@ class User(db.Model):
     whatsapp      = db.Column(db.String(50),  nullable=True)
     phone         = db.Column(db.String(50),  nullable=True)
     facebook_url      = db.Column(db.String(500), nullable=True)
-    business_category = db.Column(db.String(100), nullable=True)
+    business_category = db.Column(db.Text, nullable=True)   # JSON list
     catalog_type      = db.Column(db.Text, nullable=True)   # JSON list
     payment_methods      = db.Column(db.Text, nullable=True)
     bank_account_details = db.Column(db.Text, nullable=True)
@@ -269,6 +269,17 @@ class User(db.Model):
     @property
     def catalog_count(self):
         return Catalog.query.filter_by(user_id=self.id).count()
+
+    @property
+    def published_catalog_count(self):
+        return Catalog.query.filter_by(user_id=self.id, is_published=True).count()
+
+    @property
+    def profile_cats_locked(self):
+        """Free-plan vendor: category & type fields lock after 2 published catalogs."""
+        return (not (self.is_admin or self.is_moderator or self.is_global_admin)
+                and self.plan == 'free'
+                and self.published_catalog_count >= 2)
 
     @property
     def profile_complete(self):
@@ -1590,10 +1601,29 @@ def profile():
         user.whatsapp = new_whatsapp
         user.phone    = new_phone
         user.email          = request.form.get('email', '').strip().lower() or user.email
-        user.facebook_url       = request.form.get('facebook_url', '').strip() or None
-        user.business_category  = request.form.get('business_category', '').strip() or None
-        cat_types = request.form.getlist('catalog_type')
-        user.catalog_type = json.dumps(cat_types) if cat_types else None
+        user.facebook_url = request.form.get('facebook_url', '').strip() or None
+        # Business category + catalog type — plan-gated and lockable
+        if user.profile_cats_locked:
+            flash(
+                'Your business category and catalog type are locked on the Free plan after '
+                '2 published catalogs. Upgrade to Basic or Pro to make changes.',
+                'warning'
+            )
+        else:
+            _plan_limit   = CATEGORY_TYPE_LIMITS.get(user.plan, 1)
+            new_biz_cats  = request.form.getlist('business_category')
+            new_cat_types = request.form.getlist('catalog_type')
+            _limit_word   = 'category' if _plan_limit == 1 else 'categories'
+            if len(new_biz_cats) > _plan_limit or len(new_cat_types) > _plan_limit:
+                flash(
+                    f'Your {user.plan_label} plan allows up to {_plan_limit} business '
+                    f'{_limit_word} and catalog type{"" if _plan_limit == 1 else "s"}. '
+                    f'Remove some before saving, or upgrade your plan.',
+                    'error'
+                )
+                return render_template('profile.html', user=user)
+            user.business_category = json.dumps(new_biz_cats) if new_biz_cats else None
+            user.catalog_type      = json.dumps(new_cat_types) if new_cat_types else None
         pay  = request.form.getlist('payment_methods')
         delv = request.form.getlist('delivery_methods')
         user.payment_methods      = json.dumps(pay)  if pay  else None
@@ -1637,6 +1667,8 @@ def profile():
 
 PLAN_AMOUNTS = {'basic': 'K20', 'pro': 'K50'}
 ADMIN_NOTIFY_EMAIL = 'admin@catalogkit.org'   # all system alerts go here
+# Max number of business categories / catalog types selectable per plan
+CATEGORY_TYPE_LIMITS = {'free': 1, 'basic': 5, 'pro': 20}
 PAYMENT_METHOD_LABELS = {
     'mobile_money':      'Mobile Money (MiCash / BSP Kina)',
     'internet_banking':  'Internet Banking',
@@ -2369,9 +2401,10 @@ def admin_edit_user(user_id):
         target.location       = request.form.get('location', '').strip() or None
         target.whatsapp           = request.form.get('whatsapp', '').strip() or None
         target.phone              = request.form.get('phone', '').strip() or None
-        target.business_category  = request.form.get('business_category', '').strip() or None
+        admin_biz_cats  = request.form.getlist('business_category')
         admin_cat_types = request.form.getlist('catalog_type')
-        target.catalog_type = json.dumps(admin_cat_types) if admin_cat_types else None
+        target.business_category = json.dumps(admin_biz_cats)  if admin_biz_cats  else None
+        target.catalog_type      = json.dumps(admin_cat_types) if admin_cat_types else None
         new_password = request.form.get('new_password', '').strip()
         if new_password:
             target.password_hash = generate_password_hash(new_password)
@@ -3122,6 +3155,10 @@ with app.app_context():
             resolved_at TIMESTAMP
         )''',
         'ALTER TABLE payment_request ADD COLUMN IF NOT EXISTS months_paid INTEGER DEFAULT 1',
+        # ── user: business profile (multi-select JSON lists) ───────────────────
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS business_category TEXT',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS catalog_type TEXT',
+        'ALTER TABLE "user" ALTER COLUMN business_category TYPE TEXT',
     ]
     with db.engine.connect() as _conn:
         for _sql in _migrations:
