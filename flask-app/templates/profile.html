@@ -54,6 +54,27 @@
       {% set biz_options = ['Market Vendor / Stall', 'Retail Shop', 'Wholesale Supplier', 'Food & Catering', 'Crafts & Handmade', 'Agriculture & Farming', 'Service Business', 'Other'] %}
       {% set type_options = ['Products for Sale', 'Services Menu', 'Price List', 'Wholesale Catalogue', 'Food Menu', 'Event Promotions'] %}
 
+      {% if user.business_category %}
+      {# ── Locked: already saved once ── #}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+        <div style="font-size:0.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Business Category &amp; Catalog Type — locked</div>
+        <div style="font-size:0.85rem;margin-bottom:8px">
+          <span style="color:var(--muted);font-size:0.8rem">Business Category: </span>
+          {% for c in saved_biz_cats %}<span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;margin-right:6px;font-size:0.82rem">{{ c }}</span>{% else %}<span style="color:var(--muted);font-size:0.82rem">Not set</span>{% endfor %}
+        </div>
+        <div style="font-size:0.85rem;margin-bottom:10px">
+          <span style="color:var(--muted);font-size:0.8rem">Catalog Type: </span>
+          {% for c in saved_cat_types %}<span style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;margin-right:6px;font-size:0.82rem">{{ c }}</span>{% else %}<span style="color:var(--muted);font-size:0.82rem">Not set</span>{% endfor %}
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin:0">These are locked after your first save. Contact us via <a href="/support" style="color:var(--accent-text)">Support</a> if you need to make a correction.</p>
+      </div>
+
+      {% else %}
+      {# ── First time — show checkboxes ── #}
+      <div style="background:rgba(249,115,22,.05);border:1px solid rgba(249,115,22,.25);border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:0.82rem;color:var(--muted)">
+        ⚠️ Choose carefully — <strong>these cannot be changed</strong> once your profile is saved.
+      </div>
+
       <div class="field">
         <label>Business Category <span class="text-muted" style="font-weight:400;font-size:0.8rem">(tick all that apply)</span></label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
@@ -87,6 +108,7 @@
           {% endfor %}
         </div>
       </div>
+      {% endif %}
     </div>
 
     <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">

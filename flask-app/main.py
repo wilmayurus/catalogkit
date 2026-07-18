@@ -1602,21 +1602,22 @@ def profile():
         user.phone    = new_phone
         user.email          = request.form.get('email', '').strip().lower() or user.email
         user.facebook_url = request.form.get('facebook_url', '').strip() or None
-        # Business category + catalog type — plan-gated
-        _plan_limit   = CATEGORY_TYPE_LIMITS.get(user.plan, 1)
-        new_biz_cats  = request.form.getlist('business_category')
-        new_cat_types = request.form.getlist('catalog_type')
-        _limit_word   = 'category' if _plan_limit == 1 else 'categories'
-        if len(new_biz_cats) > _plan_limit or len(new_cat_types) > _plan_limit:
-            flash(
-                f'Your {user.plan_label} plan allows up to {_plan_limit} business '
-                f'{_limit_word} and catalog type{"" if _plan_limit == 1 else "s"}. '
-                f'Remove some before saving, or upgrade your plan.',
-                'error'
-            )
-            return render_template('profile.html', user=user)
-        user.business_category = json.dumps(new_biz_cats) if new_biz_cats else None
-        user.catalog_type      = json.dumps(new_cat_types) if new_cat_types else None
+        # Business category + catalog type — write-once (locked once first saved)
+        if not user.business_category:
+            _plan_limit   = CATEGORY_TYPE_LIMITS.get(user.plan, 1)
+            new_biz_cats  = request.form.getlist('business_category')
+            new_cat_types = request.form.getlist('catalog_type')
+            _limit_word   = 'category' if _plan_limit == 1 else 'categories'
+            if len(new_biz_cats) > _plan_limit or len(new_cat_types) > _plan_limit:
+                flash(
+                    f'Your {user.plan_label} plan allows up to {_plan_limit} business '
+                    f'{_limit_word} and catalog type{"" if _plan_limit == 1 else "s"}. '
+                    f'Remove some before saving, or upgrade your plan.',
+                    'error'
+                )
+                return render_template('profile.html', user=user)
+            user.business_category = json.dumps(new_biz_cats) if new_biz_cats else None
+            user.catalog_type      = json.dumps(new_cat_types) if new_cat_types else None
         pay  = request.form.getlist('payment_methods')
         delv = request.form.getlist('delivery_methods')
         user.payment_methods      = json.dumps(pay)  if pay  else None
