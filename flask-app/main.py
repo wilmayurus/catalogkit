@@ -1660,6 +1660,22 @@ def payment_request():
     per_month_int = int(''.join(c for c in per_month_str if c.isdigit()) or 0)
     total_kina    = per_month_int * months_paid
 
+    # Duplicate guard — block if an identical pending request already exists
+    existing = PaymentRequest.query.filter_by(
+        user_id        = user.id,
+        plan           = plan,
+        months_paid    = months_paid,
+        payment_method = method,
+        status         = 'pending',
+    ).first()
+    if existing:
+        flash(
+            'You already have a pending payment request for this plan. '
+            'Please wait for it to be approved, or contact us on WhatsApp if you need help.',
+            'warning'
+        )
+        return redirect(url_for('choose_plan'))
+
     pr = PaymentRequest(
         user_id        = user.id,
         plan           = plan,
