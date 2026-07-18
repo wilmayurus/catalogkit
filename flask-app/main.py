@@ -731,6 +731,30 @@ def login():
         session['user_id'] = user.id
         log_access(user.id, 'login')
         flash(f'Welcome back, {user.name}!', 'success')
+
+        # Plan expiry reminder — send once if plan expires within 7 days
+        if (user.plan != 'free' and user.plan_expires and
+                timedelta(0) < user.plan_expires - datetime.utcnow() <= timedelta(days=7)):
+            recent_reminder = ActivityLog.query.filter_by(
+                user_id=user.id, action='plan_expiry_reminder'
+            ).filter(ActivityLog.created_at >= datetime.utcnow() - timedelta(days=6)).first()
+            if not recent_reminder:
+                days_left = (user.plan_expires.date() - datetime.utcnow().date()).days
+                days_word = 'tomorrow' if days_left <= 1 else f'in {days_left} days'
+                send_email(
+                    user.email,
+                    f'[CatalogKit] Your {user.plan.title()} plan expires {days_word}',
+                    f"Hi {user.name},\n\n"
+                    f"Just a reminder — your {user.plan.title()} plan expires on "
+                    f"{user.plan_expires.strftime('%d %b %Y')} ({days_word}).\n\n"
+                    f"To renew, message us on WhatsApp and we'll get you sorted:\n"
+                    f"+675 7381 7000\n\n"
+                    f"Or visit: https://www.catalogkit.org/pricing\n\n"
+                    f"Thank you for using CatalogKit!\n— The CatalogKit Team"
+                )
+                log_activity(user.id, 'plan_expiry_reminder',
+                             f'{user.plan.title()} plan expires {user.plan_expires.strftime("%d %b %Y")}')
+
         return redirect(url_for('index'))
     return render_template('login.html')
 
@@ -2190,6 +2214,7 @@ def update_agency_status(ar_id):
         return redirect(url_for('admin'))
 
     if new_status in allowed:
+        prev_status = ar.status
         if new_status == 'Completed' and ar.status != 'Completed':
             ar.completed_at = datetime.utcnow()
         elif new_status != 'Completed':
@@ -2202,6 +2227,21 @@ def update_agency_status(ar_id):
         db.session.commit()
         log_admin_action(session['user_id'], 'agency_status_changed', 'agency_request', ar.id,
                          f'{ar.business_name} → {new_status}')
+        # Notify vendor when setup visit is marked Completed
+        if new_status == 'Completed' and prev_status != 'Completed':
+            vendor = db.session.get(User, ar.user_id) if ar.user_id else None
+            if vendor:
+                send_email(
+                    vendor.email,
+                    '[CatalogKit] Your Done-For-You setup is complete!',
+                    f"Hi {vendor.name},\n\n"
+                    f"Great news — your Done-For-You catalog setup for "
+                    f"{ar.business_name} has been completed!\n\n"
+                    f"Log in to CatalogKit to view your catalog and start sharing it on WhatsApp:\n"
+                    f"https://www.catalogkit.org\n\n"
+                    f"If you have any questions, message us on WhatsApp: +675 7381 7000\n\n"
+                    f"— The CatalogKit Team"
+                )
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/<int:user_id>/suspend', methods=['POST'])
@@ -2842,12 +2882,25 @@ def admin_support_ticket(ticket_id):
             send_email(ticket.user.email, f'[CatalogKit Support] Re: {ticket.subject}',
                       f"Hi {ticket.user.name},\n\n{reply}\n\n— The CatalogKit Team\n\n"
                       f"View this conversation any time at: https://www.catalogkit.org/support/{ticket.id}")
+        prev_ticket_status = ticket.status
         if new_status in ('open', 'in_progress', 'resolved'):
             ticket.status = new_status
         ticket.updated_at = datetime.utcnow()
         db.session.commit()
         log_admin_action(me.id, 'support_replied', 'support_ticket', ticket.id,
                          f'Re: {ticket.subject} (status: {ticket.status})')
+        # Notify vendor when ticket is resolved without a reply (reply already sends its own email)
+        if new_status == 'resolved' and prev_ticket_status != 'resolved' and not reply:
+            send_email(
+                ticket.user.email,
+                f'[CatalogKit Support] Resolved: {ticket.subject}',
+                f"Hi {ticket.user.name},\n\n"
+                f"Your support request \"{ticket.subject}\" has been marked as resolved.\n\n"
+                f"If you still need help, you can reply to this ticket any time at:\n"
+                f"https://www.catalogkit.org/support/{ticket.id}\n\n"
+                f"Or message us on WhatsApp: +675 7381 7000\n\n"
+                f"— The CatalogKit Team"
+            )
         flash('Reply sent.', 'success')
         return redirect(url_for('admin_support_ticket', ticket_id=ticket.id))
     return render_template('admin_support_ticket.html', ticket=ticket, pending_count=0,
