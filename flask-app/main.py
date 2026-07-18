@@ -173,7 +173,7 @@ PAYMENT_INFO = {
 
 class User(db.Model):
     id            = db.Column(db.Integer, primary_key=True)
-    email         = db.Column(db.String(255), unique=True, nullable=False)
+    email         = db.Column(db.String(255), unique=True, nullable=True)
     password_hash = db.Column(db.String(255), nullable=False)
     name          = db.Column(db.String(255), nullable=False)
     business_name = db.Column(db.String(255), nullable=True)
@@ -633,11 +633,12 @@ def register():
         return redirect(url_for('index'))
     if request.method == 'POST':
         name             = request.form.get('name', '').strip()
-        email            = request.form.get('email', '').strip().lower()
+        email            = request.form.get('email', '').strip().lower() or None
+        phone_raw        = request.form.get('mobile', '').strip()
         password         = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
-        if not name or not email or not password or not confirm_password:
-            flash('All fields are required.', 'error')
+        if not name or not phone_raw or not password or not confirm_password:
+            flash('Name, mobile number, and password are required.', 'error')
             return render_template('register.html')
         if password != confirm_password:
             flash('Passwords do not match.', 'error')
@@ -645,31 +646,31 @@ def register():
         if len(password) < 6:
             flash('Password must be at least 6 characters.', 'error')
             return render_template('register.html')
-        if User.query.filter_by(email=email).first():
+        if email and User.query.filter_by(email=email).first():
             flash('An account with that email already exists.', 'error')
             return render_template('register.html')
-        # WhatsApp duplicate check — warn only (shared numbers are common in PNG)
-        wa_raw = request.form.get('whatsapp', '').strip()
-        if wa_raw:
-            clash = phone_in_use_by(wa_raw)
+        # Phone duplicate check — warn only (shared numbers are common in PNG)
+        if phone_raw:
+            clash = phone_in_use_by(phone_raw)
             if clash:
                 flash(
-                    'Note: that WhatsApp number is already linked to another account. '
+                    'Note: that mobile number is already linked to another account. '
                     'If you share a number with a family member or another business, that\'s fine — your account has been created.',
                     'warning'
                 )
         is_first = User.query.count() == 0
         user = User(name=name, email=email,
                     password_hash=generate_password_hash(password),
-                    whatsapp=wa_raw or None,
+                    whatsapp=phone_raw or None,
                     is_admin=is_first)
         db.session.add(user)
         db.session.commit()
         session['user_id'] = user.id
 
-        # ── Welcome email to new user ──────────────────────────────────────
+        # ── Welcome email to new user (only if they provided an email) ─────
         first_name = name.split()[0]
-        send_email(
+        if email:
+          send_email(
             email,
             'Welcome to CatalogKit! 🎉 Here\'s how to get started',
             f"""Hi {first_name},
@@ -715,16 +716,16 @@ Warm regards,
 The CatalogKit Team
 Sapphire Consulting Services · Port Moresby, PNG
 """
-        )
+          )
 
         # ── Notify admin of new signup ─────────────────────────────────────
         send_email(
             ADMIN_NOTIFY_EMAIL,
             f'[CatalogKit] New signup — {name}',
             f"A new user has registered on CatalogKit.\n\n"
-            f"Name:  {name}\n"
-            f"Email: {email}\n\n"
-            f"They have been sent a welcome email with getting-started steps.\n"
+            f"Name:   {name}\n"
+            f"Mobile: {phone_raw or '—'}\n"
+            f"Email:  {email or '(none provided)'}\n\n"
             f"View their account: https://www.catalogkit.org/admin\n"
         )
 
@@ -737,11 +738,21 @@ def login():
     if 'user_id' in session:
         return redirect(url_for('index'))
     if request.method == 'POST':
-        email    = request.form.get('email', '').strip().lower()
-        password = request.form.get('password', '')
-        user     = User.query.filter_by(email=email).first()
+        identifier = request.form.get('identifier', '').strip()
+        password   = request.form.get('password', '')
+        # Try email first, then phone/WhatsApp lookup
+        user = User.query.filter(User.email == identifier.lower()).first()
+        if not user:
+            norm = normalize_phone(identifier)
+            if norm:
+                user = next(
+                    (u for u in User.query.all()
+                     if normalize_phone(u.whatsapp) == norm
+                     or normalize_phone(u.phone) == norm),
+                    None
+                )
         if not user or not check_password_hash(user.password_hash, password):
-            flash('Invalid email or password.', 'error')
+            flash('Invalid email/phone or password.', 'error')
             return render_template('login.html')
         if user.is_suspended:
             flash('Your account has been suspended. Please contact the admin for assistance.', 'error')
@@ -759,17 +770,18 @@ def login():
             if not recent_reminder:
                 days_left = (user.plan_expires.date() - datetime.utcnow().date()).days
                 days_word = 'tomorrow' if days_left <= 1 else f'in {days_left} days'
-                send_email(
-                    user.email,
-                    f'[CatalogKit] Your {user.plan.title()} plan expires {days_word}',
-                    f"Hi {user.name},\n\n"
-                    f"Just a reminder — your {user.plan.title()} plan expires on "
-                    f"{user.plan_expires.strftime('%d %b %Y')} ({days_word}).\n\n"
-                    f"To renew, message us on WhatsApp and we'll get you sorted:\n"
-                    f"+675 7381 7000\n\n"
-                    f"Or visit: https://www.catalogkit.org/pricing\n\n"
-                    f"Thank you for using CatalogKit!\n— The CatalogKit Team"
-                )
+                if user.email:
+                    send_email(
+                        user.email,
+                        f'[CatalogKit] Your {user.plan.title()} plan expires {days_word}',
+                        f"Hi {user.name},\n\n"
+                        f"Just a reminder — your {user.plan.title()} plan expires on "
+                        f"{user.plan_expires.strftime('%d %b %Y')} ({days_word}).\n\n"
+                        f"To renew, message us on WhatsApp and we'll get you sorted:\n"
+                        f"+675 7381 7000\n\n"
+                        f"Or visit: https://www.catalogkit.org/pricing\n\n"
+                        f"Thank you for using CatalogKit!\n— The CatalogKit Team"
+                    )
                 log_activity(user.id, 'plan_expiry_reminder',
                              f'{user.plan.title()} plan expires {user.plan_expires.strftime("%d %b %Y")}')
 
@@ -1500,7 +1512,16 @@ def forgot_password():
     admin_whatsapp = PAYMENT_INFO.get('contact', '')
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
+        if not email:
+            return render_template('forgot_password.html', sent=False, reset_url=None,
+                                   mail_configured=None, admin_whatsapp=admin_whatsapp,
+                                   no_email=True)
         user  = User.query.filter_by(email=email).first()
+        if user and not user.email:
+            # Phone-only account — can't reset by email
+            return render_template('forgot_password.html', sent=False, reset_url=None,
+                                   mail_configured=None, admin_whatsapp=admin_whatsapp,
+                                   no_email=True)
         if user:
             token = secrets.token_urlsafe(32)
             user.reset_token     = token
@@ -1518,11 +1539,14 @@ def forgot_password():
                                    sent=sent,
                                    reset_url=(None if sent else reset_url),
                                    mail_configured=sent,
-                                   admin_whatsapp=admin_whatsapp)
+                                   admin_whatsapp=admin_whatsapp,
+                                   no_email=False)
         return render_template('forgot_password.html', sent=True, reset_url=None,
-                               mail_configured=True, admin_whatsapp=admin_whatsapp)
+                               mail_configured=True, admin_whatsapp=admin_whatsapp,
+                               no_email=False)
     return render_template('forgot_password.html', sent=False, reset_url=None,
-                           mail_configured=None, admin_whatsapp=admin_whatsapp)
+                           mail_configured=None, admin_whatsapp=admin_whatsapp,
+                           no_email=False)
 
 
 @app.route('/forgot-email', methods=['GET', 'POST'])
@@ -1544,17 +1568,24 @@ def forgot_email():
                     break
             if user:
                 break
+        phone_only_account = False
         if user:
-            # Partially mask the email for privacy: j***@gmail.com
-            parts  = user.email.split('@')
-            local  = parts[0]
-            masked = local[0] + '***' + (local[-1] if len(local) > 1 else '') + '@' + parts[1]
-            found_email = masked
+            if user.email:
+                # Partially mask the email for privacy: j***@gmail.com
+                parts  = user.email.split('@')
+                local  = parts[0]
+                masked = local[0] + '***' + (local[-1] if len(local) > 1 else '') + '@' + parts[1]
+                found_email = masked
+            else:
+                phone_only_account = True  # account found but no email
         else:
             not_found = True
+    else:
+        phone_only_account = False
     return render_template('forgot_email.html',
                            found_email=found_email,
                            not_found=not_found,
+                           phone_only_account=phone_only_account,
                            admin_whatsapp=admin_whatsapp)
 
 
@@ -1825,17 +1856,18 @@ def admin_approve_payment(pr_id):
         log_activity(user.id, 'plan_upgraded',
                      f'{pr.plan.title()} plan {plan_message} (payment #{pr.id} approved, K{total_kina} total)')
         log_admin_action(session['user_id'], 'payment_approved', 'payment_request', pr.id,
-                         f'Approved {pr.plan} plan K{total_kina} ({months_label}) for {user.name} ({user.email})')
-        send_email(
-            user.email,
-            f'[CatalogKit] Your {pr.plan.title()} plan is now active!',
-            f"Hi {user.name},\n\n"
-            f"We've confirmed your payment of K{total_kina} ({pr.amount}/month × {months_label}).\n\n"
-            f"Your {pr.plan.title()} plan is {plan_message}.\n\n"
-            f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
-            f"Thank you for supporting CatalogKit!\n"
-            f"— The CatalogKit Team"
-        )
+                         f'Approved {pr.plan} plan K{total_kina} ({months_label}) for {user.name} ({user.email or user.whatsapp})')
+        if user.email:
+            send_email(
+                user.email,
+                f'[CatalogKit] Your {pr.plan.title()} plan is now active!',
+                f"Hi {user.name},\n\n"
+                f"We've confirmed your payment of K{total_kina} ({pr.amount}/month × {months_label}).\n\n"
+                f"Your {pr.plan.title()} plan is {plan_message}.\n\n"
+                f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
+                f"Thank you for supporting CatalogKit!\n"
+                f"— The CatalogKit Team"
+            )
     else:
         db.session.commit()
     flash(f'Payment #{pr_id} approved — {pr.plan.title()} plan activated.', 'success')
@@ -1858,15 +1890,16 @@ def admin_reject_payment(pr_id):
                      f'Rejected payment #{pr.id}' + (f' for {user.name}' if user else ''))
     if user:
         log_activity(user.id, 'payment_rejected', f'Payment #{pr.id} rejected')
-        send_email(
-            user.email,
-            '[CatalogKit] Payment not confirmed — please contact us',
-            f"Hi {user.name},\n\n"
-            f"We were unable to confirm your payment for the {pr.plan.title()} plan.\n\n"
-            f"Please message us on WhatsApp: +675 7381 7000\n"
-            f"or email: info@catalogkit.org\n\n"
-            f"— The CatalogKit Team"
-        )
+        if user.email:
+            send_email(
+                user.email,
+                '[CatalogKit] Payment not confirmed — please contact us',
+                f"Hi {user.name},\n\n"
+                f"We were unable to confirm your payment for the {pr.plan.title()} plan.\n\n"
+                f"Please message us on WhatsApp: +675 7381 7000\n"
+                f"or email: info@catalogkit.org\n\n"
+                f"— The CatalogKit Team"
+            )
     flash(f'Payment #{pr_id} rejected.', 'success')
     return redirect(url_for('admin'))
 
@@ -2150,15 +2183,16 @@ def admin_confirm_payment(pr_id):
                          f'Confirmed receipt + activated {pr.plan} × {months_label} for {user.name}')
         log_activity(user.id, 'plan_upgraded',
                      f'{pr.plan.title()} plan activated ({months_label}) — receipt confirmed')
-        send_email(
-            user.email,
-            f'[CatalogKit] Your {pr.plan.title()} plan is now active!',
-            f"Hi {user.name},\n\n"
-            f"We've confirmed your payment of K{total_kina} ({pr.amount}/month × {months_label}).\n\n"
-            f"Your {pr.plan.title()} plan is now active and expires {new_expires.strftime('%d %b %Y')}.\n\n"
-            f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
-            f"Thank you!\n— The CatalogKit Team"
-        )
+        if user.email:
+            send_email(
+                user.email,
+                f'[CatalogKit] Your {pr.plan.title()} plan is now active!',
+                f"Hi {user.name},\n\n"
+                f"We've confirmed your payment of K{total_kina} ({pr.amount}/month × {months_label}).\n\n"
+                f"Your {pr.plan.title()} plan is now active and expires {new_expires.strftime('%d %b %Y')}.\n\n"
+                f"Log in to start building your catalogs: https://www.catalogkit.org\n\n"
+                f"Thank you!\n— The CatalogKit Team"
+            )
         flash(f'Receipt confirmed — {pr.plan.title()} plan activated for {user.name}.', 'success')
     else:
         db.session.commit()
@@ -2285,14 +2319,15 @@ def suspend_user(user_id):
         user.is_suspended = True
         user.suspended_at = datetime.utcnow()
         db.session.commit()
-        log_admin_action(session['user_id'], 'user_suspended', 'user', user.id, f'{user.name} ({user.email})')
+        log_admin_action(session['user_id'], 'user_suspended', 'user', user.id, f'{user.name} ({user.email or user.whatsapp})')
         # Log them out immediately if active
         flash(f'{user.name}\'s account has been suspended.', 'success')
-        send_email(user.email,
-            'CatalogKit — Your account has been suspended',
-            f'Hi {user.name},\n\nYour CatalogKit account has been suspended. '
-            f'Please contact us if you believe this is a mistake.'
-        )
+        if user.email:
+            send_email(user.email,
+                'CatalogKit — Your account has been suspended',
+                f'Hi {user.name},\n\nYour CatalogKit account has been suspended. '
+                f'Please contact us if you believe this is a mistake.'
+            )
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/<int:user_id>/unsuspend', methods=['POST'])
@@ -2303,14 +2338,15 @@ def unsuspend_user(user_id):
         user.is_suspended = False
         user.suspended_at = None
         db.session.commit()
-        log_admin_action(session['user_id'], 'user_reinstated', 'user', user.id, f'{user.name} ({user.email})')
+        log_admin_action(session['user_id'], 'user_reinstated', 'user', user.id, f'{user.name} ({user.email or user.whatsapp})')
         flash(f'{user.name}\'s account has been reinstated.', 'success')
-        send_email(user.email,
-            'CatalogKit — Your account has been reinstated',
-            f'Hi {user.name},\n\nGood news! Your CatalogKit account has been reinstated. '
-            f'You can now log in and continue using CatalogKit.\n\n'
-            f'Log in at: https://www.catalogkit.org'
-        )
+        if user.email:
+            send_email(user.email,
+                'CatalogKit — Your account has been reinstated',
+                f'Hi {user.name},\n\nGood news! Your CatalogKit account has been reinstated. '
+                f'You can now log in and continue using CatalogKit.\n\n'
+                f'Log in at: https://www.catalogkit.org'
+            )
     return redirect(url_for('admin'))
 
 @app.route('/admin/user/<int:user_id>/set-role', methods=['POST'])
@@ -2916,9 +2952,10 @@ def admin_support_ticket(ticket_id):
         if reply:
             db.session.add(SupportMessage(ticket_id=ticket.id, from_admin=True,
                                           author_name=me.name, body=reply))
-            send_email(ticket.user.email, f'[CatalogKit Support] Re: {ticket.subject}',
-                      f"Hi {ticket.user.name},\n\n{reply}\n\n— The CatalogKit Team\n\n"
-                      f"View this conversation any time at: https://www.catalogkit.org/support/{ticket.id}")
+            if ticket.user.email:
+                send_email(ticket.user.email, f'[CatalogKit Support] Re: {ticket.subject}',
+                          f"Hi {ticket.user.name},\n\n{reply}\n\n— The CatalogKit Team\n\n"
+                          f"View this conversation any time at: https://www.catalogkit.org/support/{ticket.id}")
         prev_ticket_status = ticket.status
         if new_status in ('open', 'in_progress', 'resolved'):
             ticket.status = new_status
@@ -3060,7 +3097,7 @@ def support():
         db.session.commit()
         log_activity(user.id, 'support_ticket_created', subject[:200])
         send_email(ADMIN_NOTIFY_EMAIL, f'[CatalogKit Support] New message from {user.name}: {subject}',
-                  f"{user.name} ({user.email}) sent a support message:\n\n"
+                  f"{user.name} ({user.email or user.whatsapp or 'no contact'}) sent a support message:\n\n"
                   f"Subject: {subject}\n\n{message}\n\n"
                   f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
         flash("Your message has been sent — we'll reply here and by email.", 'success')
@@ -3086,7 +3123,7 @@ def support_ticket(ticket_id):
             ticket.updated_at = datetime.utcnow()
             db.session.commit()
             send_email(ADMIN_NOTIFY_EMAIL, f'[CatalogKit Support] {user.name} replied: {ticket.subject}',
-                      f"{user.name} ({user.email}) replied:\n\n{body}\n\n"
+                      f"{user.name} ({user.email or user.whatsapp or 'no contact'}) replied:\n\n{body}\n\n"
                       f"Reply from the admin panel: https://www.catalogkit.org/admin/support/{ticket.id}")
         return redirect(url_for('support_ticket', ticket_id=ticket.id))
     return render_template('support_ticket.html', user=user, ticket=ticket)
@@ -3156,6 +3193,8 @@ with app.app_context():
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS business_category TEXT',
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS catalog_type TEXT',
         'ALTER TABLE "user" ALTER COLUMN business_category TYPE TEXT',
+        # ── user: make email optional (phone-only signup support) ──────────────
+        'ALTER TABLE "user" ALTER COLUMN email DROP NOT NULL',
     ]
     with db.engine.connect() as _conn:
         for _sql in _migrations:
