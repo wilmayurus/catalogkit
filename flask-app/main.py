@@ -275,6 +275,12 @@ class User(db.Model):
         return Catalog.query.filter_by(user_id=self.id, is_published=True).count()
 
     @property
+    def business_name_locked(self):
+        """Business name locks after the first catalog is published."""
+        return (not (self.is_admin or self.is_moderator or self.is_global_admin)
+                and self.published_catalog_count >= 1)
+
+    @property
     def profile_cats_locked(self):
         """Free-plan vendor: category & type fields lock after 2 published catalogs."""
         return (not (self.is_admin or self.is_moderator or self.is_global_admin)
@@ -1583,7 +1589,8 @@ def profile():
     user = current_user()
     if request.method == 'POST':
         was_incomplete = not user.profile_complete
-        user.business_name  = request.form.get('business_name', '').strip() or None
+        if not user.business_name_locked:
+            user.business_name = request.form.get('business_name', '').strip() or None
         user.contact_person = request.form.get('contact_person', '').strip() or None
         user.location       = request.form.get('location', '').strip() or None
         new_whatsapp = request.form.get('whatsapp', '').strip() or None

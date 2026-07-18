@@ -31,8 +31,16 @@
 
       <div class="field">
         <label>Business Name</label>
+        {% if user.business_name_locked %}
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:0.92rem;color:var(--text)">
+          {{ user.business_name or '—' }}
+        </div>
+        <p class="text-muted" style="font-size:0.78rem;margin:5px 0 0">🔒 Locked after first catalog publish. <a href="/support" style="color:var(--accent-text)">Contact Support</a> if you need to correct it.</p>
+        {% else %}
         <input type="text" name="business_name" placeholder="e.g. Grace's Fashion Boutique"
                value="{{ user.business_name or '' }}">
+        <p class="text-muted" style="font-size:0.78rem;margin:5px 0 0">This will lock once you publish your first catalog.</p>
+        {% endif %}
       </div>
 
       <div class="field">
