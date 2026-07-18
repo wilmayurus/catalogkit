@@ -54,22 +54,6 @@
       {% set biz_options = ['Market Vendor / Stall', 'Retail Shop', 'Wholesale Supplier', 'Food & Catering', 'Crafts & Handmade', 'Agriculture & Farming', 'Service Business', 'Other'] %}
       {% set type_options = ['Products for Sale', 'Services Menu', 'Price List', 'Wholesale Catalogue', 'Food Menu', 'Event Promotions'] %}
 
-      {% if user.profile_cats_locked %}
-      {# ── Locked: free plan + 2 published catalogs ── #}
-      <div style="background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.35);border-radius:10px;padding:14px 16px;margin-bottom:4px">
-        <div style="font-weight:700;font-size:0.88rem;color:var(--accent);margin-bottom:6px">🔒 Profile locked — upgrade to change</div>
-        <p style="font-size:0.82rem;color:var(--muted);margin:0 0 10px">Free plan vendors can only select 1 business category and 1 catalog type. After 2 published catalogs these fields are locked. Upgrade to Basic (K20/month) to unlock up to 5 each.</p>
-        <div style="font-size:0.82rem;margin-bottom:4px"><strong>Business Category:</strong>
-          {% if saved_biz_cats %}{% for c in saved_biz_cats %}<span style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin-left:6px;font-size:0.82rem">{{ c }}</span>{% endfor %}{% else %}<span style="color:var(--muted)">Not set</span>{% endif %}
-        </div>
-        <div style="font-size:0.82rem"><strong>Catalog Type:</strong>
-          {% if saved_cat_types %}{% for c in saved_cat_types %}<span style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 9px;margin-left:6px;font-size:0.82rem">{{ c }}</span>{% endfor %}{% else %}<span style="color:var(--muted)">Not set</span>{% endif %}
-        </div>
-        <a href="/pricing" class="btn btn-primary" style="display:inline-block;margin-top:12px;padding:8px 18px;font-size:0.82rem;font-weight:700;border-radius:8px;text-decoration:none">Upgrade plan →</a>
-      </div>
-
-      {% else %}
-      {# ── Editable ── #}
       <div class="field">
         <label>Business Category <span class="text-muted" style="font-weight:400;font-size:0.8rem">(tick all that apply)</span></label>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
@@ -103,7 +87,6 @@
           {% endfor %}
         </div>
       </div>
-      {% endif %}
     </div>
 
     <div class="field-group" style="background:var(--surface2);border-radius:14px;padding:24px;margin-bottom:20px">
