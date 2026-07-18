@@ -1490,20 +1490,6 @@ def delete_catalog(catalog_id):
     return redirect(url_for('index'))
 
 
-# ── Dashboard (plan info) ─────────────────────────────────────────────────────
-
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    user = current_user()
-    user.reset_monthly_if_needed()
-    db.session.commit()
-    plan_limits = {'free': 3, 'basic': 20, 'pro': None}
-    return render_template('dashboard.html', user=user,
-                           catalogs=sorted(user.catalogs, key=lambda c: c.updated_at, reverse=True),
-                           now=datetime.utcnow(),
-                           plan_limits=plan_limits)
-
 
 # ── Forgot / Reset Password ───────────────────────────────────────────────────
 
