@@ -439,6 +439,14 @@ class SupportMessage(db.Model):
                                   backref=db.backref('messages', lazy=True, order_by='SupportMessage.created_at'))
 
 
+class BlockedContact(db.Model):
+    """Email addresses or phone numbers blocked from creating accounts."""
+    id         = db.Column(db.Integer, primary_key=True)
+    value      = db.Column(db.String(255), unique=True, nullable=False)  # email or normalised phone
+    reason     = db.Column(db.String(500), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # ── Email ─────────────────────────────────────────────────────────────────────
 
 def send_email(to, subject, body):
@@ -643,7 +651,21 @@ def register():
             app.logger.warning('Bot signup blocked (honeypot): %s', request.remote_addr)
             flash('Account created! Please complete your profile to get started.', 'success')
             return redirect(url_for('profile'))
-        # 2. Block URLs in the name field
+        # 2. Check blocklist (email + phone)
+        def _is_blocked(val):
+            if not val: return False
+            v = val.strip().lower()
+            if BlockedContact.query.filter_by(value=v).first():
+                return True
+            norm = normalize_phone(val)
+            if norm and BlockedContact.query.filter_by(value=norm).first():
+                return True
+            return False
+        if _is_blocked(email) or _is_blocked(phone_raw):
+            app.logger.warning('Blocked signup attempt: email=%s phone=%s', email, phone_raw)
+            flash('We are unable to create an account with that contact information.', 'error')
+            return render_template('register.html')
+        # 3. Block URLs in the name field
         url_pattern = re.compile(r'https?://|www\.|bit\.ly|t\.me|tinyurl|\.ru/|\.tk/|\.xyz/', re.I)
         if url_pattern.search(name):
             app.logger.warning('Bot signup blocked (URL in name): %s / %s', name, request.remote_addr)
@@ -2260,12 +2282,14 @@ def admin():
     payment_requests = PaymentRequest.query.order_by(PaymentRequest.submitted_at.desc()).all()
     me = db.session.get(User, session['user_id'])
     pending_count = PaymentRequest.query.filter_by(status='pending').count()
+    blocklist = BlockedContact.query.order_by(BlockedContact.created_at.desc()).all()
     return render_template('admin.html', all_users=all_users,
                            agency_requests=agency_requests,
                            payment_requests=payment_requests,
                            pending_count=pending_count, now=datetime.utcnow(),
                            timedelta=timedelta,
-                           me=me, admin_active='dashboard')
+                           me=me, admin_active='dashboard',
+                           blocklist=blocklist)
 
 @app.route('/admin/agency/<int:ar_id>/status', methods=['POST'])
 @admin_required
@@ -2374,6 +2398,39 @@ def set_user_role(user_id):
     log_admin_action(me.id, 'role_changed', 'user', target.id, f'{target.name} → {role}')
     flash(f'{target.name}\'s role updated to {role.replace("_"," ").title()}.', 'success')
     return redirect(url_for('admin'))
+
+@app.route('/admin/blocklist/add', methods=['POST'])
+@full_admin_required
+def admin_blocklist_add():
+    value  = request.form.get('value', '').strip().lower()
+    reason = request.form.get('reason', '').strip() or None
+    if not value:
+        flash('Please enter an email or phone number.', 'error')
+        return redirect(url_for('admin') + '#blocklist')
+    # Normalise phone numbers
+    norm = normalize_phone(value)
+    store = norm if norm else value
+    if BlockedContact.query.filter_by(value=store).first():
+        flash(f'"{value}" is already on the blocklist.', 'warning')
+        return redirect(url_for('admin') + '#blocklist')
+    db.session.add(BlockedContact(value=store, reason=reason))
+    db.session.commit()
+    log_admin_action(session['user_id'], 'blocklist_add', 'blocked_contact', None, store)
+    flash(f'"{value}" has been blocked.', 'success')
+    return redirect(url_for('admin') + '#blocklist')
+
+
+@app.route('/admin/blocklist/<int:entry_id>/remove', methods=['POST'])
+@full_admin_required
+def admin_blocklist_remove(entry_id):
+    entry = db.session.get(BlockedContact, entry_id)
+    if entry:
+        log_admin_action(session['user_id'], 'blocklist_remove', 'blocked_contact', entry_id, entry.value)
+        db.session.delete(entry)
+        db.session.commit()
+        flash(f'"{entry.value}" removed from blocklist.', 'success')
+    return redirect(url_for('admin') + '#blocklist')
+
 
 @app.route('/admin/user/create', methods=['POST'])
 @full_admin_required

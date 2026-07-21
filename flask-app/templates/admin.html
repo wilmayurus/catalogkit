@@ -681,6 +681,57 @@
 }
 </style>
 
+<!-- ── Blocklist ───────────────────────────────────────────── -->
+<div id="blocklist" style="margin-top:40px">
+  <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px">🚫 Blocked Numbers &amp; Emails</h2>
+  <p style="font-size:0.83rem;color:var(--muted);margin-bottom:16px">
+    Anyone trying to sign up with a blocked email or phone number will be rejected. Use this after deleting spam accounts.
+  </p>
+  <form method="POST" action="/admin/blocklist/add"
+        style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:flex-end">
+    <div style="flex:1;min-width:200px">
+      <label style="font-size:0.78rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">EMAIL OR PHONE NUMBER</label>
+      <input type="text" name="value" placeholder="e.g. spammer@gmail.com or +19023456782" required
+             style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--surface);color:var(--text)">
+    </div>
+    <div style="flex:1;min-width:160px">
+      <label style="font-size:0.78rem;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">REASON <span style="font-weight:400">(optional)</span></label>
+      <input type="text" name="reason" placeholder="e.g. spam bot"
+             style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.88rem;background:var(--surface);color:var(--text)">
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm" style="white-space:nowrap;padding:9px 18px">Block</button>
+  </form>
+  {% if blocklist %}
+  <table style="width:100%;border-collapse:collapse;font-size:0.85rem">
+    <thead>
+      <tr style="background:var(--surface2)">
+        <th style="text-align:left;padding:8px 12px;font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Value</th>
+        <th style="text-align:left;padding:8px 12px;font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Reason</th>
+        <th style="text-align:left;padding:8px 12px;font-size:0.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Added</th>
+        <th style="padding:8px 12px"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in blocklist %}
+      <tr style="border-top:1px solid var(--border)">
+        <td style="padding:10px 12px;font-family:monospace;font-size:0.83rem;color:var(--accent-text)">{{ entry.value }}</td>
+        <td style="padding:10px 12px;color:var(--muted);font-size:0.82rem">{{ entry.reason or '—' }}</td>
+        <td style="padding:10px 12px;color:var(--muted);font-size:0.82rem;white-space:nowrap">{{ entry.created_at.strftime('%d %b %Y') }}</td>
+        <td style="padding:10px 12px;text-align:right">
+          <form method="POST" action="/admin/blocklist/{{ entry.id }}/remove" style="display:inline"
+                onsubmit="return confirm('Remove {{ entry.value }} from the blocklist?')">
+            <button type="submit" class="btn btn-sm" style="background:none;border:1px solid var(--danger);color:var(--danger);padding:4px 12px;border-radius:6px;font-size:0.78rem;cursor:pointer">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--muted);font-size:0.85rem;padding:16px 0">No blocked contacts yet.</p>
+  {% endif %}
+</div>
+
 <script>
 function switchTab(prefix, tab, btn) {
   document.querySelectorAll('[id^="' + prefix + '-tab-"]').forEach(function(el) {
