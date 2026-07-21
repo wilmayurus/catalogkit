@@ -637,6 +637,22 @@ def register():
         phone_raw        = request.form.get('mobile', '').strip()
         password         = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
+        # ── Spam / bot protection ──────────────────────────────────────────
+        # 1. Honeypot: bots fill hidden fields, humans leave them blank
+        if request.form.get('website', ''):
+            app.logger.warning('Bot signup blocked (honeypot): %s', request.remote_addr)
+            flash('Account created! Please complete your profile to get started.', 'success')
+            return redirect(url_for('profile'))
+        # 2. Block URLs in the name field
+        url_pattern = re.compile(r'https?://|www\.|bit\.ly|t\.me|tinyurl|\.ru/|\.tk/|\.xyz/', re.I)
+        if url_pattern.search(name):
+            app.logger.warning('Bot signup blocked (URL in name): %s / %s', name, request.remote_addr)
+            flash('Please enter your real name — links are not allowed.', 'error')
+            return render_template('register.html')
+        # 3. Block names that are clearly not a person's name (too long / all caps spam)
+        if len(name) > 80 or (len(name) > 20 and name == name.upper()):
+            flash('Please enter your real name.', 'error')
+            return render_template('register.html')
         if not name or not phone_raw or not password or not confirm_password:
             flash('Name, mobile number, and password are required.', 'error')
             return render_template('register.html')
