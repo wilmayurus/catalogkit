@@ -3263,6 +3263,25 @@ with app.app_context():
             except Exception as _e:
                 app.logger.warning('Migration skipped: %s', _e)
 
+    # ── Data migration: split "UPS / EFM" into separate entries ───────────────
+    with app.app_context():
+        _users_with_combined = User.query.filter(
+            User.delivery_methods.ilike('%UPS / EFM%')
+        ).all()
+        for _u in _users_with_combined:
+            try:
+                _methods = json.loads(_u.delivery_methods or '[]')
+                if 'UPS / EFM' in _methods:
+                    _methods.remove('UPS / EFM')
+                    if 'UPS' not in _methods:
+                        _methods.append('UPS')
+                    if 'EFM' not in _methods:
+                        _methods.append('EFM')
+                    _u.delivery_methods = json.dumps(_methods)
+            except Exception:
+                pass
+        db.session.commit()
+
 # ── About page ─────────────────────────────────────────────────────────────────
 
 @app.route('/about')
