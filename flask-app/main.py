@@ -192,6 +192,8 @@ class User(db.Model):
     logo_filename = db.Column(db.String(500), nullable=True)
     brand_color   = db.Column(db.String(7),   nullable=True)   # hex e.g. #7c5cfc
     pdf_layout    = db.Column(db.String(20),  default='classic')
+    cover_font    = db.Column(db.String(30),  default='lexend')   # paid: font choice
+    cover_bg_color = db.Column(db.String(7),  nullable=True)      # paid: custom bg colour
     plan                = db.Column(db.String(20), default='free')
     plan_expires        = db.Column(db.DateTime, nullable=True)
     plan_start          = db.Column(db.DateTime, nullable=True)
@@ -1106,26 +1108,39 @@ def catalog_view(catalog_id):
                            delivery_methods_list=delv_list,
                            is_owner=is_owner)
 
-_FONT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'fonts', 'Lexend-Variable.ttf')
+_FONTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'fonts')
 _FONT_BOLD = 700
 _FONT_REG  = 400
 _font_cache = {}
 
-def _font(weight, size):
-    """Lexend variable font at a given weight — same typeface used sitewide
-    for readability (dyslexia-friendly, clear letterforms)."""
-    key = (weight, size)
+# Available cover fonts — key: stored value, path: filename in static/fonts/
+COVER_FONTS = {
+    'lexend':      {'file': 'Lexend-Variable.ttf',         'label': 'Lexend',          'style': 'Clean & modern — great readability'},
+    'montserrat':  {'file': 'Montserrat-Variable.ttf',      'label': 'Montserrat',       'style': 'Bold & geometric — strong visual impact'},
+    'playfair':    {'file': 'PlayfairDisplay-Variable.ttf', 'label': 'Playfair Display', 'style': 'Elegant serif — premium, boutique feel'},
+    'raleway':     {'file': 'Raleway-Variable.ttf',         'label': 'Raleway',          'style': 'Slim & refined — minimal, upscale look'},
+}
+
+def _font(weight, size, font_key='lexend'):
+    """Load a cover font by key at the requested weight and size."""
+    font_info = COVER_FONTS.get(font_key) or COVER_FONTS['lexend']
+    path = os.path.join(_FONTS_DIR, font_info['file'])
+    key = (font_key, weight, size)
     cached = _font_cache.get(key)
     if cached is not None:
         return cached
     try:
-        f = ImageFont.truetype(_FONT_PATH, size)
+        f = ImageFont.truetype(path, size)
         try:
             f.set_variation_by_axes([weight])
         except Exception:
             pass
     except Exception:
-        f = ImageFont.load_default()
+        # Fallback: try Lexend, then PIL default
+        try:
+            f = ImageFont.truetype(os.path.join(_FONTS_DIR, 'Lexend-Variable.ttf'), size)
+        except Exception:
+            f = ImageFont.load_default()
     _font_cache[key] = f
     return f
 
@@ -1222,61 +1237,65 @@ def _wrap_lines(text, font, max_width):
     return lines
 
 def _make_cover(catalog, user):
-    W, H     = 800, 1000
-    accent   = _accent_rgb(user)
-    can_brand = True
-    layout   = (user.pdf_layout or 'classic') if can_brand else 'classic'
+    W, H      = 800, 1000
+    accent    = _accent_rgb(user)
+    layout    = user.pdf_layout or 'classic'
+
+    # Paid-plan extras: custom font + background colour
+    is_paid   = user.plan in ('basic', 'pro')
+    fkey      = (user.cover_font or 'lexend') if is_paid else 'lexend'
+    if fkey not in COVER_FONTS:
+        fkey = 'lexend'
+
+    def _f(weight, size):
+        return _font(weight, size, fkey)
 
     # ── Layout: Modern ────────────────────────────────────────────────────────
     if layout == 'modern':
-        img  = Image.new('RGB', (W, H), (248, 249, 251))
+        # Paid custom bg applies to the lower (white) section; default is light grey
+        lower_bg = _hex_to_rgb(user.cover_bg_color, (248, 249, 251)) if (is_paid and user.cover_bg_color) else (248, 249, 251)
+        img  = Image.new('RGB', (W, H), lower_bg)
         draw = ImageDraw.Draw(img)
-        # Coloured top banner
         banner_h = 340
         banner   = Image.new('RGB', (W, banner_h), accent)
         img.paste(banner, (0, 0))
         draw = ImageDraw.Draw(img)
-        # Logo inside banner
         y = 50
-        logo = _load_logo(user, 200, 100) if can_brand else None
+        logo = _load_logo(user, 200, 100)
         if logo:
             y = _paste_logo_centered(img, logo, W // 2, y) + 14
         else:
             y = 80
-        # Catalog name in banner (white)
         _centered_text(draw, 'PRODUCT CATALOG', W // 2, y,
-                       _font(_FONT_BOLD, 12), (255, 255, 255))
+                       _f(_FONT_BOLD, 12), (255, 255, 255))
         y += 26
-        name_font = _font(_FONT_BOLD, 50)
+        name_font = _f(_FONT_BOLD, 50)
         bb = draw.textbbox((0, 0), catalog.name, font=name_font)
         if bb[2] - bb[0] > W - 80:
-            name_font = _font(_FONT_BOLD, 36)
+            name_font = _f(_FONT_BOLD, 36)
         _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
-        # Divider
         draw.rectangle([W // 2 - 40, banner_h + 26, W // 2 + 40, banner_h + 30], fill=accent)
-        # Business name below banner
         if user.business_name:
             _centered_text(draw, user.business_name.upper(), W // 2, banner_h + 46,
-                           _font(_FONT_BOLD, 20), accent)
-        # Contact snippet bottom
+                           _f(_FONT_BOLD, 20), accent)
         parts = []
         if user.whatsapp: parts.append(f'WhatsApp: {user.whatsapp}')
         if user.email:    parts.append(user.email)
         if parts:
             _centered_text(draw, '  ·  '.join(parts), W // 2, H - 40,
-                           _font(_FONT_REG, 13), (150, 150, 160))
+                           _f(_FONT_REG, 13), (150, 150, 160))
         return _apply_watermark(img, user)
 
     # ── Layout: Bold ──────────────────────────────────────────────────────────
     elif layout == 'bold':
         r, g, b  = accent
-        dark_bg  = (max(r - 35, 0), max(g - 35, 0), max(b - 35, 0))
-        img  = Image.new('RGB', (W, H), dark_bg)
+        default_bg = (max(r - 35, 0), max(g - 35, 0), max(b - 35, 0))
+        bg_color = _hex_to_rgb(user.cover_bg_color, default_bg) if (is_paid and user.cover_bg_color) else default_bg
+        img  = Image.new('RGB', (W, H), bg_color)
         draw = ImageDraw.Draw(img)
         _brand_stripe(draw, 0, 8, W, accent)
-        # Logo with white pill behind it
         y = 80
-        logo = _load_logo(user, 220, 110) if can_brand else None
+        logo = _load_logo(user, 220, 110)
         if logo:
             lx = (W - logo.width) // 2 - 12
             ly = y - 10
@@ -1290,49 +1309,46 @@ def _make_cover(catalog, user):
             draw = ImageDraw.Draw(img)
         else:
             y = 120
-        # Large catalog name
-        name_font = _font(_FONT_BOLD, 60)
+        name_font = _f(_FONT_BOLD, 60)
         bb = draw.textbbox((0, 0), catalog.name, font=name_font)
         if bb[2] - bb[0] > W - 80:
-            name_font = _font(_FONT_BOLD, 44)
+            name_font = _f(_FONT_BOLD, 44)
         _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
-        # Wide rule
         draw.rectangle([W // 2 - 60, y + 120, W // 2 + 60, y + 125],
                        fill=(255, 255, 255))
-        # Business name
         if user.business_name:
             _centered_text(draw, user.business_name.upper(), W // 2, y + 140,
-                           _font(_FONT_REG, 22), (255, 255, 255))
+                           _f(_FONT_REG, 22), (255, 255, 255))
         return _apply_watermark(img, user)
 
     # ── Layout: Classic (default) ─────────────────────────────────────────────
     else:
-        img  = Image.new('RGB', (W, H), (26, 26, 46))
+        default_bg = (26, 26, 46)
+        bg_color = _hex_to_rgb(user.cover_bg_color, default_bg) if (is_paid and user.cover_bg_color) else default_bg
+        img  = Image.new('RGB', (W, H), bg_color)
         draw = ImageDraw.Draw(img)
         _brand_stripe(draw, 0, 6, W, accent)
-        # Circle accent
         for rv in range(180, 0, -20):
             draw.ellipse([W - rv - 30, H - rv - 30, W - 30 + rv, H - 30 + rv],
                          outline=accent)
         _centered_text(draw, 'PRODUCT CATALOG', W // 2, 90,
-                       _font(_FONT_BOLD, 13), (200, 200, 220))
-        # Logo above catalog name for Growth users
+                       _f(_FONT_BOLD, 13), (200, 200, 220))
         y = H // 2 - 120
-        logo = _load_logo(user, 200, 90) if can_brand else None
+        logo = _load_logo(user, 200, 90)
         if logo:
             y = _paste_logo_centered(img, logo, W // 2, y) + 12
             draw = ImageDraw.Draw(img)
         else:
             y = H // 2 - 70
-        name_font = _font(_FONT_BOLD, 52)
+        name_font = _f(_FONT_BOLD, 52)
         bb = draw.textbbox((0, 0), catalog.name, font=name_font)
         if bb[2] - bb[0] > W - 80:
-            name_font = _font(_FONT_BOLD, 36)
+            name_font = _f(_FONT_BOLD, 36)
         _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
         draw.rectangle([W // 2 - 32, H // 2 + 10, W // 2 + 32, H // 2 + 14], fill=accent)
         if user.business_name:
             _centered_text(draw, user.business_name.upper(), W // 2, H // 2 + 34,
-                           _font(_FONT_REG, 18), (200, 200, 220))
+                           _f(_FONT_REG, 18), (200, 200, 220))
         return _apply_watermark(img, user)
 
 def _make_product_page(item, catalog, user):
@@ -1673,7 +1689,7 @@ def profile():
                 f'Remove some before saving, or upgrade your plan.',
                 'error'
             )
-            return render_template('profile.html', user=user)
+            return render_template('profile.html', user=user, cover_fonts=COVER_FONTS)
         user.business_category = json.dumps(new_biz_cats) if new_biz_cats else None
         user.catalog_type      = json.dumps(new_cat_types) if new_cat_types else None
         pay  = request.form.getlist('payment_methods')
@@ -1692,6 +1708,16 @@ def profile():
                 user.pdf_layout = layout
             # Logo upload
             logo_file = request.files.get('logo')
+        # ── Enhanced styling (paid plans only) ────────────────────────────────
+        if user.plan in ('basic', 'pro'):
+            font_choice = request.form.get('cover_font', 'lexend')
+            if font_choice in COVER_FONTS:
+                user.cover_font = font_choice
+            bg_color = request.form.get('cover_bg_color', '').strip()
+            if bg_color and bg_color.startswith('#') and len(bg_color) == 7:
+                user.cover_bg_color = bg_color
+            elif request.form.get('cover_bg_reset'):
+                user.cover_bg_color = None  # revert to layout default
             if logo_file and logo_file.filename:
                 ext = os.path.splitext(logo_file.filename)[1].lower()
                 if ext in {'.jpg', '.jpeg', '.png', '.webp'}:
@@ -1712,7 +1738,7 @@ def profile():
             return redirect(url_for('choose_plan'))
         flash('Profile updated!', 'success')
         return redirect(url_for('profile'))
-    return render_template('profile.html', user=user)
+    return render_template('profile.html', user=user, cover_fonts=COVER_FONTS)
 
 
 # ── Plan selection & payment approval ────────────────────────────────────────
@@ -3254,6 +3280,9 @@ with app.app_context():
         'ALTER TABLE "user" ALTER COLUMN business_category TYPE TEXT',
         # ── user: make email optional (phone-only signup support) ──────────────
         'ALTER TABLE "user" ALTER COLUMN email DROP NOT NULL',
+        # ── user: paid-plan cover customisation ────────────────────────────────
+        "ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS cover_font VARCHAR(30) DEFAULT 'lexend'",
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS cover_bg_color VARCHAR(7)',
     ]
     with db.engine.connect() as _conn:
         for _sql in _migrations:
