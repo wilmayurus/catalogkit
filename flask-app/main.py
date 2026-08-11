@@ -192,8 +192,11 @@ class User(db.Model):
     logo_filename = db.Column(db.String(500), nullable=True)
     brand_color   = db.Column(db.String(7),   nullable=True)   # hex e.g. #7c5cfc
     pdf_layout    = db.Column(db.String(20),  default='classic')
-    cover_font    = db.Column(db.String(30),  default='lexend')   # paid: font choice
+    cover_font     = db.Column(db.String(30),  default='lexend')   # paid: font choice
     cover_bg_color = db.Column(db.String(7),  nullable=True)      # paid: custom bg colour
+    cover_tagline  = db.Column(db.String(120), nullable=True)      # pro: subtitle line on cover
+    cover_bg_image = db.Column(db.String(500), nullable=True)      # pro: photo backdrop filename
+    page_bar_color = db.Column(db.String(7),   nullable=True)      # pro: product page header/footer colour
     plan                = db.Column(db.String(20), default='free')
     plan_expires        = db.Column(db.DateTime, nullable=True)
     plan_start          = db.Column(db.DateTime, nullable=True)
@@ -1174,6 +1177,26 @@ def _load_logo(user, max_w, max_h):
     except Exception:
         return None
 
+def _load_cover_bg(user, W, H, overlay_alpha=0.52):
+    """Pro only: load cover bg photo, resize to fill W×H, apply dark overlay."""
+    if not (user.plan == 'pro' and user.cover_bg_image):
+        return None
+    raw = storage_download(BUCKET_LOGOS, f'cover/{user.id}/{user.cover_bg_image}')
+    if not raw:
+        return None
+    try:
+        ph  = Image.open(io.BytesIO(raw)).convert('RGB')
+        pw, pph = ph.size
+        scale = max(W / pw, H / pph)
+        nw, nh = max(1, int(pw * scale)), max(1, int(pph * scale))
+        ph  = ph.resize((nw, nh), Image.LANCZOS)
+        ph  = ph.crop(((nw - W) // 2, (nh - H) // 2,
+                        (nw - W) // 2 + W, (nh - H) // 2 + H))
+        dark = Image.new('RGB', (W, H), (0, 0, 0))
+        return Image.blend(ph, dark, alpha=overlay_alpha)
+    except Exception:
+        return None
+
 def _paste_logo_centered(img, logo, cx, y):
     """Paste RGBA logo centred at cx, top at y; returns bottom y."""
     if not logo:
@@ -1241,8 +1264,9 @@ def _make_cover(catalog, user):
     accent    = _accent_rgb(user)
     layout    = user.pdf_layout or 'classic'
 
-    # Paid-plan extras: custom font + background colour
+    # Paid-plan extras: custom font + background colour (Basic & Pro)
     is_paid   = user.plan in ('basic', 'pro')
+    is_pro    = user.plan == 'pro'
     fkey      = (user.cover_font or 'lexend') if is_paid else 'lexend'
     if fkey not in COVER_FONTS:
         fkey = 'lexend'
@@ -1250,11 +1274,14 @@ def _make_cover(catalog, user):
     def _f(weight, size):
         return _font(weight, size, fkey)
 
+    # Pro extras: cover photo backdrop + tagline
+    bg_photo = _load_cover_bg(user, W, H) if is_pro else None
+    tagline  = (user.cover_tagline or '').strip() if is_pro else ''
+
     # ── Layout: Modern ────────────────────────────────────────────────────────
     if layout == 'modern':
-        # Paid custom bg applies to the lower (white) section; default is light grey
         lower_bg = _hex_to_rgb(user.cover_bg_color, (248, 249, 251)) if (is_paid and user.cover_bg_color) else (248, 249, 251)
-        img  = Image.new('RGB', (W, H), lower_bg)
+        img  = bg_photo.copy() if bg_photo else Image.new('RGB', (W, H), lower_bg)
         draw = ImageDraw.Draw(img)
         banner_h = 340
         banner   = Image.new('RGB', (W, banner_h), accent)
@@ -1274,6 +1301,9 @@ def _make_cover(catalog, user):
         if bb[2] - bb[0] > W - 80:
             name_font = _f(_FONT_BOLD, 36)
         _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
+        if tagline:
+            _centered_text(draw, tagline, W // 2, y + 90,
+                           _f(_FONT_REG, 16), (230, 230, 255))
         draw.rectangle([W // 2 - 40, banner_h + 26, W // 2 + 40, banner_h + 30], fill=accent)
         if user.business_name:
             _centered_text(draw, user.business_name.upper(), W // 2, banner_h + 46,
@@ -1291,7 +1321,7 @@ def _make_cover(catalog, user):
         r, g, b  = accent
         default_bg = (max(r - 35, 0), max(g - 35, 0), max(b - 35, 0))
         bg_color = _hex_to_rgb(user.cover_bg_color, default_bg) if (is_paid and user.cover_bg_color) else default_bg
-        img  = Image.new('RGB', (W, H), bg_color)
+        img  = bg_photo.copy() if bg_photo else Image.new('RGB', (W, H), bg_color)
         draw = ImageDraw.Draw(img)
         _brand_stripe(draw, 0, 8, W, accent)
         y = 80
@@ -1319,13 +1349,16 @@ def _make_cover(catalog, user):
         if user.business_name:
             _centered_text(draw, user.business_name.upper(), W // 2, y + 140,
                            _f(_FONT_REG, 22), (255, 255, 255))
+        if tagline:
+            _centered_text(draw, tagline, W // 2, y + 170,
+                           _f(_FONT_REG, 15), (220, 220, 255))
         return _apply_watermark(img, user)
 
     # ── Layout: Classic (default) ─────────────────────────────────────────────
     else:
         default_bg = (26, 26, 46)
         bg_color = _hex_to_rgb(user.cover_bg_color, default_bg) if (is_paid and user.cover_bg_color) else default_bg
-        img  = Image.new('RGB', (W, H), bg_color)
+        img  = bg_photo.copy() if bg_photo else Image.new('RGB', (W, H), bg_color)
         draw = ImageDraw.Draw(img)
         _brand_stripe(draw, 0, 6, W, accent)
         for rv in range(180, 0, -20):
@@ -1345,9 +1378,12 @@ def _make_cover(catalog, user):
         if bb[2] - bb[0] > W - 80:
             name_font = _f(_FONT_BOLD, 36)
         _wrapped_text(draw, catalog.name, W // 2, y, name_font, (255, 255, 255), W - 80)
-        draw.rectangle([W // 2 - 32, H // 2 + 10, W // 2 + 32, H // 2 + 14], fill=accent)
+        if tagline:
+            _centered_text(draw, tagline, W // 2, H // 2 + 20,
+                           _f(_FONT_REG, 16), (180, 180, 210))
+        draw.rectangle([W // 2 - 32, H // 2 + 46, W // 2 + 32, H // 2 + 50], fill=accent)
         if user.business_name:
-            _centered_text(draw, user.business_name.upper(), W // 2, H // 2 + 34,
+            _centered_text(draw, user.business_name.upper(), W // 2, H // 2 + 60,
                            _f(_FONT_REG, 18), (200, 200, 220))
         return _apply_watermark(img, user)
 
@@ -1357,7 +1393,8 @@ def _make_product_page(item, catalog, user):
     iname = (item.get('item_name') or '') if isinstance(item, dict) else ''
     price = (item.get('price') or '')    if isinstance(item, dict) else ''
     raw   = storage_download(BUCKET_IMAGES, f'{catalog.processed_prefix}/{fname}')
-    DARK   = (15, 15, 30)
+    # Pro: custom bar colour; everyone else gets the dark default
+    DARK   = _hex_to_rgb(user.page_bar_color, (15, 15, 30)) if (user.plan == 'pro' and user.page_bar_color) else (15, 15, 30)
     TXT    = (210, 210, 230)
     accent = _accent_rgb(user)
     # Reserve space for the bars so the photo is placed *between* them,
@@ -1718,20 +1755,48 @@ def profile():
                 user.cover_bg_color = bg_color
             elif request.form.get('cover_bg_reset'):
                 user.cover_bg_color = None  # revert to layout default
-            if logo_file and logo_file.filename:
-                ext = os.path.splitext(logo_file.filename)[1].lower()
+        # ── Pro-only extras ───────────────────────────────────────────────────
+        if user.plan == 'pro':
+            tl = request.form.get('cover_tagline', '').strip()[:120]
+            user.cover_tagline = tl or None
+            bar_color = request.form.get('page_bar_color', '').strip()
+            if bar_color and bar_color.startswith('#') and len(bar_color) == 7:
+                user.page_bar_color = bar_color
+            elif request.form.get('page_bar_reset'):
+                user.page_bar_color = None
+            # Cover background photo upload
+            bg_img_file = request.files.get('cover_bg_image')
+            if bg_img_file and bg_img_file.filename:
+                ext = os.path.splitext(bg_img_file.filename)[1].lower()
                 if ext in {'.jpg', '.jpeg', '.png', '.webp'}:
-                    if user.logo_filename:
-                        storage_delete(BUCKET_LOGOS, [f'{user.id}/{user.logo_filename}'])
-                    fname = f"logo_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
-                    ct    = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
-                    ok, detail = storage_upload(BUCKET_LOGOS, f'{user.id}/{fname}', logo_file.read(), ct)
-                    if ok:
-                        user.logo_filename = fname
+                    if user.cover_bg_image:
+                        storage_delete(BUCKET_LOGOS, [f'cover/{user.id}/{user.cover_bg_image}'])
+                    fname_bg = f"covbg_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
+                    ct_bg    = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
+                    ok_bg, det_bg = storage_upload(BUCKET_LOGOS, f'cover/{user.id}/{fname_bg}', bg_img_file.read(), ct_bg)
+                    if ok_bg:
+                        user.cover_bg_image = fname_bg
                     else:
-                        flash(f'Logo upload failed — {detail or "please try again."}', 'error')
+                        flash(f'Cover photo upload failed — {det_bg or "please try again."}', 'error')
                 else:
-                    flash('Logo must be JPG, PNG, or WebP.', 'error')
+                    flash('Cover photo must be JPG, PNG, or WebP.', 'error')
+            elif request.form.get('cover_bg_image_remove') and user.cover_bg_image:
+                storage_delete(BUCKET_LOGOS, [f'cover/{user.id}/{user.cover_bg_image}'])
+                user.cover_bg_image = None
+        if logo_file and logo_file.filename:
+            ext = os.path.splitext(logo_file.filename)[1].lower()
+            if ext in {'.jpg', '.jpeg', '.png', '.webp'}:
+                if user.logo_filename:
+                    storage_delete(BUCKET_LOGOS, [f'{user.id}/{user.logo_filename}'])
+                fname = f"logo_{user.id}_{uuid.uuid4().hex[:8]}{ext}"
+                ct    = 'image/jpeg' if ext in ('.jpg', '.jpeg') else f'image/{ext.lstrip(".")}'
+                ok, detail = storage_upload(BUCKET_LOGOS, f'{user.id}/{fname}', logo_file.read(), ct)
+                if ok:
+                    user.logo_filename = fname
+                else:
+                    flash(f'Logo upload failed — {detail or "please try again."}', 'error')
+            else:
+                flash('Logo must be JPG, PNG, or WebP.', 'error')
         db.session.commit()
         # First-time profile completion → go straight to a new catalog
         if was_incomplete and user.profile_complete:
@@ -3283,6 +3348,10 @@ with app.app_context():
         # ── user: paid-plan cover customisation ────────────────────────────────
         "ALTER TABLE \"user\" ADD COLUMN IF NOT EXISTS cover_font VARCHAR(30) DEFAULT 'lexend'",
         'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS cover_bg_color VARCHAR(7)',
+        # ── user: pro-plan extras ───────────────────────────────────────────────
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS cover_tagline VARCHAR(120)',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS cover_bg_image VARCHAR(500)',
+        'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS page_bar_color VARCHAR(7)',
     ]
     with db.engine.connect() as _conn:
         for _sql in _migrations:
