@@ -1,4 +1,4 @@
-import io, os, uuid, json, zipfile, shutil, re, secrets, textwrap
+import io, os, uuid, json, zipfile, shutil, re, secrets, textwrap, hashlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import quote as url_quote
 from datetime import datetime, timedelta
@@ -1104,12 +1104,23 @@ def catalog_view(catalog_id):
         wa_link = f"https://wa.me/{digits}?text={url_quote(msg)}"
     pay_list  = list(dict.fromkeys(json.loads(owner.payment_methods  or '[]')))
     delv_list = list(dict.fromkeys(json.loads(owner.delivery_methods or '[]')))
+    style_values = (
+        owner.brand_color, owner.pdf_layout, owner.cover_font,
+        owner.cover_bg_color, owner.cover_tagline, owner.cover_bg_image,
+        owner.page_bar_color, owner.logo_filename, owner.business_name,
+        owner.email, owner.whatsapp, owner.payment_methods,
+        owner.delivery_methods, owner.facebook_url, catalog.name,
+    )
+    page_version = hashlib.sha256(
+        repr(style_values).encode('utf-8')
+    ).hexdigest()[:12]
     return render_template('catalog.html', user=owner, catalog=catalog,
                            page_data=catalog.get_page_data(),
                            wa_link=wa_link,
                            payment_methods_list=pay_list,
                            delivery_methods_list=delv_list,
-                           is_owner=is_owner)
+                           is_owner=is_owner,
+                           page_version=page_version)
 
 _FONTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'fonts')
 _FONT_BOLD = 700
@@ -1356,7 +1367,12 @@ def _make_cover(catalog, user):
 
     # ── Layout: Classic (default) ─────────────────────────────────────────────
     else:
-        default_bg = (26, 26, 46)
+        # Tint the default background with the vendor's brand colour so Free
+        # users can clearly see their chosen colour, not only a thin stripe.
+        default_bg = tuple(
+            int(base * 0.55 + channel * 0.45)
+            for base, channel in zip((26, 26, 46), accent)
+        )
         bg_color = _hex_to_rgb(user.cover_bg_color, default_bg) if (is_paid and user.cover_bg_color) else default_bg
         img  = bg_photo.copy() if bg_photo else Image.new('RGB', (W, H), bg_color)
         draw = ImageDraw.Draw(img)

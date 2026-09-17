@@ -297,20 +297,20 @@
     <div id="flipbook">
       <div class="hard cover-front">
         <img class="rendered-page"
-             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=0) }}"
+             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=0, v=page_version) }}"
              alt="{{ catalog.name }} cover">
       </div>
       {% for item in page_data %}
       <div class="page">
         <img class="rendered-page"
-             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=loop.index) }}"
+             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=loop.index, v=page_version) }}"
              alt="{{ item.item_name or 'Product page ' ~ loop.index }}"
              loading="lazy">
       </div>
       {% endfor %}
       <div class="hard cover-back">
         <img class="rendered-page"
-             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=(page_data|length + 1)) }}"
+             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=(page_data|length + 1), v=page_version) }}"
              alt="{{ catalog.name }} contact and ordering information"
              loading="lazy">
       </div>
