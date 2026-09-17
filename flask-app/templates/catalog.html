@@ -11,6 +11,13 @@
 {% block head %}
 <style>
 .catalog-container { padding-top: 20px; }
+.rendered-page {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+}
 
 /* ── FRONT COVER ─────────────────────────────────────────────────── */
 .cover-front {
@@ -289,122 +296,23 @@
   <div id="flipbook-wrap">
     <div id="flipbook">
       <div class="hard cover-front">
-        <div class="cover-accent-stripe"></div>
-        <div class="cover-geo"></div>
-        <div class="cover-front-body">
-          <p class="cover-eyebrow">Product Catalog</p>
-          <h1 class="cover-title">{{ catalog.name }}</h1>
-          <div class="cover-rule"></div>
-          {% if user.business_name %}<p class="cover-tagline">{{ user.business_name }}</p>{% endif %}
-        </div>
+        <img class="rendered-page"
+             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=0) }}"
+             alt="{{ catalog.name }} cover">
       </div>
       {% for item in page_data %}
       <div class="page">
-        <div class="page-inner">
-          <div class="page-header-bar">
-            <span class="page-header-label">Product Catalog</span>
-            <span class="page-header-sep">-</span>
-            <span class="page-header-cat">{{ catalog.name }}</span>
-          </div>
-          <div class="page-item-name">{{ item.item_name or 'Item ' ~ loop.index }}</div>
-          <img src="{{ storage_url('catalog-images', 'processed/' ~ user.id|string ~ '/' ~ catalog.id|string ~ '/' ~ item.file) }}"
-               alt="Page {{ loop.index }}" loading="lazy">
-          <div class="page-price-center">{{ item.price or 'K 0.00' }}</div>
-          <div class="page-footer-bar">
-            {% if user.business_name %}
-            <div class="page-footer-row page-footer-row-biz">
-              <span class="page-footer-text">{{ user.business_name }}</span>
-            </div>
-            {% endif %}
-            {% if user.email or user.whatsapp %}
-            <div class="page-footer-row">
-              {% if user.email %}
-              <span class="page-footer-item">
-                <span class="page-footer-icon">✉</span><span class="page-footer-text">{{ user.email }}</span>
-              </span>
-              {% endif %}
-              {% if user.email and user.whatsapp %}<span class="page-footer-sep">|</span>{% endif %}
-              {% if user.whatsapp %}
-              <span class="page-footer-item">
-                <span class="page-footer-icon">
-                  <svg viewBox="0 0 32 32" width="10" height="10" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle">
-                    <path fill="#25D366" d="M16 3C9.373 3 4 8.373 4 15c0 2.385.668 4.61 1.832 6.504L4 29l7.695-1.813A12.94 12.94 0 0016 28c6.627 0 12-5.373 12-12S22.627 3 16 3z"/>
-                    <path fill="#fff" d="M21.5 18.9c-.3-.15-1.77-.87-2.04-.97-.28-.1-.48-.15-.68.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.47-.89-.79-1.49-1.76-1.66-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.68-1.63-.93-2.23-.24-.58-.49-.5-.68-.51-.17-.01-.37-.01-.57-.01s-.52.07-.8.37c-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.87 1.22 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.11.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.19-.57-.34z"/>
-                  </svg>
-                </span><span class="page-footer-text">{{ user.whatsapp }}</span>
-              </span>
-              {% endif %}
-            </div>
-            {% endif %}
-          </div>
-        </div>
+        <img class="rendered-page"
+             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=loop.index) }}"
+             alt="{{ item.item_name or 'Product page ' ~ loop.index }}"
+             loading="lazy">
       </div>
       {% endfor %}
       <div class="hard cover-back">
-
-        <!-- Header -->
-        <div class="cb-header">
-          {% if user.business_name %}<p class="cb-brand">{{ user.business_name }}</p>{% endif %}
-          <h2 class="cb-headline">Thank you for supporting<br>a local PNG SME!</h2>
-          <div class="cb-rule"></div>
-          <p class="cb-sub">Questions or ready to order? Message us on WhatsApp.</p>
-        </div>
-
-        <!-- WhatsApp CTA -->
-        {% if wa_link %}
-        <a href="{{ wa_link }}" class="cb-wa-btn" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.38 1.26 4.8L2.05 22l5.39-1.41c1.37.74 2.92 1.16 4.6 1.16 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01C17.18 3.03 14.69 2 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42 1.56 1.56 2.41 3.63 2.41 5.83 0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.41-4.19-1.18l-.3-.17-3.12.82.83-3.04-.2-.32c-.84-1.32-1.28-2.85-1.28-4.42 0-4.54 3.7-8.17 8.27-8.17M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.86-.87 2.07s.89 2.39 1.01 2.56c.14.17 1.76 2.67 4.25 3.73.59.27 1.05.42 1.41.53.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.16-.48-.27-.25-.14-1.47-.74-1.69-.82-.23-.08-.37-.12-.56.12-.16.25-.64.81-.78.97-.15.17-.29.19-.53.07-.26-.13-1.06-.39-2.02-1.25-.74-.66-1.23-1.47-1.38-1.72-.14-.24-.01-.39.11-.5.11-.11.27-.29.37-.44.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.11-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.43-.14 0-.3-.01-.47-.01z"/>
-          </svg>
-          Order via WhatsApp Now
-        </a>
-        {% endif %}
-
-        <!-- Payment & Delivery — side by side -->
-        {% if payment_methods_list or delivery_methods_list %}
-        <div class="cb-info-wrap{% if not payment_methods_list or not delivery_methods_list %} single-col{% endif %}">
-          {% if payment_methods_list %}
-          <div class="cb-info-block">
-            <p class="cb-info-title">💳 Payment</p>
-            <ul class="cb-info-list">
-              {% for method in payment_methods_list %}
-              <li>{{ method }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-          {% if delivery_methods_list %}
-          <div class="cb-info-block">
-            <p class="cb-info-title">🚚 Delivery</p>
-            <ul class="cb-info-list">
-              {% for method in delivery_methods_list %}
-              <li>{{ method }}</li>
-              {% endfor %}
-            </ul>
-          </div>
-          {% endif %}
-        </div>
-        {% endif %}
-
-        <!-- Footer: all contact info + branding in one place -->
-        <div class="cb-footer">
-          {% if user.facebook_url %}
-          <a href="{{ user.facebook_url }}" class="cb-footer-link" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" width="9" height="9" fill="#1877f2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
-            Follow us on Facebook
-          </a>
-          {% endif %}
-          {% if user.location or user.phone or user.whatsapp or user.email %}
-          <div class="cb-footer-contact">
-            {% if user.location %}<span class="cb-footer-contact-item"><span class="icon">📍</span>{{ user.location }}</span>{% endif %}
-            {% if user.phone %}<span class="cb-footer-contact-item"><span class="icon">📞</span>{{ user.phone }}</span>{% endif %}
-            {% if user.whatsapp %}<span class="cb-footer-contact-item"><span class="icon">💬</span>{{ user.whatsapp }}</span>{% endif %}
-            {% if user.email %}<span class="cb-footer-contact-item"><span class="icon">✉</span>{{ user.email }}</span>{% endif %}
-          </div>
-          {% endif %}
-          <p class="cb-made-with">Made with <a href="https://www.catalogkit.org" target="_blank" rel="noopener">CatalogKit</a></p>
-        </div>
-
+        <img class="rendered-page"
+             src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=(page_data|length + 1)) }}"
+             alt="{{ catalog.name }} contact and ordering information"
+             loading="lazy">
       </div>
     </div>
   </div>

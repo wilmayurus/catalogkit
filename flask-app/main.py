@@ -1545,6 +1545,36 @@ def generate_catalog_pdf(catalog, user):
     return buf
 
 
+@app.route('/catalog/<int:catalog_id>/page/<int:page_number>.jpg')
+def catalog_page_image(catalog_id, page_number):
+    """Serve a lightweight flipbook page rendered from the same design as the PDF."""
+    catalog = db.session.get(Catalog, catalog_id)
+    if not catalog:
+        abort(404)
+    owner = db.session.get(User, catalog.user_id)
+    if not owner:
+        abort(404)
+
+    page_data = catalog.get_page_data()
+    if page_number == 0:
+        page = _make_cover(catalog, owner)
+    elif 1 <= page_number <= len(page_data):
+        page = _make_product_page(page_data[page_number - 1], catalog, owner)
+    elif page_number == len(page_data) + 1:
+        page = _make_back_cover(catalog, owner)
+    else:
+        abort(404)
+
+    buf = io.BytesIO()
+    page.convert('RGB').save(
+        buf, format='JPEG', quality=72, optimize=True, progressive=True
+    )
+    buf.seek(0)
+    response = send_file(buf, mimetype='image/jpeg')
+    response.headers['Cache-Control'] = 'public, max-age=300'
+    return response
+
+
 @app.route('/catalog/<int:catalog_id>/download')
 @login_required
 def download_catalog(catalog_id):
