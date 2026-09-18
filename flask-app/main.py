@@ -1190,7 +1190,7 @@ def _load_logo(user, max_w, max_h):
 
 def _load_cover_bg(user, W, H, overlay_alpha=0.52):
     """Pro only: load cover bg photo, resize to fill W×H, apply dark overlay."""
-    if not (user.plan == 'pro' and user.cover_bg_image):
+    if not ((user.plan == 'pro' or user.is_admin) and user.cover_bg_image):
         return None
     raw = storage_download(BUCKET_LOGOS, f'cover/{user.id}/{user.cover_bg_image}')
     if not raw:
@@ -1276,8 +1276,8 @@ def _make_cover(catalog, user):
     layout    = user.pdf_layout or 'classic'
 
     # Paid-plan extras: custom font + background colour (Basic & Pro)
-    is_paid   = user.plan in ('basic', 'pro')
-    is_pro    = user.plan == 'pro'
+    is_paid   = user.plan in ('basic', 'pro') or user.is_admin
+    is_pro    = user.plan == 'pro' or user.is_admin
     fkey      = (user.cover_font or 'lexend') if is_paid else 'lexend'
     if fkey not in COVER_FONTS:
         fkey = 'lexend'
@@ -1410,7 +1410,7 @@ def _make_product_page(item, catalog, user):
     price = (item.get('price') or '')    if isinstance(item, dict) else ''
     raw   = storage_download(BUCKET_IMAGES, f'{catalog.processed_prefix}/{fname}')
     # Pro: custom bar colour; everyone else gets the dark default
-    DARK   = _hex_to_rgb(user.page_bar_color, (15, 15, 30)) if (user.plan == 'pro' and user.page_bar_color) else (15, 15, 30)
+    DARK   = _hex_to_rgb(user.page_bar_color, (15, 15, 30)) if ((user.plan == 'pro' or user.is_admin) and user.page_bar_color) else (15, 15, 30)
     TXT    = (210, 210, 230)
     accent = _accent_rgb(user)
     # Reserve space for the bars so the photo is placed *between* them,
@@ -1792,7 +1792,7 @@ def profile():
             # Logo upload
             logo_file = request.files.get('logo')
         # ── Enhanced styling (paid plans only) ────────────────────────────────
-        if user.plan in ('basic', 'pro'):
+        if user.plan in ('basic', 'pro') or user.is_admin:
             font_choice = request.form.get('cover_font', 'lexend')
             if font_choice in COVER_FONTS:
                 user.cover_font = font_choice
@@ -1802,7 +1802,7 @@ def profile():
             elif request.form.get('cover_bg_reset'):
                 user.cover_bg_color = None  # revert to layout default
         # ── Pro-only extras ───────────────────────────────────────────────────
-        if user.plan == 'pro':
+        if user.plan == 'pro' or user.is_admin:
             tl = request.form.get('cover_tagline', '').strip()[:120]
             user.cover_tagline = tl or None
             bar_color = request.form.get('page_bar_color', '').strip()
