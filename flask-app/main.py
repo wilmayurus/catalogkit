@@ -1855,7 +1855,7 @@ def profile():
 # ── Plan selection & payment approval ────────────────────────────────────────
 
 PLAN_AMOUNTS = {'basic': 'K20', 'pro': 'K50'}
-ADMIN_NOTIFY_EMAIL = 'admin@catalogkit.org'   # all system alerts go here
+ADMIN_NOTIFY_EMAIL = 'admin@catalogkit.org'   # signup, setup, support and contact alerts
 # Max number of business categories / catalog types selectable per plan
 CATEGORY_TYPE_LIMITS = {'free': 1, 'basic': 5, 'pro': 20}
 PAYMENT_METHOD_LABELS = {
@@ -3264,8 +3264,31 @@ def pricing():
 
 # ── Contact & FAQ page ──────────────────────────────────────────────────────────
 
-@app.route('/contact')
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
+    if request.method == 'POST':
+        # Honeypot: do not let automated submissions flood the inbox.
+        if request.form.get('website'):
+            return redirect(url_for('contact'))
+        name = request.form.get('name', '').strip()
+        reply_contact = request.form.get('reply_contact', '').strip()
+        message = request.form.get('message', '').strip()
+        if not name or not reply_contact or not message:
+            flash('Please enter your name, email or phone number, and message.', 'error')
+        elif len(name) > 80 or len(reply_contact) > 120 or len(message) > 2000:
+            flash('Your message is too long. Please shorten it and try again.', 'error')
+        else:
+            sent = send_email(
+                ADMIN_NOTIFY_EMAIL,
+                '[CatalogKit] New contact message',
+                f"New message from the website contact form:\n\n"
+                f"Name: {name}\nEmail or phone: {reply_contact}\n\n"
+                f"Message:\n{message}\n"
+            )
+            if sent:
+                flash("Your message was sent. We'll get back to you soon.", 'success')
+                return redirect(url_for('contact'))
+            flash('We could not send your message right now. Please email info@catalogkit.org or use WhatsApp.', 'error')
     return render_template('contact.html')
 
 

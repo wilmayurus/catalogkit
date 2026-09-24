@@ -80,6 +80,26 @@
     </div>
   </div>
 
+  <div class="contact-card" style="display:block;margin-bottom:48px">
+    <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:8px">Send us a message</h2>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:18px">Have a question? We’ll reply using the email or phone number you give us.</p>
+    <form action="{{ url_for('contact') }}" method="post">
+      <div style="position:absolute;left:-9999px" aria-hidden="true">
+        <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <label for="contact-name" style="display:block;font-weight:600;margin-bottom:6px">Your name</label>
+      <input id="contact-name" name="name" type="text" required maxlength="80" value="{{ request.form.get('name', '') }}"
+             style="display:block;width:100%;padding:10px;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)">
+      <label for="contact-reply" style="display:block;font-weight:600;margin-bottom:6px">Email or phone number</label>
+      <input id="contact-reply" name="reply_contact" type="text" required maxlength="120" value="{{ request.form.get('reply_contact', '') }}"
+             style="display:block;width:100%;padding:10px;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)">
+      <label for="contact-message" style="display:block;font-weight:600;margin-bottom:6px">Message</label>
+      <textarea id="contact-message" name="message" required maxlength="2000" rows="5"
+                style="display:block;width:100%;padding:10px;margin-bottom:16px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);resize:vertical">{{ request.form.get('message', '') }}</textarea>
+      <button type="submit" class="btn btn-primary">Send message</button>
+    </form>
+  </div>
+
   {# ── FAQ ── #}
   <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:18px;text-align:center">Frequently asked questions</h2>
   <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:40px">
