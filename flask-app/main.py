@@ -1880,7 +1880,7 @@ def profile():
 # ── Plan selection & payment approval ────────────────────────────────────────
 
 PLAN_AMOUNTS = {'basic': 'K20', 'pro': 'K50'}
-ADMIN_NOTIFY_EMAIL = 'admin@catalogkit.org'   # signup, setup, support and contact alerts
+ADMIN_NOTIFY_EMAIL = 'info@catalogkit.org'   # signup, setup, support and contact alerts
 # Max number of business categories / catalog types selectable per plan
 CATEGORY_TYPE_LIMITS = {'free': 1, 'basic': 5, 'pro': 20}
 PAYMENT_METHOD_LABELS = {
