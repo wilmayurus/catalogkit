@@ -1123,8 +1123,9 @@ def catalog_view(catalog_id):
             digits = '675' + digits
         elif digits.startswith('0') and len(digits) == 9:
             digits = '675' + digits[1:]
-        msg = "Hi! I just viewed your flipbook catalog and would like to make an order."
-        wa_link = f"https://wa.me/{digits}?text={url_quote(msg)}"
+        if 8 <= len(digits) <= 15 and not digits.startswith('0'):
+            msg = "Hi! I just viewed your flipbook catalog and would like to make an order."
+            wa_link = f"https://wa.me/{digits}?text={url_quote(msg)}"
     pay_list  = list(dict.fromkeys(json.loads(owner.payment_methods  or '[]')))
     delv_list = list(dict.fromkeys(json.loads(owner.delivery_methods or '[]')))
     style_values = (

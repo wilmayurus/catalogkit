@@ -18,6 +18,19 @@
   object-fit: contain;
   background: #fff;
 }
+.back-cover-whatsapp-link {
+  position: absolute;
+  left: 7.5%;
+  width: 85%;
+  height: 4.4%;
+  z-index: 5;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.back-cover-whatsapp-link:focus-visible {
+  outline: 3px solid #124d2a;
+  outline-offset: 2px;
+}
 
 /* ── FRONT COVER ─────────────────────────────────────────────────── */
 .cover-front {
@@ -313,6 +326,14 @@
              src="{{ url_for('catalog_page_image', catalog_id=catalog.id, page_number=(page_data|length + 1), v=page_version) }}"
              alt="{{ catalog.name }} contact and ordering information"
              loading="lazy">
+        {% if wa_link %}
+        <a class="back-cover-whatsapp-link" href="{{ wa_link }}"
+           style="top:{{ '42%' if user.business_name else '38.8%' }}"
+           target="_blank" rel="noopener noreferrer"
+           aria-label="Order from {{ user.business_name or user.name }} on WhatsApp at {{ user.whatsapp }}"
+           onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()"
+           onclick="event.stopPropagation()"></a>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -324,6 +345,11 @@
   </div>
 
   <div class="catalog-actions">
+    {% if wa_link %}
+    <a href="{{ wa_link }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+      &#128172; Order via WhatsApp
+    </a>
+    {% endif %}
     <button class="btn btn-secondary" onclick="copyShareLink()">&#128279; Copy Share Link</button>
     {% if is_owner %}
     <a href="/catalog/{{ catalog.id }}/download" class="btn btn-secondary" download>&#128190; Download PDF</a>
