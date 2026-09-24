@@ -885,6 +885,7 @@ def new_catalog():
     db.session.add(catalog)
     db.session.commit()
     log_activity(user.id, 'catalog_created', catalog.name)
+    notify_catalog_created(user, catalog)
     return redirect(url_for('workspace', catalog_id=catalog.id))
 
 
@@ -1880,7 +1881,20 @@ def profile():
 # ── Plan selection & payment approval ────────────────────────────────────────
 
 PLAN_AMOUNTS = {'basic': 'K20', 'pro': 'K50'}
-ADMIN_NOTIFY_EMAIL = 'info@catalogkit.org'   # signup, setup, support and contact alerts
+ADMIN_NOTIFY_EMAIL = 'info@catalogkit.org'   # signup, catalog, payment, setup, support and contact alerts
+
+def notify_catalog_created(user, catalog):
+    send_email(
+        ADMIN_NOTIFY_EMAIL,
+        f'[CatalogKit] New catalog #{catalog.id} — {user.name}',
+        f"A new catalog was created.\n\n"
+        f"Catalog: {catalog.name}\n"
+        f"Owner: {user.name}\n"
+        f"Email: {user.email or '(none provided)'}\n"
+        f"WhatsApp: {user.whatsapp or '(none provided)'}\n"
+        f"View: https://www.catalogkit.org/catalog/{catalog.id}\n"
+    )
+
 # Max number of business categories / catalog types selectable per plan
 CATEGORY_TYPE_LIMITS = {'free': 1, 'basic': 5, 'pro': 20}
 PAYMENT_METHOD_LABELS = {
@@ -1901,6 +1915,7 @@ def choose_plan():
             db.session.add(catalog)
             db.session.commit()
             log_activity(user.id, 'catalog_created', catalog.name)
+            notify_catalog_created(user, catalog)
             flash('Welcome to CatalogKit! Your catalog is ready.', 'success')
             return redirect(url_for('workspace', catalog_id=catalog.id))
         if plan not in PLAN_AMOUNTS:
@@ -2295,6 +2310,7 @@ def admin_record_payment():
     db.session.add(pr)
 
     if activate_now:
+        new_catalog = None
         if target.plan == plan and target.plan_expires and target.plan_expires > now_dt:
             new_expires = target.plan_expires + timedelta(days=30 * months)
         else:
@@ -2307,8 +2323,11 @@ def admin_record_payment():
         target.monthly_reset_date = date(today.year + 1, 1, 1) if today.month == 12 \
                                     else date(today.year, today.month + 1, 1)
         if not target.catalogs:
-            db.session.add(Catalog(user_id=target.id, name='My Catalog'))
+            new_catalog = Catalog(user_id=target.id, name='My Catalog')
+            db.session.add(new_catalog)
         db.session.commit()
+        if new_catalog:
+            notify_catalog_created(target, new_catalog)
         log_admin_action(session['user_id'], 'payment_recorded_activated', 'payment_request', pr.id,
                          f'Recorded + activated {plan} × {months_label} for {target.name}')
         log_activity(target.id, 'plan_upgraded',
@@ -2360,9 +2379,13 @@ def admin_confirm_payment(pr_id):
         today = now_dt.date()
         user.monthly_reset_date = date(today.year + 1, 1, 1) if today.month == 12 \
                                    else date(today.year, today.month + 1, 1)
+        new_catalog = None
         if not user.catalogs:
-            db.session.add(Catalog(user_id=user.id, name='My Catalog'))
+            new_catalog = Catalog(user_id=user.id, name='My Catalog')
+            db.session.add(new_catalog)
         db.session.commit()
+        if new_catalog:
+            notify_catalog_created(user, new_catalog)
         per_month_int = int(''.join(c for c in (pr.amount or '0') if c.isdigit()) or 0)
         total_kina    = per_month_int * months_paid
         log_admin_action(session['user_id'], 'payment_confirmed', 'payment_request', pr.id,
@@ -2625,6 +2648,13 @@ def admin_create_user():
     db.session.commit()
     log_activity(user.id, 'user_created_by_admin', f'Account created by admin {me.email}')
     log_admin_action(me.id, 'user_created', 'user', user.id, f'{user.name} ({user.email}) as {access_level}')
+    send_email(
+        ADMIN_NOTIFY_EMAIL,
+        f'[CatalogKit] New account created — {user.name}',
+        f"A new account was created by an admin.\n\n"
+        f"Name: {user.name}\nEmail: {user.email}\nRole: {access_level}\n"
+        f"View: https://www.catalogkit.org/admin\n"
+    )
     flash(f'{user.name}\'s account has been created.', 'success')
     return redirect(url_for('admin'))
 
@@ -2675,17 +2705,20 @@ def admin_edit_user(user_id):
         # WhatsApp payment) without needing a PaymentRequest record.
         new_plan = request.form.get('plan')
         plan_changed = new_plan in ('free', 'basic', 'pro') and new_plan != target.plan
+        new_catalog = None
         if plan_changed:
             old_plan = target.plan
             target.plan = new_plan
             target.monthly_builds_used = 0
             target.plan_start = datetime.utcnow()
             if not target.catalogs:
-                catalog = Catalog(user_id=target.id, name='My Catalog')
-                db.session.add(catalog)
+                new_catalog = Catalog(user_id=target.id, name='My Catalog')
+                db.session.add(new_catalog)
             log_activity(target.id, 'plan_changed_by_admin',
                          f'Plan changed from {old_plan} to {new_plan} by admin {me.email}')
         db.session.commit()
+        if new_catalog:
+            notify_catalog_created(target, new_catalog)
         log_activity(target.id, 'profile_edited_by_admin', f'Profile edited by admin {me.email}')
         log_admin_action(me.id, 'user_edited', 'user', target.id, f'{target.name} ({target.email})')
         if plan_changed:
