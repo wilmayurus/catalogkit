@@ -11,6 +11,27 @@
   </div>
   {% endif %}
 
+  {% if show_install_invite %}
+  <style>
+    #install-invite[hidden], #install-invite [hidden] { display: none !important; }
+  </style>
+  <aside id="install-invite" hidden aria-labelledby="install-invite-title"
+         style="background:var(--surface2);border:1.5px solid var(--accent);border-radius:14px;padding:20px 22px;margin-bottom:28px">
+    <h2 id="install-invite-title" style="font-size:1.1rem;margin:0 0 8px">Keep CatalogKit on your home screen</h2>
+    <p style="font-size:0.88rem;color:var(--muted);margin:0 0 14px">Open your catalogs quickly, just like an app. This is optional.</p>
+    <p id="install-android-steps" hidden style="font-size:0.88rem;line-height:1.5;margin:0 0 14px">
+      In Chrome, tap the browser menu <strong>⋮</strong> and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.
+    </p>
+    <p id="install-ios-steps" hidden style="font-size:0.88rem;line-height:1.5;margin:0 0 14px">
+      Open this page in <strong>Safari</strong>, tap <strong>Share</strong> (the square with an upward arrow), then tap <strong>Add to Home Screen</strong> and confirm.
+    </p>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <button id="install-now" type="button" class="btn btn-primary" hidden>Add to home screen</button>
+      <button id="install-later" type="button" class="btn btn-ghost">Not now</button>
+    </div>
+  </aside>
+  {% endif %}
+
   <div style="margin-bottom:28px">
     <h2 style="font-size:1.5rem;font-weight:700;margin:0 0 4px">My Profile</h2>
     <p class="text-muted" style="font-size:0.88rem;margin:0">
@@ -377,4 +398,48 @@
   </form>
 
 </div>
+{% endblock %}
+
+{% block scripts %}
+{% if show_install_invite %}
+<script>
+(function () {
+  const invite = document.getElementById('install-invite');
+  const installButton = document.getElementById('install-now');
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  if (isInstalled) return;
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  if (!isIOS && !isAndroid) return;
+
+  document.getElementById(isIOS ? 'install-ios-steps' : 'install-android-steps').hidden = false;
+  invite.hidden = false;
+  document.getElementById('install-later').addEventListener('click', function () {
+    invite.hidden = true;
+  });
+
+  if (!isAndroid) return;
+  let installPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    installPrompt = event;
+    installButton.hidden = false;
+  });
+  installButton.addEventListener('click', async function () {
+    if (!installPrompt) return;
+    const prompt = installPrompt;
+    installPrompt = null;
+    installButton.hidden = true;
+    await prompt.prompt();
+    const choice = await prompt.userChoice;
+    if (choice.outcome === 'accepted') invite.hidden = true;
+  });
+  window.addEventListener('appinstalled', function () {
+    invite.hidden = true;
+  });
+})();
+</script>
+{% endif %}
 {% endblock %}

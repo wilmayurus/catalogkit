@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import (Flask, render_template, request, jsonify,
-                   send_file, session, redirect, url_for, flash)
+                   send_file, send_from_directory, session, redirect, url_for, flash)
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -15,6 +15,22 @@ from sqlalchemy import text
 app = Flask(__name__)
 app.secret_key = os.environ.get('SESSION_SECRET', 'dev-only-change-in-prod')
 app.jinja_env.filters['fromjson'] = json.loads
+
+@app.route('/sw.js')
+def service_worker():
+    # Serve at the site root so the browser can install the whole website.
+    return send_from_directory(app.static_folder, 'sw.js', mimetype='application/javascript')
+
+@app.route('/install-icon/<int:size>.png')
+def install_icon(size):
+    if size not in (192, 512):
+        return 'Icon not found', 404
+    with Image.open(os.path.join(app.static_folder, 'img', 'catalogkit-logo.png')) as original:
+        icon = original.resize((size, size), Image.Resampling.LANCZOS)
+        image_data = io.BytesIO()
+        icon.save(image_data, format='PNG')
+    image_data.seek(0)
+    return send_file(image_data, mimetype='image/png', max_age=86400)
 
 @app.after_request
 def no_cache(response):
@@ -709,6 +725,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         session['user_id'] = user.id
+        session['show_install_invite'] = True
 
         # ── Welcome email to new user (only if they provided an email) ─────
         first_name = name.split()[0]
@@ -739,6 +756,12 @@ Here's how to get started in 4 easy steps:
   4. BUILD & SHARE
      Click "Confirm & Build Catalog" and CatalogKit will generate
      your flipbook and PDF instantly — ready to share on WhatsApp!
+
+Want quick access from your phone's home screen?
+  Android (Chrome): open CatalogKit, tap the browser menu (⋮),
+  then choose "Install app" or "Add to Home screen".
+  iPhone (Safari): tap Share, then "Add to Home Screen".
+  Your phone will ask you to confirm — CatalogKit cannot add it automatically.
 
 ──────────────────────────────────────
 Need help getting started?
@@ -1849,7 +1872,8 @@ def profile():
             return redirect(url_for('choose_plan'))
         flash('Profile updated!', 'success')
         return redirect(url_for('profile'))
-    return render_template('profile.html', user=user, cover_fonts=COVER_FONTS)
+    return render_template('profile.html', user=user, cover_fonts=COVER_FONTS,
+                           show_install_invite=session.pop('show_install_invite', False))
 
 
 # ── Plan selection & payment approval ────────────────────────────────────────
